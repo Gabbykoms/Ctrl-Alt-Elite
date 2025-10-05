@@ -168,7 +168,7 @@ supabase.key=your_supabase_service_key
 ## Acknowledgments
 
 This project was developed as part of CPSC 415 – Cloud Native Applications, Trinity College, Fall 2025.
-Special thanks to the course instructor for his guidance and support.
+Special thanks to the course instructor (@javajon) for his guidance and support.
 
 ---
 
