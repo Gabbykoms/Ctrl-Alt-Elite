@@ -37,7 +37,7 @@ Email Verification System	Ensures only verified Trinity College users (@trincoll
 
 
 🧭 User Interface & Core Features
-🎓 For Students
+For Students
 
 Real-time map to track shuttle position and ETA.
 
@@ -47,7 +47,7 @@ Integrated chatbot for FAQs (schedules, routes, delays, etc.).
 
 Secure email-based login using @trincoll.edu.
 
-👩‍💼 For Admins
+For Admins
 
 Manage driver accounts and assignments.
 
@@ -63,7 +63,7 @@ Automatic GPS-based shuttle tracking updates.
 
 Integration with admin dashboard for performance visibility.
 
-🧠 Architecture Summary
+Architecture Summary
 
 The application follows a modular microservice architecture, consisting of:
 
@@ -77,7 +77,7 @@ AI Service (OpenAI) — enables natural language queries via the chatbot.
 
 Nginx Gateway — manages routing and deployment traffic.
 
-🧪 Future Enhancements
+Future Enhancements
 
 Push notifications for shuttle arrival and route delays.
 
@@ -87,7 +87,7 @@ Integration with Trinity’s ID system for single sign-on (SSO).
 
 Dark mode and mobile app version.
 
-📜 Acknowledgments
+Acknowledgments
 
 This project was developed as part of CPSC 415 – Cloud Native Applications, Trinity College, Fall 2025.
 Special thanks to the course instructors and teaching assistants for their guidance and support.
