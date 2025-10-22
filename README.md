@@ -1,179 +1,270 @@
-# Trinity College Campus Safety Shuttle Tracker
+# Bantam Shuttle - Trinity College Shuttle Tracking Application
 
-## Overview
+A modern, full-featured shuttle tracking application built for Trinity College with React 18, Vite, TypeScript, and Tailwind CSS.
 
-The **Trinity College Campus Safety Shuttle Tracker** is a modern, student-focused web application designed to enhance mobility and safety around campus. It enables students to track campus shuttles in real time, receive arrival estimates, and access a built-in chatbot for quick assistance — all while ensuring secure authentication through institutional email verification.
+## Features
 
-This project promotes accessibility and reliability, helping students navigate campus confidently regardless of New England's challenging weather conditions.
+- **Student Portal**: Real-time shuttle tracking with interactive maps, route information, and stop details
+- **Driver Dashboard**: Clock in/out functionality, status management, and live location tracking
+- **Admin Dashboard**: Live view of all shuttles, routes, and analytics with charts
+- **AI Chatbot**: Floating action button chatbot for shuttle inquiries
+- **Authentication**: Secure login/register with @trincoll.edu email validation
+- **Responsive Design**: Mobile-first, fully responsive interface
+- **Real-time Updates**: Socket.IO integration for live shuttle location updates
 
----
+## Tech Stack
 
-## Contributors
-
-- Shamsher Ghising Tamang
-- Noella Uwayisenga
-- Gabriel Koomson
-
----
-
-## System Modules
-
-| Module | Description |
-|--------|-------------|
-| **Student Portal** | Allows students to view live shuttle locations, ETAs, and recommended departure times to reach the nearest stop. |
-| **Driver Dashboard** | Lets drivers clock in/out, update their status, and share GPS data used for real-time tracking. |
-| **Admin Console** | Provides administrative controls to assign drivers, monitor routes, and view analytics or usage statistics. |
-| **Chatbot Assistant** | Integrated AI chatbot powered by the OpenAI API to answer common transportation queries and provide route guidance. |
-| **Email Verification System** | Ensures only verified Trinity College users (@trincoll.edu) can access the service, maintaining safety and privacy. |
-
----
-
-## Technology Stack
-
-| Layer | Technology |
-|-------|-----------|
-| **Frontend** | React |
-| **Backend** | Java (Spring Boot) |
-| **Database & Authentication** | Supabase |
-| **AI / NLP** | OpenAI API |
-| **Web Server & Deployment** | Nginx |
-
----
-
-## Key Features
-
-### For Students
-- **Real-time Tracking**: Live map displaying shuttle position and estimated time of arrival
-- **Smart Notifications**: Intelligent alerts suggesting optimal departure times to reach the nearest stop
-- **AI Chatbot**: Instant answers to FAQs about schedules, routes, delays, and more
-- **Secure Access**: Email-based authentication restricted to @trincoll.edu addresses
-
-### For Drivers
-- **Simple Clock-In/Out**: Streamlined interface for shift management
-- **Automatic GPS Tracking**: Real-time location updates with minimal driver interaction
-- **Performance Visibility**: Integration with admin dashboard for route monitoring
-
-### For Administrators
-- **Driver Management**: Assign, monitor, and manage driver accounts
-- **Route Monitoring**: Real-time oversight of shuttle operations and route performance
-- **Analytics Dashboard**: Comprehensive usage statistics and system performance metrics
-- **Operation Logs**: Detailed history of shuttle activities and system events
-
----
-
-## System Architecture
-
-The application follows a **modular microservice architecture** with clear separation of concerns:
-
-```
-┌─────────────────┐
-│  React Frontend │ ← User Interface & Real-time Updates
-└────────┬────────┘
-         │
-┌────────▼────────┐
-│  Nginx Gateway  │ ← Routing & Load Distribution
-└────────┬────────┘
-         │
-    ┌────┴────┐
-    │         │
-┌───▼──────┐  │
-│  Spring  │  │  ┌──────────┐
-│   Boot   │◄─┴──► Supabase │ ← Centralized Storage
-│ Backend  │     └──────────┘
-└────┬─────┘
-     │
-┌────▼─────┐
-│ OpenAI   │ ← Natural Language Processing
-│   API    │
-└──────────┘
-```
-
-### Component Breakdown
-
-1. **Frontend (React)** — Responsive user interface with real-time updates
-2. **Backend (Spring Boot)** — RESTful API handling business logic and data processing
-3. **Database (Supabase)** — User management, route data, and GPS telemetry storage
-4. **AI Service (OpenAI)** — Powers the intelligent chatbot for natural language queries
-5. **Nginx Gateway** — Manages request routing, load balancing, and deployment traffic
-
----
+- **Frontend Framework**: React 18 with TypeScript
+- **Build Tool**: Vite
+- **Styling**: Tailwind CSS
+- **Routing**: React Router DOM
+- **State Management**: React Context API
+- **API Client**: Axios with interceptors
+- **Real-time Communication**: Socket.IO
+- **Maps**: Mapbox GL
+- **Charts**: Recharts
+- **Testing**: Vitest + React Testing Library
+- **Icons**: Lucide React
 
 ## Getting Started
 
 ### Prerequisites
-- Node.js (v16 or higher)
-- Java JDK 17+
-- Maven
-- Supabase account
-- OpenAI API key
+
+- Node.js 20.19.0 or higher
+- npm or yarn package manager
 
 ### Installation
 
+1. Clone the repository:
 ```bash
-# Clone the repository
-git clone https://github.com/Gabbykoms/Ctrl-Alt-Elite.git
-cd trinity-shuttle-tracker
+git clone <repo-url>
+cd Ctrl-Alt-Elite
+```
 
-# Frontend setup
-cd frontend
+2. Install dependencies:
+```bash
 npm install
-npm start
-
-# Backend setup
-cd ../backend
-mvn clean install
-mvn spring-boot:run
 ```
 
-### Environment Variables
-
-Create `.env` files in both frontend and backend directories:
-
-**Frontend `.env`:**
-```
-REACT_APP_API_URL=http://localhost:8080/api
-REACT_APP_SUPABASE_URL=your_supabase_url
-REACT_APP_SUPABASE_KEY=your_supabase_key
+3. Create a `.env` file based on `.env.example`:
+```bash
+cp .env.example .env
 ```
 
-**Backend `application.properties`:**
+4. Add your environment variables (especially Mapbox token):
+```env
+VITE_MAPBOX_TOKEN=your_mapbox_public_token
+VITE_API_BASE_URL=http://localhost:3000/api
+VITE_SOCKET_URL=http://localhost:3000
 ```
-openai.api.key=your_openai_key
-supabase.url=your_supabase_url
-supabase.key=your_supabase_service_key
+
+### Development
+
+Start the development server:
+```bash
+npm run dev
 ```
 
----
+The application will open at `http://localhost:5173`
 
-## Security & Privacy
+### Build
 
-- **Email Verification**: Access restricted to verified @trincoll.edu email addresses
-- **Secure Authentication**: Token-based authentication via Supabase
-- **Data Protection**: GPS data and user information encrypted in transit and at rest
-- **Privacy First**: Location data retained only for operational purposes
+Build for production:
+```bash
+npm run build
+```
 
----
+### Testing
 
-## Future Enhancements
+Run tests:
+```bash
+npm run test
+```
 
-- [ ] Push notifications for shuttle arrival alerts and route delays
-- [ ] Integration with Trinity's ID system for single sign-on (SSO)
-- [ ] Native mobile applications (iOS & Android)
-- [ ] Multi-language support for international students
-- [ ] Accessibility features (screen reader optimization, high contrast mode)
-- [ ] Route optimization based on demand patterns
+Run tests with UI:
+```bash
+npm run test:ui
+```
 
----
+## Project Structure
 
-## Acknowledgments
+```
+src/
+├── components/          # Reusable React components
+│   ├── Header.tsx
+│   ├── Sidebar.tsx
+│   ├── LiveMap.tsx
+│   ├── RouteSidebar.tsx
+│   ├── Chatbot.tsx
+│   ├── ChatbotUI.tsx
+│   ├── ProtectedRoute.tsx
+│   └── Global.tsx
+├── pages/              # Page components
+│   ├── LoginPage.tsx
+│   ├── RegisterPage.tsx
+│   ├── VerifyEmailPage.tsx
+│   ├── StudentDashboard.tsx
+│   ├── DriverDashboard.tsx
+│   ├── AdminDashboard.tsx
+│   ├── Placeholders.tsx
+│   └── NotFound404.tsx
+├── layouts/            # Layout components
+│   ├── AuthLayout.tsx
+│   ├── AppLayout.tsx
+│   └── AppLayout.test.tsx
+├── contexts/           # React Context providers
+│   ├── AuthContext.tsx
+│   └── ShuttleContext.tsx
+├── services/           # API and Socket services
+│   ├── apiService.ts
+│   ├── apiService.test.ts
+│   └── socketService.ts
+├── test/              # Test configuration
+│   └── setup.ts
+├── App.tsx            # Main app component
+├── main.tsx           # Entry point
+└── index.css          # Global styles
 
-This project was developed as part of CPSC 415 – Cloud Native Applications, Trinity College, Fall 2025.
-Special thanks to the course instructor (@javajon) for his guidance and support.
+```
 
----
+## Color Palette (Trinity College Brand)
 
-## Contact
+- **Primary**: `#004179` (Trinity Blue)
+- **Secondary**: `#F3C404` (Trinity Gold)
+- **Accent**: `#6CACE4` (Light Blue)
+- **Neutral**: `#F5F5F5` (Light Gray)
+- **Dark**: `#1a1a1a` (Near Black)
 
-For questions, feedback, or contributions, please contact the development team through Trinity College email addresses.
+## Routes
 
-**Project Repository**: https://github.com/Gabbykoms/Ctrl-Alt-Elite.git  
+### Public Routes
+- `/login` - Login page
+- `/register` - Registration page (requires @trincoll.edu email)
+- `/verify-email` - Email verification page
+
+### Student Routes (Protected)
+- `/app` - Main dashboard with live map
+- `/app/schedule` - Schedule page
+- `/app/profile` - User profile
+
+### Driver Routes (Protected)
+- `/driver/dashboard` - Driver dashboard with clock in/out
+
+### Admin Routes (Protected)
+- `/admin/dashboard` - Admin dashboard with live view and analytics
+- `/admin/drivers` - Driver management
+- `/admin/routes` - Route management
+
+## Authentication
+
+The app uses JWT tokens for authentication. Tokens are stored in localStorage and automatically included in API requests via axios interceptors.
+
+### Email Validation
+
+- Registration requires a `@trincoll.edu` email address
+- Custom error messages guide users through the process
+
+## API Integration
+
+The app is configured to connect to a backend API. Update the `VITE_API_BASE_URL` environment variable to point to your backend.
+
+### Example API endpoints:
+- `POST /auth/login` - User login
+- `POST /auth/register` - User registration
+- `GET /shuttles` - Get all shuttles
+- `GET /routes` - Get all routes
+- `GET /stops` - Get all stops
+
+## Real-time Updates
+
+The app uses Socket.IO for real-time shuttle location updates. Ensure your backend is running on the configured `VITE_SOCKET_URL`.
+
+### Events:
+- `shuttle-update` - Shuttle location/status changed
+- `route-update` - Route information changed
+- `stop-update` - Stop information changed
+
+## Testing
+
+The project includes comprehensive tests for:
+- **LoginPage**: Email validation, form submission, error handling
+- **AppLayout**: Navigation links, logout functionality, role-based UI
+- **apiService**: Authorization header, interceptors, API methods
+
+Run specific tests:
+```bash
+npm run test -- LoginPage
+npm run test -- AppLayout
+npm run test -- apiService
+```
+
+## Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `VITE_MAPBOX_TOKEN` | Mapbox public token for maps | - |
+| `VITE_API_BASE_URL` | Backend API base URL | http://localhost:3000/api |
+| `VITE_SOCKET_URL` | WebSocket server URL | http://localhost:3000 |
+
+## Development Notes
+
+### Adding New Features
+
+1. Create components in `src/components/`
+2. Create pages in `src/pages/`
+3. Add routes in `src/App.tsx`
+4. Use existing contexts (AuthContext, ShuttleContext)
+5. Write tests for new functionality
+
+### Common Tasks
+
+**Add a new route:**
+```tsx
+<Route
+  element={
+    <ProtectedRoute>
+      <AppLayout onLogout={logout} userRole="student">
+        <YourPage />
+      </AppLayout>
+    </ProtectedRoute>
+  }
+  path="/your-path"
+/>
+```
+
+**Use authentication:**
+```tsx
+import { useAuth } from '../contexts/AuthContext'
+
+function MyComponent() {
+  const { user, token } = useAuth()
+  // Use user and token
+}
+```
+
+**Use shuttle data:**
+```tsx
+import { useShuttle } from '../contexts/ShuttleContext'
+
+function MyComponent() {
+  const { shuttles, stops, routes } = useShuttle()
+  // Use data
+}
+```
+
+## Deployment
+
+Build the project for production:
+```bash
+npm run build
+```
+
+The optimized build will be in the `dist/` directory.
+
+## Support
+
+For issues or questions, please contact the development team.
+
+## License
+
+© 2025 Trinity College. All rights reserved.
