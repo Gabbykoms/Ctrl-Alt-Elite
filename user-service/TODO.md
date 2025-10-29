@@ -1,0 +1,7 @@
+- ~~Get the basic swagger running with create, read update~~
+- ~~Create a delete user api~~
+- ~~Fix the things with docker and docker compose with data persistence~~
+- ~~Data dictionary and business rules making~~
+- ~~Proper schema design with normalisation~~
+- ~~Use of UML diagrams with relationships~~
+- work on docker compose

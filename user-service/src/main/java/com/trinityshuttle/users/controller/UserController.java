@@ -6,8 +6,11 @@ import com.trinityshuttle.users.dto.UpdateUserRequest;
 import com.trinityshuttle.users.dto.UserDto;
 import com.trinityshuttle.users.service.UserService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController
@@ -34,4 +37,22 @@ public class UserController {
     public UserDto create(@Valid @RequestBody CreateUserRequest body) {
         return service.createUser(body);
     }
+
+//    @DeleteMapping("/{id}")
+//    public UserDto delete(@PathVariable Long id) {
+//        return service.deleteUser(id);
+//    }
+
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        service.deleteUser(id);
+    }
+
+    @GetMapping
+    public List<UserDto> getAll() {
+        return service.getAllUsers();
+    }
+
+
 }

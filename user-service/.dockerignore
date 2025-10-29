@@ -1,0 +1,16 @@
+.DS_Store
+
+.git
+.gitignore
+
+.idea
+.gradle
+
+*.iml
+build
+docker-compose*.yml
+
+./docs
+TODO.md
+HELP.md
+README.md

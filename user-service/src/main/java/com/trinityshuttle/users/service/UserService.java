@@ -8,6 +8,7 @@ import com.trinityshuttle.users.entity.User;
 import com.trinityshuttle.users.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.List;
 
 
 @Service
@@ -46,6 +47,33 @@ public class UserService {
         var saved = repo.save(u);
         return toDto(saved);
     }
+
+//    @Transactional
+//    public UserDto deleteUser(Long id) {
+//        var u = repo.findById(id).orElseThrow(() ->
+//                new NotFoundException("User %d not found".formatted(id))
+//        );
+//
+//        repo.delete(u);
+//        return toDto(u);
+//    }
+
+    @Transactional
+    public void deleteUser(Long id) {
+        var u = repo.findById(id).orElseThrow(() ->
+                new NotFoundException("User %d not found".formatted(id))
+        );
+        repo.delete(u);
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserDto> getAllUsers() {
+        return repo.findAll()
+                .stream()
+                .map(UserService::toDto)
+                .toList();
+    }
+
 
     private static UserDto toDto(User u) {
        return new UserDto(u.getId(), u.getName(), u.getPhotoUrl(), u.getHouse(), u.getRole());

@@ -1,0 +1,21 @@
+@startuml
+' ER diagram for user-service
+hide circle
+skinparam linetype ortho
+
+entity "users" as Users {
+  * id : BIGINT <<PK>>
+  --
+  name : TEXT (NOT NULL)
+  photo_url : TEXT
+  house : TEXT
+  role : TEXT (ENUM: DRIVER | ADMIN | STUDENT, NOT NULL)
+  created_at : TIMESTAMPTZ (DEFAULT now())
+  updated_at : TIMESTAMPTZ (DEFAULT now())
+}
+
+note right of Users
+  Trigger: set_updated_at BEFORE UPDATE
+  Index: idx_users_role(role)
+end note
+@enduml
