@@ -1,3 +1,5 @@
+
+
 import { useEffect, useRef, useState } from 'react'
 import mapboxgl from 'mapbox-gl'
 
@@ -23,12 +25,11 @@ export default function LiveMap({ pins, routes = [], activeRouteIds = [] }: Live
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map())
   const [mapError, setMapError] = useState(false)
 
+  // Effect 1: Initialize the map
   useEffect(() => {
     if (!mapContainer.current) return
 
-    // Initialize map - using a basic MapBox style
-    // Note: You'll need to set your Mapbox token in environment variables
-    const token = (import.meta.env as any).VITE_MAPBOX_TOKEN
+    const token = import.meta.env.VITE_MAPBOX_TOKEN
     
     if (!token) {
       setMapError(true)
@@ -42,119 +43,153 @@ export default function LiveMap({ pins, routes = [], activeRouteIds = [] }: Live
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
         style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-72.64, 41.77], // Trinity College coordinates
+        center: [-72.685, 41.746], // Centered on Trinity College
         zoom: 15,
       })
 
-      // Add navigation controls
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
     } catch (error) {
       console.error('Failed to initialize map:', error)
       setMapError(true)
     }
 
+    // Cleanup function
     return () => {
       map.current?.remove()
     }
-  }, [])
+  }, []) // Empty dependency array ensures this runs only once
 
-  // Update markers when pins change
+  // Effect 2: Update markers when pins change
   useEffect(() => {
     if (!map.current) return
 
-    // Remove old markers
+    // This logic is fine: remove all markers and add the new set
     markersRef.current.forEach((marker) => marker.remove())
     markersRef.current.clear()
 
-    // Add new markers
     pins.forEach((pin) => {
       const el = document.createElement('div')
+      // Using your project's Tailwind colors (primary/accent)
       el.className = `w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${
         pin.type === 'stop' ? 'bg-primary' : 'bg-accent'
-      } text-white font-bold text-sm shadow-lg`
-      el.textContent = pin.type === 'stop' ? 'S' : 'B'
+      } text-white font-bold text-sm shadow-lg border-2 border-white`
+      el.textContent = pin.type === 'stop' ? 'S' : 'B' // 'S' for Stop, 'B' for Bantam/Bus
 
       const marker = new mapboxgl.Marker(el)
         .setLngLat([pin.lng, pin.lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 }).setHTML(
-            `<div class="p-2"><strong>${pin.name}</strong>${pin.info ? `<p class="text-sm mt-1">${pin.info}</p>` : ''}</div>`
+            `<div class="p-1 font-sans"><strong>${pin.name}</strong>${pin.info ? `<p class="text-sm mt-1">${pin.info}</p>` : ''}</div>`
           )
         )
         .addTo(map.current!)
 
-      el.addEventListener('click', () => {
+      // Using 'click' on the custom element is more reliable
+      el.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent map click event
         marker.togglePopup()
         pin.onPopupOpen?.(pin.id)
       })
 
       markersRef.current.set(pin.id, marker)
     })
-  }, [pins])
+  }, [pins]) // Re-runs whenever the pins prop changes
 
-  // Draw routes when they change
+  // Effect 3: Draw routes when routes or activeRouteIds change
   useEffect(() => {
     if (!map.current) return
 
-    // Remove old route layers
-    activeRouteIds.forEach((routeId) => {
-      const layerId = `route-${routeId}`
-      if (map.current?.getLayer(layerId)) {
-        map.current.removeLayer(layerId)
-      }
-      const sourceId = `route-source-${routeId}`
-      if (map.current?.getSource(sourceId)) {
-        map.current.removeSource(sourceId)
-      }
-    })
+    // This function contains the logic to update routes
+    const updateMapRoutes = () => {
+      // 1. FIX FOR DESELECTION BUG:
+      // Get all route layers currently on the map
+      const allMapLayers = map.current?.getStyle().layers || []
+      const currentRouteLayerIds = allMapLayers
+        .map((layer) => layer.id)
+        .filter((id) => id.startsWith('route-'))
 
-    // Add new route layers
-    activeRouteIds.forEach((routeId) => {
-      const route = routes.find((r) => r.id === routeId)
-      if (!route) return
+      // Loop over layers ON THE MAP and remove any that are NOT active
+      currentRouteLayerIds.forEach((layerId) => {
+        const routeId = layerId.replace('route-', '')
+        
+        // If this map layer is NOT in our activeRouteIds, remove it
+        if (!activeRouteIds.includes(routeId)) {
+          const sourceId = `route-source-${routeId}`
+          if (map.current?.getLayer(layerId)) {
+            map.current.removeLayer(layerId)
+          }
+          if (map.current?.getSource(sourceId)) {
+            map.current.removeSource(sourceId)
+          }
+        }
+      })
 
-      const sourceId = `route-source-${routeId}`
-      const layerId = `route-${routeId}`
+      // 2. ADD NEW/ACTIVE ROUTES
+      activeRouteIds.forEach((routeId) => {
+        const route = routes.find((r) => r.id === routeId)
+        if (!route) return // This route isn't in our props, skip
 
-      if (!map.current?.getSource(sourceId)) {
-        map.current?.addSource(sourceId, {
-          type: 'geojson',
-          data: {
-            type: 'Feature',
-            geometry: {
-              type: 'LineString',
-              coordinates: route.coordinates,
+        const sourceId = `route-source-${routeId}`
+        const layerId = `route-${routeId}`
+
+        // Only add if it doesn't already exist on the map
+        if (!map.current?.getSource(sourceId)) {
+          map.current?.addSource(sourceId, {
+            type: 'geojson',
+            data: {
+              type: 'Feature',
+              geometry: {
+                type: 'LineString',
+                coordinates: route.coordinates,
+              },
+              properties: {},
             },
-            properties: {},
-          },
-        })
-      }
+          })
+        }
 
-      if (!map.current?.getLayer(layerId)) {
-        map.current?.addLayer({
-          id: layerId,
-          type: 'line',
-          source: sourceId,
-          paint: {
-            'line-color': '#004179',
-            'line-width': 3,
-            'line-opacity': 0.7,
-          },
-        })
-      }
-    })
-  }, [routes, activeRouteIds])
+        if (!map.current?.getLayer(layerId)) {
+          map.current?.addLayer({
+            id: layerId,
+            type: 'line',
+            source: sourceId,
+            paint: {
+              'line-color': '#004179', // Trinity Blue (bg-primary)
+              'line-width': 4,
+              'line-opacity': 0.75,
+            },
+          })
+        }
+      })
+    }
 
+    // 3. FIX FOR RACE CONDITION:
+    // Check if the map's style is loaded.
+    if (!map.current.isStyleLoaded()) {
+      // If not, wait for it to load ('load' fires only once)
+      map.current.once('load', updateMapRoutes)
+    } else {
+      // If it is loaded, update routes immediately.
+      updateMapRoutes()
+    }
+
+  }, [routes, activeRouteIds]) // Re-runs when route data or active toggles change
+
+  // Error fallback UI
   if (mapError) {
     return (
       <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-        <div className="text-center p-8">
-          <p className="text-gray-600 mb-2">Map Preview Not Available</p>
-          <p className="text-sm text-gray-500">Add your Mapbox token to .env to enable the map</p>
+        <div className="text-center p-8 bg-white rounded-lg shadow-md">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2">Map Error</h3>
+          <p className="text-sm text-gray-600">
+            Could not load map. Please ensure your
+            <code className="text-xs bg-gray-200 p-1 rounded mx-1">VITE_MAPBOX_TOKEN</code>
+            is set correctly in your <code className="text-xs bg-gray-200 p-1 rounded mx-1">.env</code> file.
+          </p>
         </div>
       </div>
     )
   }
 
+  // The map container
   return <div ref={mapContainer} className="w-full h-full" />
 }

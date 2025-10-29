@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import { ShuttleProvider } from './contexts/ShuttleContext'
 import ProtectedRoute from './components/ProtectedRoute'
@@ -23,6 +23,9 @@ function AppRoutes() {
 
   return (
     <Routes>
+      {/* Root redirect */}
+      <Route path="/" element={<Navigate to="/demo" replace />} />
+      
       {/* Demo/Test Routes - Direct access without authentication */}
       <Route
         element={
