@@ -5,3 +5,5 @@
 - ~~Proper schema design with normalisation~~
 - ~~Use of UML diagrams with relationships~~
 - work on docker compose
+- work on gradle build instead of dockerbuild
+- put code for $REGISTRY push
