@@ -1,0 +1,38 @@
+[
+  {
+    "content": "Library: The Trinity College Library is located at the center of campus and is easily accessible from the Main Campus Loop. The closest shuttle stop is 'Library Stop' directly in front of the main entrance. During peak hours, expect an average 5-minute wait time. The library is open late, and the Late Night Safety Shuttle can pick you up from here after 9 PM.",
+    "building_name": "Library",
+    "closest_stop": "Library Stop",
+    "avg_wait_minutes": 5,
+    "services": ["study spaces", "computer labs", "printing"]
+  },
+  {
+    "content": "Mather Hall: This is the main dining facility and student center at Trinity College. The shuttle stops directly in front of the building on the Main Campus Loop route. Mather Hall is a major hub, so shuttles are frequent here - every 10-15 minutes during meal times. The building also houses the campus bookstore and student mail services.",
+    "building_name": "Mather Hall",
+    "closest_stop": "Mather Hall Stop",
+    "amenities": ["dining", "events", "bookstore", "mail services"],
+    "frequency_minutes": 10
+  },
+  {
+    "content": "Athletic Center: Located on the south end of campus, the Athletic Center is a popular destination. Shuttle service is available every 15 minutes during peak hours on the Main Campus Loop. The stop is at the main entrance. Facilities include a gym, pool, basketball courts, and fitness classes.",
+    "building_name": "Athletic Center",
+    "closest_stop": "Athletic Center Stop",
+    "facilities": ["gym", "pool", "courts", "fitness classes"],
+    "frequency_minutes": 15
+  },
+  {
+    "content": "Vernon Street: This residential area houses several dormitories. The shuttle stop serves multiple residence halls including those on Vernon Street. This is a busy stop during morning class times and late evenings. The Late Night Safety Shuttle specifically serves this area after 9 PM for student safety.",
+    "building_name": "Vernon Street Residences",
+    "closest_stop": "Vernon Street Stop",
+    "building_type": "residential",
+    "late_night_service": true
+  },
+  {
+    "content": "Life Sciences Center (LSC): The LSC houses biology, chemistry, and environmental science departments. The shuttle stop is on the north side of the building. This stop is particularly busy during class change times. Average wait is 12 minutes during off-peak hours and 7 minutes during peak times.",
+    "building_name": "Life Sciences Center",
+    "building_code": "LSC",
+    "closest_stop": "LSC Stop",
+    "departments": ["biology", "chemistry", "environmental science"],
+    "avg_wait_minutes": 12
+  }
+]

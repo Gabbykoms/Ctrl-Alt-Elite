@@ -1,0 +1,30 @@
+[
+  {
+    "content": "Main Campus Loop: This is the primary route serving the Trinity College campus. It includes stops at Mather Hall (main dining), Library, Vernon Street (residential area), LSC (Life Sciences Center), and Athletic Center. The complete loop takes approximately 15 minutes and runs continuously during operating hours.",
+    "route_name": "Main Campus Loop",
+    "duration_minutes": 15,
+    "frequency_minutes": 15,
+    "stops": ["Mather Hall", "Library", "Vernon Street", "LSC", "Athletic Center"]
+  },
+  {
+    "content": "Downtown Hartford Route: This route connects the Trinity campus to downtown Hartford. Stops include Union Station (train/bus connections), Hartford Public Library, Bushnell Park, and the State Capitol area. This route runs hourly during weekdays and is perfect for students exploring the city or commuting.",
+    "route_name": "Downtown Route",
+    "duration_minutes": 25,
+    "frequency_minutes": 60,
+    "stops": ["Trinity Campus", "Union Station", "Hartford Public Library", "Bushnell Park"]
+  },
+  {
+    "content": "Late Night Safety Shuttle: Available after 9 PM until 11 PM, this is an on-demand service designed for student safety. You can request pickup from any safe location on or near campus through the app. The driver will pick you up and drop you at your desired destination within the service area. Response time is typically 5-10 minutes.",
+    "route_name": "Late Night Safety Shuttle",
+    "type": "on-demand",
+    "hours": "9 PM - 11 PM",
+    "response_time_minutes": 10
+  },
+  {
+    "content": "Weekend Express: On weekends, a simplified route connects major campus locations including residential halls, Mather Hall, and the Athletic Center. This route runs every 20 minutes from 9 AM to 9 PM.",
+    "route_name": "Weekend Express",
+    "duration_minutes": 10,
+    "frequency_minutes": 20,
+    "days": ["Saturday", "Sunday"]
+  }
+]

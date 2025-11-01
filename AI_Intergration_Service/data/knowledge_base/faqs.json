@@ -1,0 +1,51 @@
+
+[
+  {
+    "question": "What are the shuttle operating hours?",
+    "answer": "The Trinity College shuttle operates from 7:00 AM to 11:00 PM on weekdays. Weekend hours are 9:00 AM to 9:00 PM.",
+    "category": "hours",
+    "priority": "high"
+  },
+  {
+    "question": "How often does the shuttle run?",
+    "answer": "The shuttle runs every 15 minutes during peak hours (8 AM - 6 PM) and every 20 minutes during off-peak hours.",
+    "category": "schedule",
+    "priority": "high"
+  },
+  {
+    "question": "Is the shuttle free for students?",
+    "answer": "Yes, the shuttle service is completely free for all Trinity College students with a valid @trincoll.edu email address.",
+    "category": "cost",
+    "priority": "high"
+  },
+  {
+    "question": "What do I do if the shuttle is late?",
+    "answer": "Check the app for real-time updates. If the shuttle is more than 10 minutes late, you can report it through the app or contact Campus Safety at 860-297-2222.",
+    "category": "delays",
+    "priority": "medium"
+  },
+  {
+    "question": "Can I request a specific pickup location?",
+    "answer": "Yes, you can request rides from specific stops using the app. The driver will see your request and can pick you up at the nearest designated stop.",
+    "category": "pickup",
+    "priority": "medium"
+  },
+  {
+    "question": "What if I miss the shuttle?",
+    "answer": "Don't worry! The next shuttle will arrive in 15-20 minutes depending on the time of day. You can track the next shuttle's location in real-time using the app.",
+    "category": "general",
+    "priority": "medium"
+  },
+  {
+    "question": "Are there shuttles during breaks and holidays?",
+    "answer": "Shuttle service operates on a modified schedule during breaks and holidays. Check the app or contact Campus Safety for specific holiday schedules.",
+    "category": "schedule",
+    "priority": "medium"
+  },
+  {
+    "question": "Can guests use the shuttle?",
+    "answer": "The shuttle service is primarily for Trinity College students, faculty, and staff. Guests may use the shuttle when accompanied by a Trinity community member.",
+    "category": "eligibility",
+    "priority": "low"
+  }
+]
