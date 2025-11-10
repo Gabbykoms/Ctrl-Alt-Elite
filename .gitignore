@@ -7,10 +7,14 @@ yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
+# Dependencies
 node_modules
 dist
 dist-ssr
-*.local
+
+# Local environment files
+.env
+.env*.local
 
 # Editor directories and files
 .vscode/*
@@ -23,14 +27,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
-.env
-.env.local
-.env.*.local
-
 # Test coverage
 coverage
 *.lcov
 
 # Build output
 build
+
+# Vite
+.vite-dev.pid

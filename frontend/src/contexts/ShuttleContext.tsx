@@ -60,6 +60,10 @@ export function ShuttleProvider({ children }: { children: ReactNode }) {
     { id: 'stop-2', name: 'Long Walk', lat: 41.768, lng: -72.638 },
     { id: 'stop-3', name: 'Athletic Center', lat: 41.772, lng: -72.642 },
     { id: 'stop-4', name: 'Science Center', lat: 41.766, lng: -72.636 },
+    { id: 'stop-5', name: 'Library', lat: 41.765, lng: -72.641 },
+    { id: 'stop-6', name: 'Crescent Neighborhood', lat: 41.774, lng: -72.645 },
+    { id: 'stop-7', name: 'Vernon Street', lat: 41.763, lng: -72.632 },
+    { id: 'stop-8', name: 'Summits', lat: 41.769, lng: -72.635 },
   ])
 
   const [routes, setRoutesState] = useState<Route[]>([
