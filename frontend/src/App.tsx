@@ -24,35 +24,9 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Root redirect */}
-      <Route path="/" element={<Navigate to="/demo" replace />} />
+      <Route path="/" element={<Navigate to="/student" replace />} />
       
-      {/* Demo/Test Routes - Direct access without authentication */}
-      <Route
-        element={
-          <AppLayout onLogout={logout} userRole="student">
-            <StudentDashboard />
-          </AppLayout>
-        }
-        path="/demo"
-      />
-      <Route
-        element={
-          <AppLayout onLogout={logout} userRole="driver">
-            <DriverDashboard />
-          </AppLayout>
-        }
-        path="/demo/driver"
-      />
-      <Route
-        element={
-          <AppLayout onLogout={logout} userRole="admin">
-            <AdminDashboard />
-          </AppLayout>
-        }
-        path="/demo/admin"
-      />
-      
-      {/* Public Routes */}
+      {/* Public Routes - Direct access without authentication */}
       <Route element={<AuthLayout><LoginPage /></AuthLayout>} path="/login" />
       <Route element={<AuthLayout><RegisterPage /></AuthLayout>} path="/register" />
       <Route element={<AuthLayout><VerifyEmailPage /></AuthLayout>} path="/verify-email" />
@@ -60,75 +34,61 @@ function AppRoutes() {
       {/* Student Routes */}
       <Route
         element={
-          <ProtectedRoute>
-            <AppLayout onLogout={logout} userRole="student">
-              <StudentDashboard />
-            </AppLayout>
-          </ProtectedRoute>
+          <AppLayout onLogout={logout} userRole="student">
+            <StudentDashboard />
+          </AppLayout>
         }
-        path="/app"
+        path="/student"
       />
       <Route
         element={
-          <ProtectedRoute>
-            <AppLayout onLogout={logout} userRole="student">
-              <SchedulePage />
-            </AppLayout>
-          </ProtectedRoute>
+          <AppLayout onLogout={logout} userRole="student">
+            <SchedulePage />
+          </AppLayout>
         }
-        path="/app/schedule"
+        path="/student/schedule"
       />
       <Route
         element={
-          <ProtectedRoute>
-            <AppLayout onLogout={logout} userRole="student">
-              <ProfilePage />
-            </AppLayout>
-          </ProtectedRoute>
+          <AppLayout onLogout={logout} userRole="student">
+            <ProfilePage />
+          </AppLayout>
         }
-        path="/app/profile"
+        path="/student/profile"
       />
 
       {/* Driver Routes */}
       <Route
         element={
-          <ProtectedRoute>
-            <AppLayout onLogout={logout} userRole="driver">
-              <DriverDashboard />
-            </AppLayout>
-          </ProtectedRoute>
+          <AppLayout onLogout={logout} userRole="driver">
+            <DriverDashboard />
+          </AppLayout>
         }
-        path="/driver/dashboard"
+        path="/driver"
       />
 
       {/* Admin Routes */}
       <Route
         element={
-          <ProtectedRoute>
-            <AppLayout onLogout={logout} userRole="admin">
-              <AdminDashboard />
-            </AppLayout>
-          </ProtectedRoute>
+          <AppLayout onLogout={logout} userRole="admin">
+            <AdminDashboard />
+          </AppLayout>
         }
-        path="/admin/dashboard"
+        path="/admin"
       />
       <Route
         element={
-          <ProtectedRoute>
-            <AppLayout onLogout={logout} userRole="admin">
-              <DriverManagementPage />
-            </AppLayout>
-          </ProtectedRoute>
+          <AppLayout onLogout={logout} userRole="admin">
+            <DriverManagementPage />
+          </AppLayout>
         }
         path="/admin/drivers"
       />
       <Route
         element={
-          <ProtectedRoute>
-            <AppLayout onLogout={logout} userRole="admin">
-              <RouteManagementPage />
-            </AppLayout>
-          </ProtectedRoute>
+          <AppLayout onLogout={logout} userRole="admin">
+            <RouteManagementPage />
+          </AppLayout>
         }
         path="/admin/routes"
       />

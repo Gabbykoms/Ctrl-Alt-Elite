@@ -43,7 +43,7 @@ export default function LoginPage() {
     setIsLoading(true)
     try {
       await login(email, password)
-      navigate('/app')
+      navigate('/student')
     } catch (error) {
       setEmailError('Login failed. Please try again.')
     } finally {

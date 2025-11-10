@@ -20,7 +20,7 @@ export default function NotFound404() {
         {/* Quick Navigation */}
         <div className="space-y-3 mb-10">
           <Link
-            to="/demo"
+            to="/student"
             className="flex items-center justify-center gap-2 px-6 py-3 bg-primary text-white rounded-lg font-semibold hover:opacity-90 transition-all transform hover:scale-105"
           >
             <Home size={20} />
@@ -28,7 +28,7 @@ export default function NotFound404() {
           </Link>
 
           <Link
-            to="/demo"
+            to="/student"
             className="flex items-center justify-center gap-2 px-6 py-3 bg-secondary bg-opacity-20 text-dark border border-secondary rounded-lg font-semibold hover:bg-opacity-30 transition-all"
           >
             <Map size={20} />
@@ -43,9 +43,9 @@ export default function NotFound404() {
             Common Routes
           </h3>
           <ul className="space-y-2 text-gray-700 text-sm">
-            <li>• <Link to="/demo" className="text-primary hover:underline">Student Dashboard</Link></li>
-            <li>• <Link to="/demo/driver" className="text-primary hover:underline">Driver Dashboard</Link></li>
-            <li>• <Link to="/demo/admin" className="text-primary hover:underline">Admin Dashboard</Link></li>
+            <li>• <Link to="/student" className="text-primary hover:underline">Student Dashboard</Link></li>
+            <li>• <Link to="/driver" className="text-primary hover:underline">Driver Dashboard</Link></li>
+            <li>• <Link to="/admin" className="text-primary hover:underline">Admin Dashboard</Link></li>
             <li>• <Link to="/login" className="text-primary hover:underline">Login Page</Link></li>
           </ul>
         </div>

@@ -15,20 +15,20 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
 
   const getNavItems = () => {
     const commonItems = [
-      { label: 'Map', path: '/app', icon: MapPin },
-      { label: 'Schedule', path: '/app/schedule', icon: Calendar },
-      { label: 'Profile', path: '/app/profile', icon: User },
+      { label: 'Map', path: '/student', icon: MapPin },
+      { label: 'Schedule', path: '/student/schedule', icon: Calendar },
+      { label: 'Profile', path: '/student/profile', icon: User },
     ]
 
     if (userRole === 'driver') {
       return [
-        { label: 'Dashboard', path: '/driver/dashboard', icon: BarChart3 },
+        { label: 'Dashboard', path: '/driver', icon: BarChart3 },
       ]
     }
 
     if (userRole === 'admin') {
       return [
-        { label: 'Dashboard', path: '/admin/dashboard', icon: BarChart3 },
+        { label: 'Dashboard', path: '/admin', icon: BarChart3 },
         { label: 'Drivers', path: '/admin/drivers', icon: User },
         { label: 'Routes', path: '/admin/routes', icon: MapPin },
       ]
