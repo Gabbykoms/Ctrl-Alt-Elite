@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
@@ -7,32 +7,32 @@ export default function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
-  const [emailError, setEmailError] = useState('')
+  const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { login } = useAuth()
+  const { login, user } = useAuth()
   const navigate = useNavigate()
 
   const validateEmail = (value: string) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     if (!emailRegex.test(value)) {
-      setEmailError('Please enter a valid email')
+      setError('Please enter a valid email')
       return false
     }
-    setEmailError('')
+    setError('')
     return true
   }
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value
     setEmail(value)
-    if (value) validateEmail(value)
+    if (value && error) validateEmail(value)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!email || !password) {
-      setEmailError('Please fill in all fields')
+      setError('Please fill in all fields')
       return
     }
 
@@ -41,15 +41,37 @@ export default function LoginPage() {
     }
 
     setIsLoading(true)
+    setError('')
+
     try {
       await login(email, password)
-      navigate('/student')
-    } catch (error) {
-      setEmailError('Login failed. Please try again.')
-    } finally {
+      // Navigation will be handled by useEffect below after user is set
+    } catch (error: any) {
+      console.error('Login error:', error)
+      
+      // Handle specific error messages
+      if (error.message?.includes('Invalid') || error.message?.includes('password')) {
+        setError('Invalid email or password')
+      } else if (error.message?.includes('not found')) {
+        setError('No account found with this email')
+      } else {
+        setError(error.message || 'Login failed. Please try again.')
+      }
       setIsLoading(false)
     }
   }
+
+  // Redirect based on user role after successful login
+  useEffect(() => {
+    if (user && !isLoading) {
+      const redirectPath = 
+        user.role === 'admin' ? '/admin' :
+        user.role === 'driver' ? '/driver' :
+        '/student'
+      
+      navigate(redirectPath, { replace: true })
+    }
+  }, [user, navigate, isLoading])
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">
@@ -63,11 +85,11 @@ export default function LoginPage() {
             value={email}
             onChange={handleEmailChange}
             className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary ${
-              emailError ? 'border-red-500' : 'border-gray-300'
+              error ? 'border-red-500' : 'border-gray-300'
             }`}
-            placeholder="your@email.com"
+            placeholder="your@trincoll.edu"
+            disabled={isLoading}
           />
-          {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
         </div>
 
         <div>
@@ -79,16 +101,24 @@ export default function LoginPage() {
               onChange={(e) => setPassword(e.target.value)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
               placeholder="••••••••"
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-2.5 text-gray-500 hover:text-gray-700"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
             </button>
           </div>
         </div>
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {error}
+          </div>
+        )}
 
         <button
           type="submit"
@@ -101,11 +131,6 @@ export default function LoginPage() {
       </form>
 
       <div className="mt-6 space-y-3 text-center text-sm">
-        <p>
-          <Link to="#" className="text-primary hover:underline">
-            Forgot Password?
-          </Link>
-        </p>
         <p className="text-gray-600">
           Don't have an account?{' '}
           <Link to="/register" className="text-primary hover:underline font-semibold">

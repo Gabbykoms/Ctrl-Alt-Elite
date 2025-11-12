@@ -1,6 +1,8 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { authAPI } from '../services/apiService'
 
 interface User {
+  id: string
   name: string
   email: string
   role: 'student' | 'driver' | 'admin'
@@ -9,8 +11,9 @@ interface User {
 interface AuthContextType {
   token: string | null
   user: User | null
+  loading: boolean
   login: (email: string, password: string) => Promise<void>
-  register: (name: string, email: string, password: string) => Promise<void>
+  register: (name: string, email: string, password: string, role?: 'student' | 'driver' | 'admin') => Promise<void>
   logout: () => void
 }
 
@@ -22,6 +25,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const stored = localStorage.getItem('user')
     return stored ? JSON.parse(stored) : null
   })
+  const [loading, setLoading] = useState(true)
+
+  // Fetch current user on mount if token exists
+  useEffect(() => {
+    const fetchCurrentUser = async () => {
+      if (token) {
+        try {
+          const response = await authAPI.getCurrentUser()
+          setUser(response.data.user)
+        } catch (error) {
+          console.error('Failed to fetch current user:', error)
+          // Token is invalid, clear it
+          setToken(null)
+          setUser(null)
+          localStorage.removeItem('token')
+          localStorage.removeItem('user')
+        }
+      }
+      setLoading(false)
+    }
+
+    fetchCurrentUser()
+  }, [token])
 
   useEffect(() => {
     if (token) {
@@ -39,35 +65,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [user])
 
-  const login = async (email: string, _password: string) => {
-    // Placeholder - will be connected to backend
-    const mockToken = 'mock-token-' + Date.now()
-    setToken(mockToken)
-    setUser({
-      name: 'Test User',
-      email,
-      role: 'student',
-    })
+  const login = async (email: string, password: string) => {
+    try {
+      const response = await authAPI.login(email, password)
+      const { token: newToken, user: newUser } = response.data
+
+      setToken(newToken)
+      setUser(newUser)
+    } catch (error: any) {
+      console.error('Login error:', error)
+      throw new Error(error.response?.data?.message || 'Login failed')
+    }
   }
 
-  const register = async (name: string, email: string, _password: string) => {
-    // Placeholder - will be connected to backend
-    const mockToken = 'mock-token-' + Date.now()
-    setToken(mockToken)
-    setUser({
-      name,
-      email,
-      role: 'student',
-    })
+  const register = async (name: string, email: string, password: string, role: 'student' | 'driver' | 'admin' = 'student') => {
+    try {
+      const response = await authAPI.register(name, email, password, role)
+      const { token: newToken, user: newUser } = response.data
+
+      setToken(newToken)
+      setUser(newUser)
+    } catch (error: any) {
+      console.error('Registration error:', error)
+      throw new Error(error.response?.data?.message || 'Registration failed')
+    }
   }
 
   const logout = () => {
-    setToken(null)
-    setUser(null)
+    try {
+      authAPI.logout().catch(() => {
+        // Ignore logout errors on backend
+      })
+    } finally {
+      setToken(null)
+      setUser(null)
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    }
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, login, register, logout }}>
+    <AuthContext.Provider value={{ token, user, loading, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )
