@@ -1,4 +1,4 @@
-# 🚍 Tracking Service
+# Tracking Service
 
 Real-time GPS ingestion and location distribution service for the campus shuttle system.
 
@@ -6,7 +6,7 @@ This service receives GPS updates from a **driver user**, stores the **latest lo
 
 ---
 
-## ✨ Features
+## Features
 
 * **Driver GPS ingestion** via REST
 * **Latest location storage** (in-memory sink)
@@ -17,7 +17,7 @@ This service receives GPS updates from a **driver user**, stores the **latest lo
 
 ---
 
-## 📦 Project Structure
+## Project Structure
 
 ```
 src/main/java/com/javashams/tracking/
@@ -34,9 +34,9 @@ src/main/java/com/javashams/tracking/
 
 ---
 
-# 🚀 How It Works
+# How It Works
 
-## 1️⃣ Driver sends GPS → `POST /v1/locations:single`
+## 1) Driver sends GPS → `POST /v1/locations:single`
 
 The driver UI periodically sends a `GeoPoint` representing the bus location.
 
@@ -67,13 +67,13 @@ The service:
 
 ---
 
-## 2️⃣ Consumers read latest bus location(s)
+## 2) Consumers read latest bus location(s)
 
-### ➤ **GET /v1/locations/latest?org=trinity&deviceId=bus-1**
+### **GET /v1/locations/latest?org=trinity&deviceId=bus-1**
 
 Returns the most recent location for a single bus.
 
-### ➤ **GET /v1/locations/latest/org/trinity**
+### **GET /v1/locations/latest/org/trinity**
 
 Returns latest positions of **all** buses in the org.
 
@@ -85,9 +85,9 @@ Great for:
 
 ---
 
-## 3️⃣ Real-time stream (SSE)
+## 3) Real-time stream (SSE)
 
-### ➤ **GET /sse/geo?org=trinity**
+### **GET /sse/geo?org=trinity**
 
 Subscribes to Server-Sent Events of all location updates in the given org.
 
@@ -101,7 +101,7 @@ Each driver GPS update appears instantly in the stream.
 
 ---
 
-# 📘 API Documentation (Swagger)
+# API Documentation (Swagger)
 
 Swagger UI is available at:
 
@@ -117,7 +117,7 @@ You can:
 
 ---
 
-# 🧩 GeoPoint (data model)
+# GeoPoint (data model)
 
 | Field                 | Meaning                                     |
 | --------------------- | ------------------------------------------- |
@@ -135,7 +135,7 @@ You can:
 
 ---
 
-# 🏗️ Running the Service
+# Running the Service
 
 ```bash
 ./gradlew bootRun
@@ -149,7 +149,7 @@ http://localhost:8080
 
 ---
 
-# 🔜 Future Extensions
+# Future Extensions
 
 This service is designed to integrate with:
 
