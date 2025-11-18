@@ -1,100 +1,161 @@
-# tracking-service (template)
+# 🚍 Tracking Service
 
-A minimal, production-lean template for a driver location tracking microservice using Spring Boot (Java 21), Gradle Kotlin DSL, RabbitMQ for ingest & fan-out, optional Redis/Postgres hooks, SSE for realtime to browsers, plus Docker and Kubernetes manifests. Uses clean boundaries so you can swap persistence later.
+Real-time GPS ingestion and location distribution service for the campus shuttle system.
 
-## Features
+This service receives GPS updates from a **driver user**, stores the **latest location** of each bus, and exposes endpoints for **students**, **admins**, and **drivers** to read the current bus positions via REST or live SSE streams.
 
-REST ingest endpoint (POST /v1/locations:single) and optional WebSocket/SSE fan-out (/sse/geo).
+---
 
-RabbitMQ topic exchange (geo.location.v1) with publisher confirms; queues for latest and push.
+## ✨ Features
 
-Pluggable storage via LocationSink interface (no DB hard‑wired).
+* **Driver GPS ingestion** via REST
+* **Latest location storage** (in-memory sink)
+* **Real-time updates** via SSE (`/sse/geo`)
+* **REST endpoints** to fetch live bus locations
+* **Swagger UI** for testing and documentation
+* **Framework**: Spring Boot 3.3 + WebFlux
 
-Minimal tests and health endpoints.
+---
 
-Dockerfile, docker-compose (RabbitMQ), and K8s (Deployment/Service/ConfigMap).
-
-Docs: C4-ish architecture + sequence (Mermaid), API docs, runbook.
-
-## Project layout
-
-```
-tracking-service/
-├─ build.gradle.kts
-├─ settings.gradle.kts
-├─ gradle.properties
-├─ docker-compose.yml
-├─ Dockerfile
-├─ k8s/
-│  ├─ configmap.yml
-│  ├─ deployment.yml
-│  └─ service.yml
-├─ src/
-│  ├─ main/
-│  │  ├─ java/com/example/tracking/
-│  │  │  ├─ TrackingServiceApplication.java
-│  │  │  ├─ api/IngestController.java
-│  │  │  ├─ api/GeoSseController.java
-│  │  │  ├─ config/RabbitConfig.java
-│  │  │  ├─ messaging/GeoPublisher.java
-│  │  │  ├─ messaging/LatestConsumer.java
-│  │  │  ├─ model/GeoPoint.java
-│  │  │  └─ service/LocationSink.java
-│  │  └─ resources/
-│  │     └─ application.yml
-│  └─ test/
-│     └─ java/com/example/tracking/TrackingServiceApplicationTests.java
-└─ README.md
-```
-
-# Architecture (Mermaid)
+## 📦 Project Structure
 
 ```
-flowchart LR
-A[Driver React App] -- HTTP/WS --> B[Ingest Controller]
-B --> C[RabbitMQ Exchange geo.location.v1]
-C --> D[Queue geo.proc.latest]
-C --> E[Queue geo.push.live]
-D --> F[LatestConsumer -> LocationSink (Redis/DB)]
-E --> G[GeoSseController -> SSE]
-G --> H[Admin/Student Browser]
-
-sequenceDiagram
-  participant Driver as Driver App
-  participant API as Ingest API
-  participant MQ as RabbitMQ
-  participant Latest as LatestConsumer
-  participant SSE as SSE Gateway
-  Driver->>API: POST /v1/locations:single {GeoPoint}
-  API->>MQ: publish GeoPoint (topic rk)
-  MQ->>Latest: deliver to geo.proc.latest
-  Latest->>Latest: dedupe, upsert latest, (append history)
-  MQ->>SSE: deliver to geo.push.live
-  SSE-->>Viewer: event: GeoPoint (1Hz)
+src/main/java/com/javashams/tracking/
+  api/
+    IngestController.java         -- driver POST endpoint
+    LocationQueryController.java  -- read latest bus locations
+    GeoSseController.java         -- real-time Server Sent Events stream
+  model/
+    GeoPoint.java                 -- GPS event record
+  services/
+    LocationSink.java             -- abstraction for storing latest
+    InMemoryLocationSink.java     -- in-memory implementation
 ```
 
-## Notes & TODOs
+---
 
-- Add dedupe/out-of-order windows (by seq/tsEventMs).
+# 🚀 How It Works
 
-- Implement LocationSink (Redis GEO + hash, or Postgres+PostGIS).
+## 1️⃣ Driver sends GPS → `POST /v1/locations:single`
 
-- Consider consistent-hash exchange if sharding by deviceId.
+The driver UI periodically sends a `GeoPoint` representing the bus location.
 
-- Add OpenAPI via springdoc-openapi-starter-webmvc-ui for docs.
+Example payload:
 
-- Add security (JWT on ingest), CORS, and rate limits.
+```json
+{
+  "org": "trinity",
+  "deviceId": "bus-1",
+  "tripId": "trip-123",
+  "tsEventMs": 1731945000000,
+  "tsServerMs": 0,
+  "latMicro": 41746200,
+  "lonMicro": -72691900,
+  "accM": 5.0,
+  "spdMps": 10.0,
+  "brgDeg": 135.0,
+  "seq": 1,
+  "idempotency": "bus-1-1731945000000-1"
+}
+```
 
-## Missing pieces you might want
+The service:
 
-- Redis/Postgres implementations of LocationSink.
+* Stores it as the **latest** location for `(org, deviceId)`
+* Pushes it to **SSE real-time stream**
+* Returns `202 Accepted`
 
-- WebSocket STOMP gateway (instead of SSE) if you need client → server messages.
+---
 
-- Downsampling jobs + retention policy.
+## 2️⃣ Consumers read latest bus location(s)
 
-- CI/CD (GitHub Actions) and Helm chart.
+### ➤ **GET /v1/locations/latest?org=trinity&deviceId=bus-1**
 
-# References (see main chat for links)
+Returns the most recent location for a single bus.
 
-- RabbitMQ confirms, Spring AMQP, WebFlux SSE, PostGIS/Timescale, Geolocation API.
+### ➤ **GET /v1/locations/latest/org/trinity**
+
+Returns latest positions of **all** buses in the org.
+
+Great for:
+
+* Admin dashboards
+* Rider map views
+* Driver back-office UI
+
+---
+
+## 3️⃣ Real-time stream (SSE)
+
+### ➤ **GET /sse/geo?org=trinity**
+
+Subscribes to Server-Sent Events of all location updates in the given org.
+
+Test with:
+
+```bash
+curl -N "http://localhost:8080/sse/geo?org=trinity"
+```
+
+Each driver GPS update appears instantly in the stream.
+
+---
+
+# 📘 API Documentation (Swagger)
+
+Swagger UI is available at:
+
+```
+http://localhost:8080/swagger-ui.html
+```
+
+You can:
+
+* Test all endpoints interactively
+* Inspect schemas (`GeoPoint`)
+* Generate client code
+
+---
+
+# 🧩 GeoPoint (data model)
+
+| Field                 | Meaning                                     |
+| --------------------- | ------------------------------------------- |
+| **org**               | Organization namespace (`trinity`)          |
+| **deviceId**          | Bus/device ID (`bus-1`)                     |
+| **tripId**            | Logical trip identifier                     |
+| **tsEventMs**         | When GPS was recorded on device             |
+| **tsServerMs**        | When server received it (set automatically) |
+| **latMicro/lonMicro** | Latitude/longitude in microdegrees          |
+| **accM**              | Accuracy in meters                          |
+| **spdMps**            | Speed in m/s                                |
+| **brgDeg**            | Bearing in degrees                          |
+| **seq**               | Sequence number for ordering                |
+| **idempotency**       | Unique event ID (for dedupe)                |
+
+---
+
+# 🏗️ Running the Service
+
+```bash
+./gradlew bootRun
+```
+
+The application starts on:
+
+```
+http://localhost:8080
+```
+
+---
+
+# 🔜 Future Extensions
+
+This service is designed to integrate with:
+
+* RabbitMQ / Kafka (for event fan-out)
+* Redis or Postgres for persistent storage
+* ETA computation services
+* Admin analytics dashboards
+
+The current in-memory version is ideal for local development and early frontend integration.

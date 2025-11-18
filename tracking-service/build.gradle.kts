@@ -20,14 +20,15 @@ repositories { mavenCentral() }
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webflux")
-    implementation("org.springframework.boot:spring-boot-starter-amqp")
+    // implementation("org.springframework.boot:spring-boot-starter-amqp")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
 
-// Optional: Redis client (comment out if not used yet)
-// implementation("io.lettuce:lettuce-core:6.5.3.RELEASE")
+    // Optional: Redis client (comment out if not used yet)
+    // implementation("io.lettuce:lettuce-core:6.5.3.RELEASE")
 
+    implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.6.0")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("io.projectreactor:reactor-test")
