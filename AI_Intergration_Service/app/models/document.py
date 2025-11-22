@@ -15,7 +15,11 @@ class Document(Base):
     id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     content = Column(Text, nullable=False)
     category = Column(String(50))
-    metadata = Column(JSONB, default={})
+    
+    # Renamed to doc_metadata to avoid conflict with SQLAlchemy reserved keyword
+    # "metadata" string ensures it still maps to the 'metadata' column in the database
+    doc_metadata = Column("metadata", JSONB)
+    
     embedding = Column(Vector(1536))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

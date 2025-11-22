@@ -1,33 +1,30 @@
-# LangChain and LangGraph
-langchain==0.3.0
-langchain-openai==0.2.0
-langchain-core==0.3.0
-langchain-community==0.3.0
-langgraph==0.2.0
+# --- Top Level AI Packages ---
+# We only list the PARENTS. They will auto-install compatible children.
+langchain>=0.3.0
+langgraph>=1.0.0
+langchain-openai>=0.2.0
 
-# FastAPI and Web Framework
+# --- Web Framework ---
 fastapi==0.109.0
 uvicorn[standard]==0.27.0
 python-multipart==0.0.6
-pydantic==2.5.3
-pydantic-settings==2.1.0
+pydantic>=2.7.4
+pydantic-settings>=2.4.0
 
-# Database
+# --- Database ---
 psycopg2-binary==2.9.9
 sqlalchemy==2.0.25
 pgvector==0.2.4
 
-# OpenAI
-openai==1.10.0
+# --- AI Models ---
+openai>=1.40.0
 
-# HTTP Client
+# --- Utilities & HTTP ---
 httpx==0.26.0
 requests==2.31.0
-
-# Utilities
 python-dotenv==1.0.0
 
-# Testing
+# --- Testing ---
 pytest==7.4.4
 pytest-asyncio==0.23.3
 pytest-cov==4.1.0
