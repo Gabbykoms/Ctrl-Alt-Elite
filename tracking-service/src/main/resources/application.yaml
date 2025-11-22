@@ -2,6 +2,16 @@
 spring:
   application:
     name: tracking-service
+  
+  # Redis configuration for persistent location storage
+  # Optional: comment out to use in-memory storage instead
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 2000ms
+  
   # rabbitmq:
   #   host: ${RABBITMQ_HOST:localhost}
   #   port: ${RABBITMQ_PORT:5672}
@@ -28,3 +38,9 @@ management:
 #     exchange: geo.location.v1
 #     push-queue: geo.push.live
 #     latest-queue: geo.proc.latest
+
+# Socket.IO backend connection (optional)
+# socket:
+#   io:
+#     backend-url: ${SOCKET_IO_BACKEND_URL:http://localhost:3000}
+#     namespace: /tracking

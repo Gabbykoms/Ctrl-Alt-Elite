@@ -1,13 +1,34 @@
 # docker-compose.yml (local dev)
 services:
-  rabbit:
-    image: rabbitmq:3.13-management
-    ports: ["5672:5672", "15672:15672"]
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
   tracking:
     build: .
     environment:
-      RABBITMQ_HOST: rabbit
-      RABBITMQ_USER: guest
-      RABBITMQ_PASS: guest
+      PORT: 8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SOCKET_IO_BACKEND_URL: http://host.docker.internal:3000
     ports: ["8080:8080"]
-    depends_on: [rabbit]
+    depends_on:
+      redis:
+        condition: service_healthy
+    # For local development without docker:
+    # ports: ["8080:8080"]
+    # environment:
+    #   PORT: 8080
+    #   REDIS_HOST: localhost
+    #   REDIS_PORT: 6379
+
+volumes:
+  redis_data:
