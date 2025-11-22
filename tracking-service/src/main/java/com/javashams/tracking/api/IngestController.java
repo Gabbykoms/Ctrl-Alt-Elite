@@ -74,35 +74,60 @@ public class IngestController {
         // 2) push to SSE subscribers
         geoSseController.push(p);
 
-        // 3) If this is associated with a ride, update ride tracking
-        // deviceId typically contains ride context or we can extract it
-        // For now, we store it as the shuttle_id
-        String rideId = extractRideIdFromDeviceId(body.deviceId());
-        if (rideId != null) {
-            DriverLocationDto driverLocation = new DriverLocationDto(
-                    body.deviceId(),  // driverId (or shuttleId)
-                    body.deviceId(),  // shuttleId
-                    latMicroToDegrees(body.latMicro()),
-                    lonMicroToDegrees(body.lonMicro()),
-                    body.brgDeg(),
-                    body.spdMps(),
-                    body.accM(),
-                    serverMs
-            );
-            rideTrackingService.updateRideDriverLocation(rideId, driverLocation);
-        }
+        // 3) Update ALL active rides that have this shuttleId/deviceId
+        // This is the key: find all rides and update their driver location if this device is the shuttle
+        updateRidesForDevice(body.deviceId(), body.latMicro(), body.lonMicro(), 
+                            body.brgDeg(), body.spdMps(), body.accM(), serverMs);
 
         // Accepted: we processed the update
         return ResponseEntity.accepted().build();
     }
 
     /**
-     * Helper: Extract rideId from deviceId if encoded in format "ride:123" or similar
-     * For now, returns null (ride context is set separately via /v1/rides/{rideId}/start)
+     * Update all active rides that have this device/shuttle as their driver
+     * This connects GPS data to ride-scoped tracking
      */
-    private String extractRideIdFromDeviceId(String deviceId) {
-        // TODO: Implement if deviceId contains encoded ride context
-        // Example: if (deviceId.contains(":")) { return deviceId.split(":")[0]; }
+    private void updateRidesForDevice(String deviceId, int latMicro, int lonMicro, 
+                                      Double heading, Double speedMps, Double accuracy, long timestampMs) {
+        // Find the ride associated with this shuttle/device
+        String rideId = rideTrackingService.getRideIdByShuttleId(deviceId);
+        
+        if (rideId != null) {
+            DriverLocationDto driverLocation = new DriverLocationDto(
+                    deviceId,  // driverId (or shuttleId)
+                    deviceId,  // shuttleId
+                    latMicroToDegrees(latMicro),
+                    lonMicroToDegrees(lonMicro),
+                    heading,
+                    speedMps,
+                    accuracy,
+                    timestampMs
+            );
+            rideTrackingService.updateRideDriverLocation(rideId, driverLocation);
+        }
+    }
+
+    /**
+     * Helper: Extract rideId from deviceId if encoded in format "ride:123" or similar
+     * Supports formats: "bus-1:ride-123", "ride-123:bus-1", etc.
+     */
+    private String extractRideIdFromTripId(String deviceId) {
+        // Check if deviceId contains a colon (indicates encoded format)
+        if (deviceId != null && deviceId.contains(":")) {
+            String[] parts = deviceId.split(":");
+            if (parts.length == 2) {
+                // Try both possibilities: could be "ride-id:device-id" or "device-id:ride-id"
+                String part1 = parts[0].trim();
+                String part2 = parts[1].trim();
+                
+                // Return the part that looks like a rideId (contains "ride-")
+                if (part1.contains("ride-")) return part1;
+                if (part2.contains("ride-")) return part2;
+                
+                // If neither contains "ride-", assume first part is rideId
+                return part1;
+            }
+        }
         return null;
     }
 

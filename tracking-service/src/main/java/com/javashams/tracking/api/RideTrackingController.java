@@ -31,7 +31,22 @@ public class RideTrackingController {
             @PathVariable String rideId,
             @RequestBody RideTrackingDto rideTracking
     ) {
+        // Start tracking the ride in the service
         rideTrackingService.startRideTracking(rideTracking);
+        
+        // Also extract and store the student location from the ride tracking data
+        StudentLocationDto studentLocation = new StudentLocationDto(
+                rideTracking.studentId(),
+                rideTracking.pickupLatitude(),
+                rideTracking.pickupLongitude(),
+                rideTracking.dropoffLatitude(),
+                rideTracking.dropoffLongitude(),
+                null,  // pickupAddress (can be added later)
+                null,  // dropoffAddress (can be added later)
+                rideTracking.createdAtMs()
+        );
+        rideTrackingService.setRideStudentLocation(rideId, studentLocation);
+        
         return ResponseEntity.ok(rideTracking);
     }
 

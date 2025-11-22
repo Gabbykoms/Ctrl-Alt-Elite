@@ -13,15 +13,15 @@ This microservice:
 
 ## Features
 
-✅ **Driver GPS ingestion** via REST (`POST /v1/locations:single`)  
-✅ **Real-time updates** via Server-Sent Events (`GET /sse/geo`)  
-✅ **Persistent storage** with Redis (with in-memory fallback)  
-✅ **Ride-scoped tracking** — isolate driver/student locations per ride  
-✅ **CORS enabled** for frontend + backend integration  
-✅ **Socket.IO bridge** to backend microservice  
-✅ **REST endpoints** for querying latest bus locations  
-✅ **Swagger UI** for API documentation & testing  
-✅ **Spring Boot 3.3** + WebFlux (reactive, high-throughput)
+**Driver GPS ingestion** via REST (`POST /v1/locations:single`)  
+**Real-time updates** via Server-Sent Events (`GET /sse/geo`)  
+**Persistent storage** with Redis (with in-memory fallback)  
+**Ride-scoped tracking** — isolate driver/student locations per ride  
+**CORS enabled** for frontend + backend integration  
+**Socket.IO bridge** to backend microservice  
+**REST endpoints** for querying latest bus locations  
+**Swagger UI** for API documentation & testing  
+**Spring Boot 3.3** + WebFlux (reactive, high-throughput)
 
 ---
 
@@ -86,6 +86,15 @@ src/main/java/com/javashams/tracking/
 ```
 
 ---
+
+## Running the project
+
+Make sure you have Java 21 in your system
+
+```bash
+    ./gradlew clean build -x test
+    ./gradlew bootRun
+```
 
 ## API Endpoints
 

@@ -34,17 +34,35 @@ public class RideTrackingService {
     private final Map<String, StudentLocationDto> rideStudentLocations = new ConcurrentHashMap<>();
 
     /**
+     * Map of shuttleId/deviceId -> rideId
+     * Allows us to find which ride a GPS update belongs to
+     * Key: shuttleId (e.g., "bus-1")
+     * Value: rideId (e.g., "ride-123")
+     */
+    private final Map<String, String> shuttleToRideMapping = new ConcurrentHashMap<>();
+
+    /**
      * Start tracking a new ride
      */
     public void startRideTracking(RideTrackingDto rideTracking) {
         rideContexts.put(rideTracking.rideId(), rideTracking);
+        
+        // Also map the shuttle to this ride so GPS updates can find it
+        if (rideTracking.shuttleId() != null) {
+            shuttleToRideMapping.put(rideTracking.shuttleId(), rideTracking.rideId());
+        }
     }
 
     /**
      * End tracking for a ride (cleanup)
      */
     public void endRideTracking(String rideId) {
-        rideContexts.remove(rideId);
+        // Get the ride context before removing it to find the shuttleId
+        RideTrackingDto ride = rideContexts.remove(rideId);
+        if (ride != null && ride.shuttleId() != null) {
+            shuttleToRideMapping.remove(ride.shuttleId());
+        }
+        
         rideDriverLocations.remove(rideId);
         rideStudentLocations.remove(rideId);
     }
@@ -93,5 +111,15 @@ public class RideTrackingService {
      */
     public boolean isRideTracking(String rideId) {
         return rideContexts.containsKey(rideId);
+    }
+
+    /**
+     * Find rideId by shuttleId/deviceId
+     * Used by IngestController to determine which ride a GPS update belongs to
+     * @param shuttleId the shuttle/device ID from GPS
+     * @return the associated rideId, or null if not found
+     */
+    public String getRideIdByShuttleId(String shuttleId) {
+        return shuttleToRideMapping.get(shuttleId);
     }
 }
