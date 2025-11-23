@@ -16,7 +16,11 @@ class ChatHistory(Base):
     user_id = Column(UUID(as_uuid=True), nullable=True)
     role = Column(String(20), nullable=False)
     content = Column(Text, nullable=False)
-    metadata = Column(JSONB, default={})
+    
+    # FIX: Rename Python attribute to 'chat_metadata' to avoid SQLAlchemy reserved keyword
+    # The string "metadata" ensures it still maps to the 'metadata' column in the DB
+    chat_metadata = Column("metadata", JSONB, default={})
+    
     timestamp = Column(DateTime, default=datetime.utcnow)
 
     def __repr__(self):

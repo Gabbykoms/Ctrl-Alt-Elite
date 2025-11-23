@@ -43,9 +43,165 @@
     "priority": "medium"
   },
   {
+    "question": "What shuttle service is available on weekends?",
+    "answer": "On weekends (Saturday and Sunday), the Weekend Express operates every 20 minutes from 9 AM to 9 PM. This route serves Vernon Street Residences, Mather Hall, Library, and the Athletic Center. The Downtown Hartford Route does not operate on weekends. Late Night Safety Shuttle is available from 9 PM to 11 PM on weekends for on-demand service.",
+    "category": "weekend",
+    "priority": "high"
+  },
+  {
+    "question": "Do weekend shuttles go downtown?",
+    "answer": "No, the Downtown Hartford Route only operates on weekdays. On weekends, you have access to the Weekend Express which connects major campus locations. For emergency transportation after hours, use the Late Night Safety Shuttle (9 PM - 11 PM).",
+    "category": "weekend",
+    "priority": "high"
+  },
+  {
+    "question": "Can I use the Late Night Safety Shuttle on weekends?",
+    "answer": "Yes, the Late Night Safety Shuttle (on-demand service) operates from 9 PM to 11 PM every day, including weekends. You can request pickup from any safe location on or near campus through the app. Response time is typically 5-10 minutes.",
+    "category": "weekend",
+    "priority": "medium"
+  },
+  {
     "question": "Can guests use the shuttle?",
     "answer": "The shuttle service is primarily for Trinity College students, faculty, and staff. Guests may use the shuttle when accompanied by a Trinity community member.",
     "category": "eligibility",
     "priority": "low"
+  },
+  {
+    "question": "How do I use the shuttle app?",
+    "answer": "Download the Trinity Shuttle app from the App Store or Google Play. Sign in with your @trincoll.edu email, verify your account, and you can start tracking shuttles in real-time, requesting rides, and checking schedules.",
+    "category": "app",
+    "priority": "high"
+  },
+  {
+    "question": "What if I don't have the app?",
+    "answer": "While the app is recommended for real-time tracking, you can find shuttle stops on campus and wait at designated stops. For the Late Night Safety Shuttle, you must use the app to request a ride.",
+    "category": "app",
+    "priority": "medium"
+  },
+  {
+    "question": "Can I bring luggage or large bags on the shuttle?",
+    "answer": "Yes, students can bring reasonable amounts of luggage and bags on the shuttle. However, during peak times, large items may need to be secured or held due to space constraints. Priority is given to standing passengers' safety.",
+    "category": "items",
+    "priority": "medium"
+  },
+  {
+    "question": "Can I eat or drink on the shuttle?",
+    "answer": "You can bring drinks in closed containers, but outside food is not permitted to keep the shuttle clean. Hot beverages should be handled carefully to avoid spills.",
+    "category": "conduct",
+    "priority": "low"
+  },
+  {
+    "question": "What is the shuttle's accessibility policy?",
+    "answer": "All shuttles are equipped with wheelchair lifts and accessible seating. If you need accessibility accommodations, please notify the driver when boarding. For specific accessibility questions, contact Campus Safety at 860-297-2222.",
+    "category": "accessibility",
+    "priority": "high"
+  },
+  {
+    "question": "Are shuttle stops clearly marked?",
+    "answer": "Yes, all shuttle stops on campus are clearly marked with official Trinity College shuttle stop signs. You can also see all stop locations in the shuttle app.",
+    "category": "stops",
+    "priority": "medium"
+  },
+  {
+    "question": "What should I do if I witness unsafe behavior on the shuttle?",
+    "answer": "Report it to the driver immediately. If you feel unsafe, exit the shuttle at the next stop if possible. You can also report incidents through the app or contact Campus Safety at 860-297-2222.",
+    "category": "safety",
+    "priority": "high"
+  },
+  {
+    "question": "Can I bring my bicycle on the shuttle?",
+    "answer": "Some shuttles have bike racks available on a first-come, first-served basis. Check the app to see if your shuttle has this feature. During peak times, bikes may not be accommodated.",
+    "category": "items",
+    "priority": "low"
+  },
+  {
+    "question": "What are the shuttle stop names on campus?",
+    "answer": "Main shuttle stops include: Mather Hall Stop, Library Stop, Vernon Street Stop, LSC (Life Sciences Center) Stop, Athletic Center Stop, and Downtown destinations on weekdays. Check the app for a complete list.",
+    "category": "stops",
+    "priority": "medium"
+  },
+  {
+    "question": "Can I request a shuttle to go to a location not on the regular route?",
+    "answer": "The Late Night Safety Shuttle (9 PM - 11 PM) offers on-demand service for pickups from any safe location on or near campus. For other times, you are limited to regular shuttle routes and designated stops.",
+    "category": "routes",
+    "priority": "medium"
+  },
+  {
+    "question": "Is the shuttle running during snow or bad weather?",
+    "answer": "Shuttles typically run in all weather conditions. However, during severe weather (heavy snow, ice storms, flooding), service may be delayed or temporarily suspended. Check the app for real-time weather alerts.",
+    "category": "weather",
+    "priority": "high"
+  },
+  {
+    "question": "How do I report a problem with shuttle service?",
+    "answer": "You can report issues through the shuttle app, contact Campus Safety at 860-297-2222, or visit the Trinity College Transportation Office. Include details about the route, time, and nature of the issue.",
+    "category": "support",
+    "priority": "medium"
+  },
+  {
+    "question": "What is the shuttle capacity?",
+    "answer": "Each shuttle has a maximum capacity of 15 passengers to ensure comfort and safety. The app shows real-time capacity information so you can see how full each shuttle is.",
+    "category": "capacity",
+    "priority": "medium"
+  },
+  {
+    "question": "Can I get off the shuttle at any point between stops?",
+    "answer": "No, shuttles only stop at designated shuttle stops for passenger safety. If you need to get off at an unlisted location, you can use the Late Night Safety Shuttle (9 PM - 11 PM) which offers on-demand service.",
+    "category": "stops",
+    "priority": "low"
+  },
+  {
+    "question": "What payment methods are accepted for the shuttle?",
+    "answer": "The shuttle service is completely free for Trinity College students, faculty, and staff. No payment is required. Just present your Trinity ID when boarding.",
+    "category": "cost",
+    "priority": "high"
+  },
+  {
+    "question": "Where can I find shuttle route information?",
+    "answer": "Shuttle route maps are available in the mobile app, on campus at shuttle stops, in the main library, and at Mather Hall. You can also visit the Trinity College Transportation Office or call Campus Safety at 860-297-2222.",
+    "category": "information",
+    "priority": "medium"
+  },
+  {
+    "question": "How do I contact the shuttle service?",
+    "answer": "For immediate assistance, contact Campus Safety at 860-297-2222. For general questions, use the shuttle app support feature or visit the Transportation Office during business hours.",
+    "category": "support",
+    "priority": "high"
+  },
+  {
+    "question": "Are there priority seats on the shuttle?",
+    "answer": "Yes, priority seating is available near the front of the shuttle for elderly passengers, pregnant individuals, and people with disabilities. Please give up your seat if needed.",
+    "category": "accessibility",
+    "priority": "medium"
+  },
+  {
+    "question": "Can I use the shuttle to go to the airport?",
+    "answer": "The shuttle service is designed for on-campus and local Hartford transportation. For airport transport, contact the Trinity College Travel Services or Facilities Office for alternative arrangements.",
+    "category": "destinations",
+    "priority": "low"
+  },
+  {
+    "question": "What if I have a disability that affects shuttle use?",
+    "answer": "All shuttles are wheelchair accessible with lifts and priority seating. Contact Campus Safety at 860-297-2222 or the Accessibility Services Office for specific accommodation requests.",
+    "category": "accessibility",
+    "priority": "high"
+  },
+  {
+    "question": "Are there any quiet zones on the shuttle?",
+    "answer": "While the shuttle doesn't have designated quiet zones, we ask all passengers to keep noise levels respectful of others. If you need a peaceful environment, consider studying on campus or in Mather Hall.",
+    "category": "conduct",
+    "priority": "low"
+  },
+  {
+    "question": "Can I reserve a shuttle in advance?",
+    "answer": "Regular shuttles run on fixed schedules and cannot be reserved. However, the Late Night Safety Shuttle (9 PM - 11 PM) can be requested through the app when you need it.",
+    "category": "booking",
+    "priority": "medium"
+  },
+  {
+    "question": "What do I do if I'm injured on the shuttle?",
+    "answer": "Notify the driver immediately and request medical assistance. Campus Safety will be contacted. For emergencies, call 911. Follow up by reporting the incident to Campus Safety and the Transportation Office.",
+    "category": "safety",
+    "priority": "high"
   }
 ]

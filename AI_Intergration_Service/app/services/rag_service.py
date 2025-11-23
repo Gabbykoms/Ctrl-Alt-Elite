@@ -3,7 +3,6 @@ from langchain_core.tools import tool
 from langgraph.graph import MessagesState, StateGraph, END
 from langchain_core.messages import SystemMessage, HumanMessage
 from langgraph.prebuilt import ToolNode, tools_condition
-from langgraph.checkpoint.memory import MemorySaver
 from typing import List, Dict, Any, Optional
 import logging
 from sqlalchemy.orm import Session
@@ -52,10 +51,10 @@ class ShuttleRAGService:
                     content,
                     category,
                     metadata,
-                    1 - (embedding <=> :query_embedding::vector) AS similarity
+                    1 - (embedding <=> CAST(:query_embedding AS vector)) AS similarity
                 FROM documents
-                WHERE 1 - (embedding <=> :query_embedding::vector) > :threshold
-                ORDER BY embedding <=> :query_embedding::vector
+                WHERE 1 - (embedding <=> CAST(:query_embedding AS vector)) > :threshold
+                ORDER BY embedding <=> CAST(:query_embedding AS vector)
                 LIMIT :limit
             """)
 
@@ -136,7 +135,7 @@ class ShuttleRAGService:
         tool_messages = recent_tool_messages[::-1]
 
         # Format context from retrieved documents
-        docs_content = "\n\n".join(doc.content for doc in tool_messages) if tool_messages else ""
+        docs_content = "\n\n".join(msg.content for msg in tool_messages) if tool_messages else ""
 
         # System prompt for shuttle service
         system_prompt_content = f"""
@@ -202,8 +201,8 @@ Format your response in a clear, friendly manner suitable for students.
         graph_builder.add_edge("tools", "generate")
         graph_builder.add_edge("generate", END)
 
-        # Compile with memory
-        return graph_builder.compile(checkpointer=MemorySaver())
+        # Compile without memory checkpointer (avoid msgpack serialization issues)
+        return graph_builder.compile()
 
     async def process_query(
             self,
@@ -226,13 +225,9 @@ Format your response in a clear, friendly manner suitable for students.
             # Create input messages
             input_messages = [HumanMessage(content=user_query)]
 
-            # Run graph with session/thread ID for memory
-            config = {"configurable": {"thread_id": session_id}}
-
             # Invoke the graph
             result = self.graph.invoke(
-                {"messages": input_messages},
-                config=config
+                {"messages": input_messages}
             )
 
             # Extract final response

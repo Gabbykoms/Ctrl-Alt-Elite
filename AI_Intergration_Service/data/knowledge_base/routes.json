@@ -4,27 +4,70 @@
     "route_name": "Main Campus Loop",
     "duration_minutes": 15,
     "frequency_minutes": 15,
-    "stops": ["Mather Hall", "Library", "Vernon Street", "LSC", "Athletic Center"]
+    "stops": ["Mather Hall", "Library", "Vernon Street", "LSC", "Athletic Center"],
+    "service_type": "continuous",
+    "weekday_hours": "7:00 AM - 11:00 PM"
   },
   {
     "content": "Downtown Hartford Route: This route connects the Trinity campus to downtown Hartford. Stops include Union Station (train/bus connections), Hartford Public Library, Bushnell Park, and the State Capitol area. This route runs hourly during weekdays and is perfect for students exploring the city or commuting.",
     "route_name": "Downtown Route",
     "duration_minutes": 25,
     "frequency_minutes": 60,
-    "stops": ["Trinity Campus", "Union Station", "Hartford Public Library", "Bushnell Park"]
+    "stops": ["Trinity Campus", "Union Station", "Hartford Public Library", "Bushnell Park"],
+    "service_type": "limited",
+    "weekday_hours": "7:00 AM - 11:00 PM",
+    "notes": "Weekday only, does not operate on weekends"
   },
   {
     "content": "Late Night Safety Shuttle: Available after 9 PM until 11 PM, this is an on-demand service designed for student safety. You can request pickup from any safe location on or near campus through the app. The driver will pick you up and drop you at your desired destination within the service area. Response time is typically 5-10 minutes.",
     "route_name": "Late Night Safety Shuttle",
     "type": "on-demand",
     "hours": "9 PM - 11 PM",
-    "response_time_minutes": 10
+    "response_time_minutes": 10,
+    "service_days": "daily",
+    "how_to_request": "Use the mobile app to request a pickup location"
   },
   {
-    "content": "Weekend Express: On weekends, a simplified route connects major campus locations including residential halls, Mather Hall, and the Athletic Center. This route runs every 20 minutes from 9 AM to 9 PM.",
+    "content": "Weekend Express: On weekends (Saturday and Sunday), a simplified route connects major campus locations including Vernon Street Residences, Mather Hall, Library, and the Athletic Center. This route runs every 20 minutes from 9 AM to 9 PM. Shuttle stops: Vernon Street, Mather Hall, Library Stop, Athletic Center. Please note: The Downtown Hartford Route does NOT operate on weekends. For late-night travel on weekends after 9 PM, use the Late Night Safety Shuttle (on-demand, 9 PM - 11 PM).",
     "route_name": "Weekend Express",
-    "duration_minutes": 10,
+    "duration_minutes": 15,
     "frequency_minutes": 20,
-    "days": ["Saturday", "Sunday"]
+    "days": ["Saturday", "Sunday"],
+    "stops": ["Vernon Street", "Mather Hall", "Library", "Athletic Center"],
+    "operating_hours": "9:00 AM - 9:00 PM",
+    "weekend_notes": "Simplified service, Downtown Route unavailable, Late Night Safety Shuttle available until 11 PM"
+  },
+  {
+    "content": "Union Station Route Information: Union Station is a major transportation hub with connections to Amtrak trains and regional bus services. The shuttle stop is directly in front of the main entrance. From here, students can connect to various transit options for traveling beyond Hartford. Travel time from Trinity campus is approximately 25 minutes.",
+    "route_name": "Union Station",
+    "destination_type": "transportation_hub",
+    "shuttle_route": "Downtown Route",
+    "connectivity": ["Amtrak", "Regional buses"],
+    "travel_time_minutes": 25
+  },
+  {
+    "content": "Hartford Public Library: The Hartford Public Library is a major cultural and educational resource. The shuttle stop is on Main Street with easy access to the main entrance. The library offers study spaces, computers, and programs. It is open until 6 PM on weekdays and has limited weekend hours.",
+    "route_name": "Hartford Public Library",
+    "destination_type": "cultural_resource",
+    "shuttle_route": "Downtown Route",
+    "services": ["Study spaces", "Computers", "Reference services"],
+    "hours": "Varies",
+    "accessibility": true
+  },
+  {
+    "content": "Bushnell Park: Bushnell Park is Hartford's oldest public park, featuring historic landscapes, events, and outdoor activities. The shuttle drop-off point is near the main park entrance. This is a great destination for weekend recreation or outdoor studying. Various programs and events are held throughout the year.",
+    "route_name": "Bushnell Park",
+    "destination_type": "recreational",
+    "shuttle_route": "Downtown Route",
+    "activities": ["Walking", "Events", "Recreation"],
+    "best_for": "Weekend trips, outdoor activities"
+  },
+  {
+    "content": "State Capitol Area: The Connecticut State Capitol building is located in downtown Hartford and is accessible via the shuttle. This area is useful for political science field trips, civics education, and exploring Hartford's governmental and historical significance.",
+    "route_name": "State Capitol",
+    "destination_type": "educational",
+    "shuttle_route": "Downtown Route",
+    "education_value": "Government, history, civics",
+    "tours": "May be available - contact in advance"
   }
 ]

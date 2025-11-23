@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     TEMPERATURE: float = 0.7
     
     # RAG Settings
-    SIMILARITY_THRESHOLD: float = 0.7
-    MAX_CONTEXT_DOCUMENTS: int = 3
+    SIMILARITY_THRESHOLD: float = 0.5
+    MAX_CONTEXT_DOCUMENTS: int = 5
     VECTOR_DIMENSION: int = 1536
     
     # External Services

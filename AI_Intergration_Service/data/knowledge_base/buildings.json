@@ -4,28 +4,36 @@
     "building_name": "Library",
     "closest_stop": "Library Stop",
     "avg_wait_minutes": 5,
-    "services": ["study spaces", "computer labs", "printing"]
+    "services": ["study spaces", "computer labs", "printing"],
+    "building_type": "academic",
+    "accessibility": true
   },
   {
     "content": "Mather Hall: This is the main dining facility and student center at Trinity College. The shuttle stops directly in front of the building on the Main Campus Loop route. Mather Hall is a major hub, so shuttles are frequent here - every 10-15 minutes during meal times. The building also houses the campus bookstore and student mail services.",
     "building_name": "Mather Hall",
     "closest_stop": "Mather Hall Stop",
     "amenities": ["dining", "events", "bookstore", "mail services"],
-    "frequency_minutes": 10
+    "frequency_minutes": 10,
+    "building_type": "student_center",
+    "accessibility": true
   },
   {
     "content": "Athletic Center: Located on the south end of campus, the Athletic Center is a popular destination. Shuttle service is available every 15 minutes during peak hours on the Main Campus Loop. The stop is at the main entrance. Facilities include a gym, pool, basketball courts, and fitness classes.",
     "building_name": "Athletic Center",
     "closest_stop": "Athletic Center Stop",
     "facilities": ["gym", "pool", "courts", "fitness classes"],
-    "frequency_minutes": 15
+    "frequency_minutes": 15,
+    "building_type": "recreation",
+    "accessibility": true
   },
   {
     "content": "Vernon Street: This residential area houses several dormitories. The shuttle stop serves multiple residence halls including those on Vernon Street. This is a busy stop during morning class times and late evenings. The Late Night Safety Shuttle specifically serves this area after 9 PM for student safety.",
     "building_name": "Vernon Street Residences",
     "closest_stop": "Vernon Street Stop",
     "building_type": "residential",
-    "late_night_service": true
+    "late_night_service": true,
+    "accessibility": true,
+    "peak_times": ["morning", "evening"]
   },
   {
     "content": "Life Sciences Center (LSC): The LSC houses biology, chemistry, and environmental science departments. The shuttle stop is on the north side of the building. This stop is particularly busy during class change times. Average wait is 12 minutes during off-peak hours and 7 minutes during peak times.",
@@ -33,6 +41,34 @@
     "building_code": "LSC",
     "closest_stop": "LSC Stop",
     "departments": ["biology", "chemistry", "environmental science"],
-    "avg_wait_minutes": 12
+    "avg_wait_minutes": 12,
+    "building_type": "academic",
+    "accessibility": true
+  },
+  {
+    "content": "McCook Mathematics and Physics Center: Located on the east side of campus, McCook houses mathematics and physics departments. The nearest shuttle stop is the LSC Stop, approximately a 5-minute walk. This building is frequently accessed during class change times between 8 AM and 5 PM.",
+    "building_name": "McCook Mathematics & Physics",
+    "closest_stop": "LSC Stop",
+    "walking_distance_minutes": 5,
+    "departments": ["mathematics", "physics"],
+    "building_type": "academic",
+    "accessibility": true
+  },
+  {
+    "content": "Hallden Engineering Laboratory: This engineering facility is located near the Athletic Center area. The closest shuttle stop is the Athletic Center Stop. The building includes computer labs, machine shops, and design spaces for engineering students and projects.",
+    "building_name": "Hallden Engineering",
+    "closest_stop": "Athletic Center Stop",
+    "departments": ["engineering"],
+    "facilities": ["computer labs", "machine shop", "design spaces"],
+    "building_type": "academic",
+    "accessibility": true
+  },
+  {
+    "content": "Raether Library and Information Technology Center: This facility complements the main library and houses IT services and advanced technology resources. Located near the main library, it is accessible via the Library Stop. Services include tech support, software access, and specialized computing resources.",
+    "building_name": "Raether Library & IT Center",
+    "closest_stop": "Library Stop",
+    "services": ["IT support", "Technology resources", "Software access"],
+    "building_type": "academic",
+    "accessibility": true
   }
 ]
