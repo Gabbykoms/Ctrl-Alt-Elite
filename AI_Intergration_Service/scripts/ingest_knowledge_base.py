@@ -1,6 +1,8 @@
+
 import json
 import sys
 from pathlib import Path
+from sqlalchemy import text  # <--- NEW IMPORT
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -16,15 +18,29 @@ def load_json_file(filepath: str):
         return json.load(f)
 
 
+def document_exists(db: Session, content: str) -> bool:
+    """
+    Check if a document with this exact content already exists.
+    Returns True if it exists, False otherwise.
+    """
+    # We use a raw SQL query for speed. 
+    # It checks if any row has matching content.
+    query = text("SELECT 1 FROM documents WHERE content = :content LIMIT 1")
+    result = db.execute(query, {"content": content}).scalar()
+    return result is not None
+
+
 def ingest_documents(db: Session, documents: list, category: str):
-    """Ingest list of documents"""
+    """Ingest list of documents with deduplication"""
     embedding_service = EmbeddingService(db)
 
     print(f"\n📚 Ingesting {category} documents...")
 
+    skipped_count = 0
+    
     for idx, doc in enumerate(documents, 1):
         try:
-            # Extract content from different formats
+            # 1. Extract content (Standardize format)
             if 'content' in doc:
                 content = doc['content']
             elif 'question' in doc and 'answer' in doc:
@@ -33,10 +49,16 @@ def ingest_documents(db: Session, documents: list, category: str):
                 print(f"⚠️  Skipping document {idx}: No content field")
                 continue
 
-            # Extract metadata
+            # 2. Check for Duplicates (The New Logic)
+            if document_exists(db, content):
+                # print(f"  ⏭️  Skipping [{idx}] (Already exists)")
+                skipped_count += 1
+                continue
+
+            # 3. Extract metadata
             metadata = {k: v for k, v in doc.items() if k not in ['content', 'question', 'answer']}
 
-            # Create document with embedding
+            # 4. Create document
             embedding_service.create_document(
                 content=content,
                 category=category,
@@ -46,6 +68,9 @@ def ingest_documents(db: Session, documents: list, category: str):
 
         except Exception as e:
             print(f"  ✗ [{idx}] Error: {e}")
+            
+    if skipped_count > 0:
+        print(f"     (Skipped {skipped_count} duplicates)")
 
 
 def main():
@@ -86,7 +111,7 @@ def main():
     db.close()
 
     print("\n" + "=" * 60)
-    print(f"  ✅ Ingestion complete! Total documents: {total_ingested}")
+    print(f"  ✅ Ingestion process complete!")
     print("=" * 60)
 
 
