@@ -34,10 +34,10 @@ class Settings(BaseSettings):
     VECTOR_DIMENSION: int = 1536
     
     # External Services
-    TRACKING_SERVICE_URL: str = "http://localhost:8082/api/tracking"
+    TRACKING_SERVICE_URL: str = "http://localhost:8081/api/tracking"
     
     # CORS
-    ALLOWED_ORIGINS: str = "http://localhost:3000"
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8080,http://localhost:5173"
     
     @property
     def allowed_origins_list(self) -> List[str]:
