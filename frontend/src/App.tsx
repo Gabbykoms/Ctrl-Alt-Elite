@@ -24,7 +24,8 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Root redirect */}
-      <Route path="/" element={<Navigate to="/student" replace />} />
+      {/* <Route path="/" element={<Navigate to="/student" replace />} /> */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       
       {/* Public Routes - Direct access without authentication */}
       <Route element={<AuthLayout><LoginPage /></AuthLayout>} path="/login" />

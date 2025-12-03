@@ -152,6 +152,86 @@ export const rideAPI = {
 }
 
 // ============================================
+// TRACKING-SERVICE API (direct integration)
+// ============================================
+const TRACKING_SERVICE_BASE = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8080';
+
+export const trackingAPI = {
+  // ============ RIDE TRACKING ============
+  // Start tracking a ride
+  startRideTracking: (rideId: string, data: any) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/rides/${rideId}/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // End tracking a ride
+  endRideTracking: (rideId: string) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/rides/${rideId}/end`, {
+      method: 'POST',
+      credentials: 'include',
+    }),
+
+  // Get latest driver location for a ride
+  getDriverLocation: (rideId: string) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/rides/${rideId}/driver-location`, {
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // Get student pickup/dropoff locations for a ride
+  getStudentLocation: (rideId: string) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/rides/${rideId}/student-location`, {
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // Get full ride tracking context
+  getRideContext: (rideId: string) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/rides/${rideId}/context`, {
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // ============ STOP MANAGEMENT ============
+  // Get all stops
+  getAllStops: () =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/stops`, {
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // Get a single stop by ID
+  getStop: (stopId: string) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/stops/${stopId}`, {
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // Create a new stop (admin only)
+  createStop: (data: { name: string; latitude: number; longitude: number; description?: string }) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/stops`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // Update a stop (admin only)
+  updateStop: (stopId: string, data: { name?: string; latitude?: number; longitude?: number; description?: string }) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/stops/${stopId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    }).then(res => res.json()),
+
+  // Delete a stop (admin only)
+  deleteStop: (stopId: string) =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/stops/${stopId}`, {
+      method: 'DELETE',
+      credentials: 'include',
+    }).then(res => res.json()),
+};
+
+// ============================================
 // DRIVER API
 // ============================================
 export const driverAPI = {

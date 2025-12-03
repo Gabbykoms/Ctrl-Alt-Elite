@@ -1,49 +1,125 @@
-import { useState, useRef, useEffect } from 'react'
-import mapboxgl from 'mapbox-gl'
+import { useState, useEffect } from 'react'
+import LiveMap from '../components/LiveMap'
+import { trackingAPI } from '../services/apiService'
+
+interface Stop {
+  id: string
+  name: string
+  latitude: number
+  longitude: number
+}
+
+interface Shuttle {
+  id: string
+  name: string
+  lat: number
+  lng: number
+  nextStop: string
+  eta: string
+  passengers: number
+  capacity: number
+}
 
 export default function DriverDashboard() {
   const [isClockedIn, setIsClockedIn] = useState(false)
   const [status, setStatus] = useState('offline')
-  const [mapError, setMapError] = useState(false)
-  const mapContainer = useRef<HTMLDivElement>(null)
-  const map = useRef<mapboxgl.Map | null>(null)
+  const [stops, setStops] = useState<Stop[]>([])
+  const [isLoadingStops, setIsLoadingStops] = useState(false)
+  const [shuttles, setShuttles] = useState<Shuttle[]>([])
+  const [isLoadingShuttles, setIsLoadingShuttles] = useState(false)
 
+  // Load stops from API
   useEffect(() => {
-    if (!mapContainer.current || map.current) return
-
-    const token = (import.meta.env as any).VITE_MAPBOX_TOKEN
-    
-    if (!token) {
-      setMapError(true)
-      return
+    const loadStops = async () => {
+      try {
+        setIsLoadingStops(true)
+        const response = await trackingAPI.getAllStops()
+        if (response && response.stops) {
+          setStops(response.stops)
+        }
+      } catch (error) {
+        console.error('Error loading stops:', error)
+        // Fallback to default stops
+        setStops([
+          { id: 'stop-1', name: 'Main Quad', latitude: 41.747, longitude: -72.683 },
+          { id: 'stop-2', name: 'Athletic Center', latitude: 41.745, longitude: -72.680 },
+          { id: 'stop-3', name: 'Science Center', latitude: 41.748, longitude: -72.686 },
+        ])
+      } finally {
+        setIsLoadingStops(false)
+      }
     }
-
-    mapboxgl.accessToken = token
-
-    try {
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12',
-        center: [-72.64, 41.77],
-        zoom: 15,
-      })
-
-      // Add current location marker
-      const el = document.createElement('div')
-      el.className = 'w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center font-bold text-sm shadow-lg'
-      el.textContent = 'D'
-
-      new mapboxgl.Marker(el).setLngLat([-72.64, 41.77]).addTo(map.current)
-    } catch (error) {
-      console.error('Failed to initialize map:', error)
-      setMapError(true)
-    }
-
-    return () => {
-      map.current?.remove()
-      map.current = null
-    }
+    loadStops()
   }, [])
+
+  // Load shuttles from tracking service (real bus locations)
+  useEffect(() => {
+    const loadShuttles = async () => {
+      try {
+        setIsLoadingShuttles(true)
+        const TRACKING_SERVICE_URL = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8081'
+        const response = await fetch(`${TRACKING_SERVICE_URL}/v1/locations/latest/org/trinity`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        
+        const buses = await response.json()
+        
+        if (Array.isArray(buses) && buses.length > 0) {
+          // Convert microdegrees to decimal degrees and format as shuttles
+          const formattedShuttles: Shuttle[] = buses.map((bus, index) => ({
+            id: bus.deviceId || `bus-${index}`,
+            name: `${bus.deviceId || 'Bus'}`,
+            lat: bus.latMicro ? bus.latMicro / 1_000_000 : 41.77,
+            lng: bus.lonMicro ? bus.lonMicro / 1_000_000 : -72.64,
+            nextStop: 'In Transit',
+            eta: `${Math.floor(Math.random() * 8) + 2} min`,
+            passengers: Math.floor(Math.random() * 25),
+            capacity: 25,
+          }))
+          
+          console.log('✅ Loaded shuttles from tracking service:', formattedShuttles)
+          setShuttles(formattedShuttles)
+        } else {
+          console.warn('⚠️ No buses found in tracking service')
+          setShuttles([])
+        }
+      } catch (error) {
+        console.error('❌ Error loading shuttles from tracking service:', error)
+        setShuttles([])
+      } finally {
+        setIsLoadingShuttles(false)
+      }
+    }
+    
+    // Load initially
+    loadShuttles()
+    
+    // Poll for updates every 5 seconds to see buses move
+    const interval = setInterval(loadShuttles, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Driver stops for the map
+  const mapPins = [
+    ...stops.map((stop) => ({
+      id: stop.id,
+      name: stop.name,
+      type: 'stop' as const,
+      lat: stop.latitude,
+      lng: stop.longitude,
+    })),
+    // Add shuttle markers
+    ...shuttles.map(shuttle => ({
+      id: shuttle.id,
+      type: 'shuttle' as const,
+      name: shuttle.name,
+      lat: shuttle.lat,
+      lng: shuttle.lng,
+      info: `${shuttle.passengers}/${shuttle.capacity} passengers · ${shuttle.eta}`,
+    }))
+  ]
 
   return (
     <div className="h-full flex flex-col">
@@ -96,15 +172,9 @@ export default function DriverDashboard() {
         </div>
       </div>
 
-      {/* Map */}
+      {/* Map using LiveMap component */}
       <div className="flex-1 relative">
-        {mapError ? (
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-            <p className="text-gray-600">Map not available (add Mapbox token to .env)</p>
-          </div>
-        ) : (
-          <div ref={mapContainer} className="w-full h-full" />
-        )}
+        <LiveMap pins={mapPins} />
       </div>
     </div>
   )

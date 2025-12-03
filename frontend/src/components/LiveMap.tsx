@@ -1,6 +1,8 @@
 
 
 import { useEffect, useRef, useState } from 'react'
+import { trackingAPI } from '../services/apiService'
+import { useAuth } from '../contexts/AuthContext'
 import mapboxgl from 'mapbox-gl'
 
 interface MapPin {
@@ -11,15 +13,80 @@ interface MapPin {
   name: string
   info?: string
   onPopupOpen?: (id: string) => void
+  isHighlighted?: boolean
 }
 
 interface LiveMapProps {
   pins: MapPin[]
   routes?: Array<{ id: string; coordinates: [number, number][] }>
   activeRouteIds?: string[]
+  onMapClick?: (lat: number, lng: number) => void
 }
 
-export default function LiveMap({ pins, routes = [], activeRouteIds = [] }: LiveMapProps) {
+export default function LiveMap({ pins, routes = [], activeRouteIds = [], onMapClick }: LiveMapProps) {
+  const { user } = useAuth() || {};
+  const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [busPin, setBusPin] = useState<MapPin | null>(null);
+  const rideId = user?.activeRideId || user?.rideId || 'demo-ride'; // Replace with actual ride ID logic
+    // Effect: If user is a driver, send their location to tracking service periodically
+    useEffect(() => {
+      if (!user || user.role !== 'driver') return;
+      let watchId: number;
+      let intervalId: number;
+
+      // Get and send location every 5 seconds
+      const sendLocation = (position: GeolocationPosition) => {
+        const { latitude, longitude } = position.coords;
+        trackingAPI.startRideTracking(rideId, {
+          driverId: user.id,
+          latitude,
+          longitude,
+          timestamp: Date.now(),
+        });
+      };
+
+      if (navigator.geolocation) {
+        watchId = navigator.geolocation.watchPosition(sendLocation);
+        // Also send every 5 seconds in case watchPosition is slow
+        intervalId = setInterval(() => {
+          navigator.geolocation.getCurrentPosition(sendLocation);
+        }, 5000);
+      }
+      return () => {
+        if (watchId) navigator.geolocation.clearWatch(watchId);
+        if (intervalId) clearInterval(intervalId);
+      };
+    }, [user, rideId]);
+    // Effect: For all users, fetch latest driver location and update bus pin
+    useEffect(() => {
+      let intervalId: number;
+      const fetchDriverLocation = async () => {
+        try {
+          console.log(`[LiveMap] Fetching driver location for rideId: ${rideId}`);
+          const data = await trackingAPI.getDriverLocation(rideId);
+          console.log(`[LiveMap] Driver location response:`, data);
+          if (data && data.latitude && data.longitude) {
+            console.log(`[LiveMap] Setting bus pin at ${data.latitude}, ${data.longitude}`);
+            setDriverLocation({ lat: data.latitude, lng: data.longitude });
+            setBusPin({
+              id: 'bus',
+              lat: data.latitude,
+              lng: data.longitude,
+              type: 'shuttle',
+              name: 'Bus',
+              info: `Last updated: ${new Date(data.timestamp || Date.now()).toLocaleTimeString()}`,
+            });
+          } else {
+            console.warn(`[LiveMap] Invalid driver location data:`, data);
+          }
+        } catch (e) {
+          console.error(`[LiveMap] Error fetching driver location:`, e);
+        }
+      };
+      fetchDriverLocation();
+      intervalId = setInterval(fetchDriverLocation, 5000);
+      return () => clearInterval(intervalId);
+    }, [rideId]);
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map())
@@ -48,6 +115,15 @@ export default function LiveMap({ pins, routes = [], activeRouteIds = [] }: Live
       })
 
       map.current.addControl(new mapboxgl.NavigationControl(), 'top-right')
+
+      // Add click handler for admin stop placement
+      if (onMapClick) {
+        map.current.on('click', (e) => {
+          const { lng, lat } = e.lngLat
+          console.log('Map clicked:', { lat, lng })
+          onMapClick(lat, lng)
+        })
+      }
     } catch (error) {
       console.error('Failed to initialize map:', error)
       setMapError(true)
@@ -57,43 +133,65 @@ export default function LiveMap({ pins, routes = [], activeRouteIds = [] }: Live
     return () => {
       map.current?.remove()
     }
-  }, []) // Empty dependency array ensures this runs only once
+  }, [onMapClick])
 
-  // Effect 2: Update markers when pins change
+  // Effect 2: Update markers when pins or busPin change
   useEffect(() => {
-    if (!map.current) return
-
-    // This logic is fine: remove all markers and add the new set
-    markersRef.current.forEach((marker) => marker.remove())
-    markersRef.current.clear()
-
-    pins.forEach((pin) => {
-      const el = document.createElement('div')
-      // Using your project's Tailwind colors (primary/accent)
-      el.className = `w-8 h-8 rounded-full flex items-center justify-center cursor-pointer ${
-        pin.type === 'stop' ? 'bg-primary' : 'bg-accent'
-      } text-white font-bold text-sm shadow-lg border-2 border-white`
-      el.textContent = pin.type === 'stop' ? 'S' : 'B' // 'S' for Stop, 'B' for Bantam/Bus
-
-      const marker = new mapboxgl.Marker(el)
+    if (!map.current) return;
+    markersRef.current.forEach((marker) => marker.remove());
+    markersRef.current.clear();
+    const allPins = busPin ? [...pins, busPin] : pins;
+    allPins.forEach((pin) => {
+      const el = document.createElement('div');
+      const isDriver = pin.id === 'bus';
+      const isTemporaryPin = pin.id === 'temp-pin';
+      const isHighlighted = pin.isHighlighted;
+      
+      // Determine color based on pin type
+      let bgColor = 'bg-red-600'; // Default for stops
+      if (isTemporaryPin) {
+        bgColor = 'bg-yellow-400';
+      } else if (pin.type === 'shuttle') {
+        bgColor = 'bg-green-600'; // Green for buses/shuttles
+      }
+      
+      const size = isDriver ? 'w-12 h-12' : 'w-8 h-8';
+      const fontSize = isDriver ? 'text-lg' : 'text-sm';
+      const cursorStyle = isTemporaryPin ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer';
+      const blinkAnimation = isHighlighted ? 'animate-pulse' : '';
+      const extraStyle = isHighlighted ? 'ring-4 ring-yellow-300 ring-offset-2' : '';
+      el.className = `${size} rounded-full flex items-center justify-center ${cursorStyle} ${bgColor} text-white font-bold ${fontSize} shadow-lg border-2 border-white ${isDriver ? 'animate-pulse' : isTemporaryPin ? 'animate-bounce' : ''} ${blinkAnimation} ${extraStyle}`;
+      el.textContent = pin.type === 'stop' ? (isTemporaryPin ? '📍' : 'S') : 'B';
+      
+      const marker = new mapboxgl.Marker(el, { draggable: isTemporaryPin })
         .setLngLat([pin.lng, pin.lat])
         .setPopup(
           new mapboxgl.Popup({ offset: 25 }).setHTML(
             `<div class="p-1 font-sans"><strong>${pin.name}</strong>${pin.info ? `<p class="text-sm mt-1">${pin.info}</p>` : ''}</div>`
           )
         )
-        .addTo(map.current!)
-
-      // Using 'click' on the custom element is more reliable
+        .addTo(map.current!);
+      
+      // Handle drag events for temporary pin
+      if (isTemporaryPin) {
+        marker.on('dragend', () => {
+          const lngLat = marker.getLngLat();
+          if (onMapClick) {
+            onMapClick(lngLat.lat, lngLat.lng);
+          }
+        });
+      }
+      
       el.addEventListener('click', (e) => {
-        e.stopPropagation(); // Prevent map click event
-        marker.togglePopup()
-        pin.onPopupOpen?.(pin.id)
-      })
-
-      markersRef.current.set(pin.id, marker)
-    })
-  }, [pins]) // Re-runs whenever the pins prop changes
+        e.stopPropagation();
+        if (!isTemporaryPin) {
+          marker.togglePopup();
+          pin.onPopupOpen?.(pin.id);
+        }
+      });
+      markersRef.current.set(pin.id, marker);
+    });
+  }, [pins, busPin, onMapClick]);
 
   // Effect 3: Draw routes when routes or activeRouteIds change
   useEffect(() => {

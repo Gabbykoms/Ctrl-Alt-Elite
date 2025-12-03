@@ -140,7 +140,7 @@ export default function RouteSidebar({
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:w-80 md:flex-col md:border-r md:border-gray-200">{content}</aside>
+      <aside className="hidden md:flex md:w-96 md:flex-col md:border-r md:border-gray-200 md:flex-shrink-0">{content}</aside>
 
       {/* Mobile Sidebar */}
       {isOpen && (

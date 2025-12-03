@@ -1,7 +1,8 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Clock, MapPin, AlertCircle, Plus, X, CheckCircle, Loader } from 'lucide-react'
 import LiveMap from '../components/LiveMap'
 import RouteSidebar from '../components/RouteSidebar'
+import { trackingAPI } from '../services/apiService'
 
 // Mock data
 const MOCK_ROUTES = [
@@ -40,6 +41,27 @@ interface RideRequest {
   estimatedArrival?: string
 }
 
+interface Stop {
+  id: string
+  name: string
+  latitude?: number
+  longitude?: number
+  lat?: number
+  lng?: number
+  description?: string
+}
+
+interface Shuttle {
+  id: string
+  name: string
+  lat: number
+  lng: number
+  nextStop: string
+  eta: string
+  passengers: number
+  capacity: number
+}
+
 export default function StudentDashboard() {
   const [activeRouteIds, setActiveRouteIds] = useState<string[]>(['north-loop'])
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -49,27 +71,102 @@ export default function StudentDashboard() {
   const [endLocation, setEndLocation] = useState<string>('')
   const [rideRequests, setRideRequests] = useState<RideRequest[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
+  const [stops, setStops] = useState<Stop[]>([])
+  const [isLoadingStops, setIsLoadingStops] = useState(false)
+  const [shuttles, setShuttles] = useState<Shuttle[]>(MOCK_SHUTTLES)
+  const [isLoadingShuttles, setIsLoadingShuttles] = useState(false)
+
+  // Load stops on mount
+  useEffect(() => {
+    const loadStops = async () => {
+      try {
+        setIsLoadingStops(true)
+        const response = await trackingAPI.getAllStops()
+        if (response && response.stops) {
+          setStops(response.stops)
+        }
+      } catch (error) {
+        console.error('Error loading stops:', error)
+        // Fall back to mock stops if API fails
+        setStops(MOCK_STOPS)
+      } finally {
+        setIsLoadingStops(false)
+      }
+    }
+    loadStops()
+  }, [])
+
+  // Load shuttles from tracking service (real bus locations)
+  useEffect(() => {
+    const loadShuttles = async () => {
+      try {
+        setIsLoadingShuttles(true)
+        const TRACKING_SERVICE_URL = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8081'
+        const response = await fetch(`${TRACKING_SERVICE_URL}/v1/locations/latest/org/trinity`)
+        
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`)
+        }
+        
+        const buses = await response.json()
+        
+        if (Array.isArray(buses) && buses.length > 0) {
+          // Convert microdegrees to decimal degrees and format as shuttles
+          const formattedShuttles: Shuttle[] = buses.map((bus, index) => ({
+            id: bus.deviceId || `bus-${index}`,
+            name: `${bus.deviceId || 'Bus'}`,
+            lat: bus.latMicro ? bus.latMicro / 1_000_000 : 41.77,
+            lng: bus.lonMicro ? bus.lonMicro / 1_000_000 : -72.64,
+            nextStop: 'In Transit',
+            eta: `${Math.floor(Math.random() * 8) + 2} min`,
+            passengers: Math.floor(Math.random() * 25),
+            capacity: 25,
+          }))
+          
+          console.log('✅ Loaded shuttles from tracking service:', formattedShuttles)
+          setShuttles(formattedShuttles)
+        } else {
+          console.warn('⚠️ No buses found in tracking service, using mock data')
+          setShuttles(MOCK_SHUTTLES)
+        }
+      } catch (error) {
+        console.error('❌ Error loading shuttles from tracking service:', error)
+        // Fall back to mock shuttles
+        setShuttles(MOCK_SHUTTLES)
+      } finally {
+        setIsLoadingShuttles(false)
+      }
+    }
+    
+    // Load initially
+    loadShuttles()
+    
+    // Poll for updates every 5 seconds to see buses move
+    const interval = setInterval(loadShuttles, 5000)
+    return () => clearInterval(interval)
+  }, [])
 
   const mapPins = useMemo(() => {
-    const stops = MOCK_STOPS.map((stop) => ({
+    const stopPins = stops.map((stop) => ({
       id: stop.id,
       type: 'stop' as const,
       name: stop.name,
-      lat: 41.77 + Math.random() * 0.01,
-      lng: -72.64 + Math.random() * 0.01,
+      lat: stop.latitude ?? stop.lat ?? 41.77,
+      lng: stop.longitude ?? stop.lng ?? -72.64,
     }))
 
-    const shuttles = MOCK_SHUTTLES.map((shuttle) => ({
+    // Use real shuttles from tracking service instead of MOCK_SHUTTLES
+    const shuttleMarkers = shuttles.map((shuttle) => ({
       id: shuttle.id,
       type: 'shuttle' as const,
       name: shuttle.name,
       lat: shuttle.lat,
       lng: shuttle.lng,
-      info: `Next stop: ${shuttle.nextStop} - ${shuttle.eta}`,
+      info: `${shuttle.passengers}/${shuttle.capacity} passengers · ${shuttle.eta}`,
     }))
 
-    return [...stops, ...shuttles]
-  }, [])
+    return [...stopPins, ...shuttleMarkers]
+  }, [stops, shuttles])  // Add shuttles to dependencies so map updates when buses move!
 
   const routes = useMemo(
     () =>
@@ -95,8 +192,8 @@ export default function StudentDashboard() {
 
     // Simulate API call
     setTimeout(() => {
-      const startStop = MOCK_STOPS.find((s) => s.id === startLocation)
-      const endStop = MOCK_STOPS.find((s) => s.id === endLocation)
+      const startStop = stops.find((s) => s.id === startLocation) || MOCK_STOPS.find((s) => s.id === startLocation)
+      const endStop = stops.find((s) => s.id === endLocation) || MOCK_STOPS.find((s) => s.id === endLocation)
       const randomShuttle = MOCK_SHUTTLES[Math.floor(Math.random() * MOCK_SHUTTLES.length)]
       const pickupMinutes = Math.floor(Math.random() * 8) + 3
 
@@ -127,7 +224,7 @@ export default function StudentDashboard() {
       {/* Route Sidebar */}
       <RouteSidebar
         routes={MOCK_ROUTES}
-        stops={MOCK_STOPS}
+        stops={stops.length > 0 ? stops : MOCK_STOPS}
         activeRouteIds={activeRouteIds}
         onRouteToggle={(routeId) => {
           setActiveRouteIds((prev) =>
@@ -142,7 +239,7 @@ export default function StudentDashboard() {
       />
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden">
+      <div className="flex-1 flex flex-col overflow-hidden w-full min-w-0">
         {/* Alerts */}
         {ALERTS.length > 0 && (
           <div className="bg-yellow-50 border-b border-yellow-200 p-3 space-y-2 animate-in fade-in">
@@ -291,7 +388,7 @@ export default function StudentDashboard() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select pickup location</option>
-                  {MOCK_STOPS.map((stop) => (
+                  {(stops.length > 0 ? stops : MOCK_STOPS).map((stop) => (
                     <option key={stop.id} value={stop.id}>
                       {stop.name}
                     </option>
@@ -308,7 +405,7 @@ export default function StudentDashboard() {
                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                   <option value="">Select destination</option>
-                  {MOCK_STOPS.map((stop) => (
+                  {(stops.length > 0 ? stops : MOCK_STOPS).map((stop) => (
                     <option key={stop.id} value={stop.id}>
                       {stop.name}
                     </option>

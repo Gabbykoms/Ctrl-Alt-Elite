@@ -6,6 +6,8 @@ interface User {
   name: string
   email: string
   role: 'student' | 'driver' | 'admin'
+  activeRideId?: string
+  rideId?: string
 }
 
 interface AuthContextType {
@@ -20,6 +22,10 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // Check for test mode via URL query parameter
+  const testMode = new URLSearchParams(window.location.search).get('testMode') === 'true'
+  const testRole = (new URLSearchParams(window.location.search).get('role') || 'driver') as 'student' | 'driver' | 'admin'
+  
   const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'))
   const [user, setUser] = useState<User | null>(() => {
     const stored = localStorage.getItem('user')
@@ -30,6 +36,44 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Fetch current user on mount if token exists
   useEffect(() => {
     const fetchCurrentUser = async () => {
+      // Test mode: auto-login with demo user based on role
+      if (testMode && !token) {
+        const demoUsers: Record<'student' | 'driver' | 'admin', User> = {
+          driver: {
+            id: 'demo-driver-1',
+            name: 'Demo Driver',
+            email: 'driver@trincoll.edu',
+            role: 'driver',
+            activeRideId: 'demo-ride',
+            rideId: 'demo-ride',
+          },
+          student: {
+            id: 'demo-student-1',
+            name: 'Demo Student',
+            email: 'student@trincoll.edu',
+            role: 'student',
+            activeRideId: 'demo-ride',
+            rideId: 'demo-ride',
+          },
+          admin: {
+            id: 'demo-admin-1',
+            name: 'Demo Admin',
+            email: 'admin@trincoll.edu',
+            role: 'admin',
+            activeRideId: 'demo-ride',
+            rideId: 'demo-ride',
+          },
+        }
+        const demoUser = demoUsers[testRole]
+        setToken('demo-token')
+        setUser(demoUser)
+        localStorage.setItem('token', 'demo-token')
+        localStorage.setItem('user', JSON.stringify(demoUser))
+        console.log(`✅ Test mode enabled as ${testRole}`)
+        setLoading(false)
+        return
+      }
+
       if (token) {
         try {
           const response = await authAPI.getCurrentUser()
