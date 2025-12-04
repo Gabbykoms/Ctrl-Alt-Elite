@@ -32,6 +32,9 @@ class Settings(BaseSettings):
     SIMILARITY_THRESHOLD: float = 0.5
     MAX_CONTEXT_DOCUMENTS: int = 5
     VECTOR_DIMENSION: int = 1536
+
+    #WEATHER SETTINGS
+    OPENWEATHER_API_KEY: str = ""
     
     # External Services
     TRACKING_SERVICE_URL: str = "http://localhost:8081/api/tracking"

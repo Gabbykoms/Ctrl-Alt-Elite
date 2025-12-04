@@ -5,6 +5,7 @@ from langchain_core.messages import SystemMessage, HumanMessage
 from langgraph.prebuilt import ToolNode, tools_condition
 from typing import List, Dict, Any, Optional
 import logging
+import requests  
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 
@@ -13,14 +14,12 @@ from app.models.document import Document
 
 logger = logging.getLogger(__name__)
 
-
 class ShuttleRAGService:
     """RAG service for Trinity Shuttle using LangChain + LangGraph"""
 
     def __init__(self, db: Session):
         self.db = db
-
-        # Initialize LangChain components
+        
         self.llm = ChatOpenAI(
             model=settings.CHAT_MODEL,
             temperature=settings.TEMPERATURE,
@@ -34,23 +33,43 @@ class ShuttleRAGService:
             api_key=settings.OPENAI_API_KEY
         )
 
-        # Build the graph
         self.graph = self._build_graph()
 
-    def _retrieve_documents(self, query: str, k: int = 5) -> List[Document]:
-        """Retrieve similar documents from pgvector"""
+    
+    def _get_current_weather(self) -> str:
+        """Fetch real-time weather for Trinity College (Hartford, CT)"""
         try:
-            # Generate query embedding
+            # Hartford Coordinates
+            lat = "41.745"
+            lon = "-72.690"
+            api_key = settings.OPENWEATHER_API_KEY
+            
+            if not api_key:
+                return "Weather data unavailable (API Key missing)."
+
+            url = f"https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={api_key}&units=imperial"
+            response = requests.get(url, timeout=2)
+            
+            if response.status_code == 200:
+                data = response.json()
+                condition = data['weather'][0]['description']
+                temp = int(data['main']['temp'])
+                return f"{condition.capitalize()}, {temp}°F"
+            else:
+                return "Weather currently unavailable."
+        except Exception as e:
+            logger.warning(f"Failed to fetch weather: {e}")
+            return "Weather currently unavailable."
+
+    def _retrieve_documents(self, query: str, k: int = 5) -> List[Document]:
+        
+        try:
             query_embedding = self.embeddings.embed_query(query)
             embedding_str = f"[{','.join(map(str, query_embedding))}]"
 
-            # Vector similarity search
             sql = text("""
                 SELECT 
-                    id,
-                    content,
-                    category,
-                    metadata,
+                    id, content, category, metadata,
                     1 - (embedding <=> CAST(:query_embedding AS vector)) AS similarity
                 FROM documents
                 WHERE 1 - (embedding <=> CAST(:query_embedding AS vector)) > :threshold
@@ -58,22 +77,16 @@ class ShuttleRAGService:
                 LIMIT :limit
             """)
 
-            result = self.db.execute(
-                sql,
-                {
-                    "query_embedding": embedding_str,
-                    "threshold": settings.SIMILARITY_THRESHOLD,
-                    "limit": k
-                }
-            )
+            result = self.db.execute(sql, {
+                "query_embedding": embedding_str,
+                "threshold": settings.SIMILARITY_THRESHOLD,
+                "limit": k
+            })
 
             documents = []
             for row in result:
                 doc = Document(
-                    id=row.id,
-                    content=row.content,
-                    category=row.category,
-                    metadata=row.metadata
+                    id=row.id, content=row.content, category=row.category, metadata=row.metadata
                 )
                 doc.similarity = float(row.similarity)
                 documents.append(doc)
@@ -83,6 +96,7 @@ class ShuttleRAGService:
             logger.error(f"Error retrieving documents: {e}")
             return []
 
+   
     def create_retrieval_tool(self):
         """Create the retrieval tool for LangGraph"""
         db = self.db
@@ -92,13 +106,15 @@ class ShuttleRAGService:
         def retrieve_shuttle_info(query: str):
             """
             Retrieve context information about Trinity shuttle service.
-
+            
             Args:
                 query: Question about shuttle routes, schedules, or policies
-
+                
             Returns:
                 Formatted context and raw documents
             """
+            
+            
             retrieved_docs = retrieve_func(query, k=settings.MAX_CONTEXT_DOCUMENTS)
 
             if not retrieved_docs:
@@ -116,16 +132,41 @@ class ShuttleRAGService:
 
         return retrieve_shuttle_info
 
+    
     def _query_or_respond(self, state: MessagesState):
         """Generate tool call for retrieval or respond directly"""
+        
+        # 1. Get the weather right now
+        live_weather = self._get_current_weather()
+
+        # 2. Create a hidden instruction with the weather data
+        weather_context = SystemMessage(content=f"""
+SYSTEM UPDATE:
+Current Weather in Hartford: {live_weather}
+
+INSTRUCTIONS:
+- If the user asks about the weather, use the data above to answer immediately.
+- If the user asks about shuttles/routes, call the 'retrieve_shuttle_info' tool.
+""")
+
+        # 3. Bind the tools
         retrieval_tool = self.create_retrieval_tool()
         llm_with_tools = self.llm.bind_tools([retrieval_tool])
-        response = llm_with_tools.invoke(state["messages"])
+
+        # 4. Prepend the weather context to the messages sent to the LLM
+        # We put the weather FIRST, then the user's chat history
+        response = llm_with_tools.invoke([weather_context] + state["messages"])
+        
         return {"messages": [response]}
 
+    # --- UPDATED GENERATION METHOD ---
     def _generate_response(self, state: MessagesState):
-        """Generate final response using retrieved context"""
-        # Get tool messages (retrieved documents)
+        """Generate final response using retrieved context AND live weather"""
+        
+        # 1. Get Live Weather
+        live_weather = self._get_current_weather()
+
+        # 2. Get tool messages (retrieved documents)
         recent_tool_messages = []
         for message in reversed(state["messages"]):
             if message.type == "tool":
@@ -134,34 +175,34 @@ class ShuttleRAGService:
                 break
         tool_messages = recent_tool_messages[::-1]
 
-        # Format context from retrieved documents
         docs_content = "\n\n".join(msg.content for msg in tool_messages) if tool_messages else ""
 
-        # System prompt for shuttle service
+        # 3. Inject Weather into System Prompt
         system_prompt_content = f"""
 You are a helpful assistant for Trinity College's shuttle service.
-You will be provided with relevant information about shuttle routes, schedules, and policies.
 
 Your responsibilities:
-1. Provide accurate information about shuttle operations based on the provided context
-2. Suggest next steps (e.g., check the app for real-time updates, wait at a specific stop)
-3. Advise on safety and emergency procedures when relevant
-4. Be friendly, concise, and student-focused
+1. Provide accurate information about shuttle operations based on the provided context.
+2. Suggest next steps (e.g., check the app, wait at a stop).
+3. Advise on safety and emergency procedures.
 
-IMPORTANT GUIDELINES:
-- Always base your response on the provided context
-- If information isn't in the context, clearly state you don't have that information
-- Mention specific stops, times, and routes when relevant
-- Prioritize safety information
-- Keep responses conversational and easy to understand
+---
+ LIVE SITUATION REPORT:
+Current Weather in Hartford: {live_weather}
+
+INSTRUCTION: 
+If the weather above indicates snow, ice, heavy rain, or extreme cold:
+1. Add a caution to your response.
+2. Mention that shuttles may be delayed due to these conditions.
+3. Remind students to dress warmly or wait inside if possible.
+---
 
 Contextual Information:
-{docs_content if docs_content else "No specific context available. Provide general guidance about checking the app or contacting Campus Safety."}
+{docs_content if docs_content else "No specific context available. Provide general guidance."}
 
 Format your response in a clear, friendly manner suitable for students.
 """
 
-        # Get conversation messages (exclude tool calls)
         conversation_messages = [
             message
             for message in state["messages"]
@@ -171,70 +212,32 @@ Format your response in a clear, friendly manner suitable for students.
 
         prompt = [SystemMessage(system_prompt_content)] + conversation_messages
 
-        # Generate response
         response = self.llm.invoke(prompt)
         return {"messages": [response]}
 
     def _build_graph(self):
-        """Build the LangGraph workflow"""
-        # Create graph
+        # ... (This method remains exactly the same) ...
         graph_builder = StateGraph(MessagesState)
-
-        # Add nodes
         graph_builder.add_node("query_or_respond", self._query_or_respond)
-
-        # Create tool node with retrieval tool
         retrieval_tool = self.create_retrieval_tool()
         graph_builder.add_node("tools", ToolNode([retrieval_tool]))
-
         graph_builder.add_node("generate", self._generate_response)
-
-        # Set entry point
         graph_builder.set_entry_point("query_or_respond")
-
-        # Add edges
         graph_builder.add_conditional_edges(
-            "query_or_respond",
-            tools_condition,
-            {END: END, "tools": "tools"}
+            "query_or_respond", tools_condition, {END: END, "tools": "tools"}
         )
         graph_builder.add_edge("tools", "generate")
         graph_builder.add_edge("generate", END)
-
-        # Compile without memory checkpointer (avoid msgpack serialization issues)
         return graph_builder.compile()
 
-    async def process_query(
-            self,
-            user_query: str,
-            session_id: str,
-            user_id: Optional[str] = None
-    ) -> Dict[str, Any]:
-        """
-        Process user query through the RAG pipeline
-
-        Args:
-            user_query: User's question
-            session_id: Conversation session ID
-            user_id: Optional user ID
-
-        Returns:
-            Dict with response and metadata
-        """
+    async def process_query(self, user_query: str, session_id: str, user_id: Optional[str] = None) -> Dict[str, Any]:
+        # ... (This method remains exactly the same) ...
         try:
-            # Create input messages
             input_messages = [HumanMessage(content=user_query)]
-
-            # Invoke the graph
-            result = self.graph.invoke(
-                {"messages": input_messages}
-            )
-
-            # Extract final response
+            result = self.graph.invoke({"messages": input_messages})
             final_message = result["messages"][-1]
             response_text = final_message.content
 
-            # Extract sources (documents used)
             sources = []
             for message in result["messages"]:
                 if message.type == "tool":
@@ -243,7 +246,6 @@ Format your response in a clear, friendly manner suitable for students.
                         "type": "retrieval"
                     })
 
-            # Save to chat history
             self._save_chat_history(session_id, user_id, user_query, response_text)
 
             return {
@@ -251,40 +253,18 @@ Format your response in a clear, friendly manner suitable for students.
                 "sources": sources,
                 "session_id": session_id
             }
-
         except Exception as e:
             logger.error(f"Error in RAG pipeline: {e}", exc_info=True)
             raise
 
-    def _save_chat_history(
-            self,
-            session_id: str,
-            user_id: Optional[str],
-            user_query: str,
-            response: str
-    ):
-        """Save conversation to database"""
+    def _save_chat_history(self, session_id: str, user_id: Optional[str], user_query: str, response: str):
+        
         try:
             from app.models.chat import ChatHistory
-
-            # Save user message
-            user_msg = ChatHistory(
-                session_id=session_id,
-                user_id=user_id,
-                role="user",
-                content=user_query
-            )
+            user_msg = ChatHistory(session_id=session_id, user_id=user_id, role="user", content=user_query)
             self.db.add(user_msg)
-
-            # Save assistant response
-            assistant_msg = ChatHistory(
-                session_id=session_id,
-                user_id=user_id,
-                role="assistant",
-                content=response
-            )
+            assistant_msg = ChatHistory(session_id=session_id, user_id=user_id, role="assistant", content=response)
             self.db.add(assistant_msg)
-
             self.db.commit()
         except Exception as e:
             logger.error(f"Error saving chat history: {e}")
