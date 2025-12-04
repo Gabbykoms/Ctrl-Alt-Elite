@@ -147,10 +147,10 @@ def main():
 
     print("\n" + "=" * 60)
     if all_passed:
-        print("  ✅ All tests passed! You're ready to start the service.")
+        print("   All tests passed! You're ready to start the service.")
         print("\n  Run: uvicorn app.main:app --reload --port 8083")
     else:
-        print("  ⚠️  Some tests failed. Fix the issues above before starting.")
+        print("    Some tests failed. Fix the issues above before starting.")
     print("=" * 60 + "\n")
 
 

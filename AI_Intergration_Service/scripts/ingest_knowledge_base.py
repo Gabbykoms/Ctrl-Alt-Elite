@@ -2,7 +2,7 @@
 import json
 import sys
 from pathlib import Path
-from sqlalchemy import text  # <--- NEW IMPORT
+from sqlalchemy import text  
 
 # Add parent directory to path
 sys.path.append(str(Path(__file__).parent.parent))
@@ -34,7 +34,7 @@ def ingest_documents(db: Session, documents: list, category: str):
     """Ingest list of documents with deduplication"""
     embedding_service = EmbeddingService(db)
 
-    print(f"\n📚 Ingesting {category} documents...")
+    print(f"\n Ingesting {category} documents...")
 
     skipped_count = 0
     
@@ -46,12 +46,12 @@ def ingest_documents(db: Session, documents: list, category: str):
             elif 'question' in doc and 'answer' in doc:
                 content = f"Q: {doc['question']}\nA: {doc['answer']}"
             else:
-                print(f"⚠️  Skipping document {idx}: No content field")
+                print(f"  Skipping document {idx}: No content field")
                 continue
 
             # 2. Check for Duplicates (The New Logic)
             if document_exists(db, content):
-                # print(f"  ⏭️  Skipping [{idx}] (Already exists)")
+                # print(f"   Skipping [{idx}] (Already exists)")
                 skipped_count += 1
                 continue
 
@@ -83,7 +83,7 @@ def main():
     data_dir = Path(__file__).parent.parent / 'data' / 'knowledge_base'
 
     if not data_dir.exists():
-        print(f"❌ Data directory not found: {data_dir}")
+        print(f" Data directory not found: {data_dir}")
         return
 
     # Ingest each category
@@ -104,14 +104,14 @@ def main():
                 ingest_documents(db, data, category)
                 total_ingested += len(data)
             except Exception as e:
-                print(f"❌ Error processing {filename}: {e}")
+                print(f" Error processing {filename}: {e}")
         else:
-            print(f"⚠️  File not found: {filepath}")
+            print(f"  File not found: {filepath}")
 
     db.close()
 
     print("\n" + "=" * 60)
-    print(f"  ✅ Ingestion process complete!")
+    print(f"   Ingestion process complete!")
     print("=" * 60)
 
 

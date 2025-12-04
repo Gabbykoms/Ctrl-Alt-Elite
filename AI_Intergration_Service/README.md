@@ -2,7 +2,7 @@
 
 Python-based RAG (Retrieval Augmented Generation) chatbot using **LangChain + LangGraph** for Trinity College Campus Shuttle Tracker.
 
-## 🎯 Architecture
+## Architecture
 
 This service uses the same modern architecture as your healthcare reference:
 - **LangChain** for LLM integration
@@ -11,7 +11,7 @@ This service uses the same modern architecture as your healthcare reference:
 - **Tool-based retrieval** pattern
 - **Memory/checkpointing** for conversations
 
-## 🚀 Quick Start
+## Quick Start
 
 ### 1. Setup
 ```bash
@@ -44,7 +44,7 @@ python scripts/ingest_knowledge_base.py
 uvicorn app.main:app --reload --port 8083
 ```
 
-## 📡 API Endpoints
+##  API Endpoints
 
 - **POST /chat/** - Chat with the AI
 - **GET /chat/history/{session_id}** - Get conversation history
@@ -52,7 +52,7 @@ uvicorn app.main:app --reload --port 8083
 - **GET /health/** - Health check
 - **GET /docs** - Interactive API documentation
 
-## 🧪 Testing
+##  Testing
 
 ```bash
 # Test the chat endpoint
@@ -61,11 +61,11 @@ curl -X POST http://localhost:8083/chat/ \
   -d '{"message": "What are the shuttle hours?"}'
 ```
 
-## 📊 API Documentation
+##  API Documentation
 
 Visit: http://localhost:8083/docs
 
-## 🏗️ Architecture Flow
+##  Architecture Flow
 
 ```
 User Query
@@ -79,19 +79,19 @@ generate (create response with context)
 Response
 ```
 
-## 📝 Files Created
+##  Files Created
 
-- ✅ app/main.py - FastAPI application
-- ✅ app/config.py - Configuration
-- ✅ app/database.py - Database connection
-- ✅ app/services/rag_service.py - LangGraph RAG
-- ✅ app/services/embedding_service.py - Embeddings
-- ✅ app/api/routes/*.py - API endpoints
-- ✅ scripts/*.py - Utility scripts
-- ✅ data/knowledge_base/*.json - Knowledge base
+-  app/main.py - FastAPI application
+-  app/config.py - Configuration
+-  app/database.py - Database connection
+-  app/services/rag_service.py - LangGraph RAG
+-  app/services/embedding_service.py - Embeddings
+-  app/api/routes/*.py - API endpoints
+-  scripts/*.py - Utility scripts
+-  data/knowledge_base/*.json - Knowledge base
 
 
-## 🐛 Troubleshooting
+##  Troubleshooting
 
 If you get import errors:
 ```bash
@@ -102,6 +102,6 @@ If database connection fails:
 - Check DATABASE_URL in .env
 - Ensure pgvector is enabled in Supabase
 
-## 📧 Support
+##  Support
 
 See main repository for contribution guidelines.

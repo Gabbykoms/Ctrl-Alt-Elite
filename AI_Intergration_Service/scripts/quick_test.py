@@ -84,7 +84,7 @@ async def quick_test():
         return
 
     print("\n" + "=" * 60)
-    print("  ✅ ALL TESTS PASSED!")
+    print("   ALL TESTS PASSED!")
     print("  Your service is working correctly!")
     print("=" * 60 + "\n")
 

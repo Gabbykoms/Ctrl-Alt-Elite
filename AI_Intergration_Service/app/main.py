@@ -40,17 +40,17 @@ app.include_router(documents.router, prefix="/documents", tags=["Documents"])
 @app.on_event("startup")
 async def startup_event():
     """Run on application startup"""
-    logger.info(f"🚀 Starting {settings.SERVICE_NAME}")
-    logger.info(f"📍 Environment: {settings.ENVIRONMENT}")
-    logger.info(f"🔌 Port: {settings.SERVICE_PORT}")
-    logger.info(f"🤖 Chat Model: {settings.CHAT_MODEL}")
-    logger.info(f"📊 Embedding Model: {settings.EMBEDDING_MODEL}")
+    logger.info(f" Starting {settings.SERVICE_NAME}")
+    logger.info(f" Environment: {settings.ENVIRONMENT}")
+    logger.info(f" Port: {settings.SERVICE_PORT}")
+    logger.info(f" Chat Model: {settings.CHAT_MODEL}")
+    logger.info(f" Embedding Model: {settings.EMBEDDING_MODEL}")
 
 
 @app.on_event("shutdown")
 async def shutdown_event():
     """Run on application shutdown"""
-    logger.info("👋 Shutting down AI service")
+    logger.info(" Shutting down AI service")
 
 
 @app.get("/")
