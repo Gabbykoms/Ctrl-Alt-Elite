@@ -1,0 +1,34 @@
+# docker-compose.yml (local dev)
+services:
+  redis:
+    image: redis:7-alpine
+    ports: ["6379:6379"]
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  tracking:
+    build: .
+    environment:
+      PORT: 8080
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      SOCKET_IO_BACKEND_URL: http://host.docker.internal:3000
+    ports: ["8080:8080"]
+    depends_on:
+      redis:
+        condition: service_healthy
+    # For local development without docker:
+    # ports: ["8080:8080"]
+    # environment:
+    #   PORT: 8080
+    #   REDIS_HOST: localhost
+    #   REDIS_PORT: 6379
+
+volumes:
+  redis_data:
