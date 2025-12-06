@@ -43,6 +43,9 @@ jobs:
           cd AI_Intergration_Service
           python -m pytest tests/test_basic.py -v --tb=short
         env:
+          # Pydantic needs these to exist, even if they are fake for unit tests
+          DATABASE_URL: "postgresql://user:pass@localhost:5432/test_db"
+          OPENAI_API_KEY: "dummy-key-for-testing"
           PYTHONDONTWRITEBYTECODE: 1
 
       - name: Run integration tests
