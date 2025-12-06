@@ -44,6 +44,31 @@ import { db } from '../services/database.js'
 
 const router = express.Router()
 
+/**
+ * @swagger
+ * /api/stops:
+ *   get:
+ *     summary: Get all stops
+ *     description: Retrieve all shuttle stops with their locations
+ *     tags:
+ *       - Stops
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved stops
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 stops:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Stop'
+ *                 total:
+ *                   type: integer
+ *       500:
+ *         description: Failed to fetch stops
+ */
 // Get all stops (public - anyone can view)
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -61,6 +86,30 @@ router.get('/', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/stops/{id}:
+ *   get:
+ *     summary: Get a specific stop
+ *     tags:
+ *       - Stops
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Stop details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Stop'
+ *       404:
+ *         description: Stop not found
+ */
 // Get single stop (public)
 router.get('/:id', async (req: Request, res: Response) => {
   try {
@@ -75,6 +124,49 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/stops:
+ *   post:
+ *     summary: Create a new stop
+ *     description: Create a new shuttle stop (admin only)
+ *     tags:
+ *       - Stops
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - latitude
+ *               - longitude
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *     responses:
+ *       201:
+ *         description: Stop created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Stop'
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin only
+ */
 // Create stop (admin only)
 router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
@@ -109,6 +201,51 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
   }
 })
 
+/**
+ * @swagger
+ * /api/stops/{id}:
+ *   patch:
+ *     summary: Update a stop
+ *     description: Update an existing shuttle stop (admin only)
+ *     tags:
+ *       - Stops
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               is_active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Stop updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Stop'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin only
+ */
 // Update stop (admin only)
 router.patch('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
@@ -134,6 +271,31 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, r
   }
 })
 
+/**
+ * @swagger
+ * /api/stops/{id}:
+ *   delete:
+ *     summary: Delete a stop
+ *     description: Delete a shuttle stop (admin only)
+ *     tags:
+ *       - Stops
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Stop deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin only
+ */
 // Delete stop (admin only)
 router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
