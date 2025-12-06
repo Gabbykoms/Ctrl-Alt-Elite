@@ -43,7 +43,6 @@ jobs:
           cd AI_Intergration_Service
           python -m pytest tests/test_basic.py -v --tb=short
         env:
-          # Pydantic needs these to exist, even if they are fake for unit tests
           DATABASE_URL: "postgresql://user:pass@localhost:5432/test_db"
           OPENAI_API_KEY: "dummy-key-for-testing"
           PYTHONDONTWRITEBYTECODE: 1
@@ -109,6 +108,7 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./AI_Intergration_Service
+          file: ./AI_Intergration_Service/docker/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -118,5 +118,5 @@ jobs:
       - name: Test Docker image
         if: github.event_name == 'pull_request'
         run: |
-          docker build -t test-image ./AI_Intergration_Service
+          docker build -f ./AI_Intergration_Service/docker/Dockerfile -t test-image ./AI_Intergration_Service
           echo "Docker image built successfully"
