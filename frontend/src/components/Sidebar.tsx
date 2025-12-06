@@ -1,5 +1,6 @@
+
 import { Link, useLocation } from 'react-router-dom'
-import { LogOut, MapPin, Calendar, User, BarChart3 } from 'lucide-react'
+import { LogOut, MapPin, Calendar, User, BarChart3, Settings } from 'lucide-react'
 
 interface SidebarProps {
   isOpen?: boolean
@@ -14,15 +15,10 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
   const isActive = (path: string) => location.pathname.startsWith(path)
 
   const getNavItems = () => {
-    const commonItems = [
-      { label: 'Map', path: '/student', icon: MapPin },
-      { label: 'Schedule', path: '/student/schedule', icon: Calendar },
-      { label: 'Profile', path: '/student/profile', icon: User },
-    ]
-
     if (userRole === 'driver') {
       return [
         { label: 'Dashboard', path: '/driver', icon: BarChart3 },
+        { label: 'Settings', path: '/driver/settings', icon: Settings },
       ]
     }
 
@@ -31,10 +27,17 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
         { label: 'Dashboard', path: '/admin', icon: BarChart3 },
         { label: 'Drivers', path: '/admin/drivers', icon: User },
         { label: 'Routes', path: '/admin/routes', icon: MapPin },
+        { label: 'Settings', path: '/admin/settings', icon: Settings },
       ]
     }
 
-    return commonItems
+    // Student items
+    return [
+      { label: 'Map', path: '/student', icon: MapPin },
+      { label: 'Schedule', path: '/student/schedule', icon: Calendar },
+      { label: 'Profile', path: '/student/profile', icon: User },
+      { label: 'Settings', path: '/student/settings', icon: Settings },
+    ]
   }
 
   const navItems = getNavItems()
@@ -63,7 +66,7 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
         ))}
       </nav>
 
-      <div className="p-6 border-t border-opacity-20 border-white">
+      {/* <div className="p-6 border-t border-opacity-20 border-gray">
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition-colors font-medium"
@@ -71,14 +74,24 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
           <LogOut size={20} />
           <span>Log Out</span>
         </button>
-      </div>
+      </div> */}
+      <div className="p-6 border-t border-gray-200">
+  <button
+    onClick={onLogout}
+    className="w-full flex items-center gap-3 px-4 py-3 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium"
+  >
+    <LogOut size={20} />
+    <span>Log Out</span>
+  </button>
+</div>
     </>
   )
 
   return (
     <>
       {/* Desktop Sidebar */}
-      <aside className="hidden md:flex md:fixed md:left-0 md:top-0 md:bottom-0 md:w-64 md:bg-primary md:flex-col md:shadow-lg">
+      {/* CHANGED: md:bg-primary to md:bg-blue-600 */}
+      <aside className="hidden md:flex md:fixed md:left-0 md:top-0 md:bottom-0 md:w-64 md:bg-blue-600 md:flex-col md:shadow-lg">
         {sidebarContent}
       </aside>
 
@@ -89,7 +102,8 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
             className="md:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
             onClick={onClose}
           />
-          <aside className="md:hidden fixed left-0 top-0 bottom-0 w-64 bg-primary flex flex-col shadow-lg z-50 mt-16">
+          {/* CHANGED: bg-primary to bg-blue-600 */}
+          <aside className="md:hidden fixed left-0 top-0 bottom-0 w-64 bg-blue-600 flex flex-col shadow-lg z-50 mt-16">
             {sidebarContent}
           </aside>
         </>

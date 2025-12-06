@@ -278,6 +278,11 @@ export const userAPI = {
   updateCurrentUser: (data: { name?: string }) =>
     apiClient.patch('/users/me', data),
   
+  changePassword: (currentPassword: string, newPassword: string) =>
+    apiClient.post('/users/me/change-password', { currentPassword, newPassword }),
+  
+  deleteAccount: () => apiClient.delete('/users/me'),
+  
   getAllUsers: () => apiClient.get('/users'),
 }
 

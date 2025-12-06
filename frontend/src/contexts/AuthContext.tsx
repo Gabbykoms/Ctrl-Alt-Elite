@@ -17,6 +17,8 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>
   register: (name: string, email: string, password: string, role?: 'student' | 'driver' | 'admin') => Promise<void>
   logout: () => void
+  updateUser: (userData: Partial<User>) => void
+  deleteAccount: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -148,8 +150,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData }
+      setUser(updatedUser)
+    }
+  }
+
+  const deleteAccount = async () => {
+    try {
+      await authAPI.logout()
+    } catch (error) {
+      console.error('Error during account deletion:', error)
+    } finally {
+      setToken(null)
+      setUser(null)
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+    }
+  }
+
   return (
-    <AuthContext.Provider value={{ token, user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ token, user, loading, login, register, logout, updateUser, deleteAccount }}>
       {children}
     </AuthContext.Provider>
   )

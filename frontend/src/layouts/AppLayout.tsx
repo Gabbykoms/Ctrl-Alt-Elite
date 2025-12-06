@@ -26,6 +26,8 @@ export default function AppLayout({ children, userRole = 'student', onLogout }: 
       <Header
         onMenuToggle={setSidebarOpen}
         isMenuOpen={sidebarOpen}
+        userRole={userRole}
+        onLogout={onLogout}
       />
 
       {/* Main Content */}

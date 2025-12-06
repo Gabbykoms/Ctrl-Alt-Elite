@@ -9,6 +9,7 @@ import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
 import VerifyEmailPage from './pages/VerifyEmailPage'
 import StudentDashboard from './pages/StudentDashboard'
+import AccountSettings from './pages/AccountSettings'
 import {
   SchedulePage,
   ProfilePage,
@@ -63,6 +64,16 @@ function AppRoutes() {
         }
         path="/student/profile"
       />
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="student">
+              <AccountSettings />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+        path="/student/settings"
+      />
 
       {/* Driver Routes */}
       <Route
@@ -74,6 +85,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
         path="/driver"
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="driver">
+              <AccountSettings />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+        path="/driver/settings"
       />
 
       {/* Admin Routes */}
@@ -106,6 +127,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
         path="/admin/routes"
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="admin">
+              <AccountSettings />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+        path="/admin/settings"
       />
 
       {/* Catch-all */}
