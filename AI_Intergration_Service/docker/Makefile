@@ -6,7 +6,7 @@ GREEN := \033[0;32m
 RED := \033[0;31m
 NC := \033[0m # No Color
 
-DOCKER_COMPOSE := docker-compose -f docker/docker-compose.yml
+DOCKER_COMPOSE := docker-compose -f docker-compose.yml
 
 help: ## Show this help message
 	@echo "$(BLUE)Trinity Shuttle AI Service - Docker Commands$(NC)"

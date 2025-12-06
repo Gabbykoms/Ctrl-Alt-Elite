@@ -1,32 +1,10 @@
 version: '3.8'
 
 services:
-  # PostgreSQL database with pgvector extension
-  postgres:
-    image: pgvector/pgvector:pg16
-    container_name: trinity-postgres
-    environment:
-      POSTGRES_USER: ${DB_USER:-trinity_user}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-trinity_password}
-      POSTGRES_DB: ${DB_NAME:-trinity_shuttle_db}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-trinity_user} -d ${DB_NAME:-trinity_shuttle_db}"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - trinity-network
-    restart: unless-stopped
-
   # Trinity AI Service
   ai-service:
     build:
-      context: .
+      context: ..
       dockerfile: docker/Dockerfile
     container_name: trinity-ai-service
     environment:
@@ -36,8 +14,11 @@ services:
       ENVIRONMENT: ${ENVIRONMENT:-production}
       LOG_LEVEL: ${LOG_LEVEL:-INFO}
 
-      # Database
-      DATABASE_URL: postgresql://${DB_USER:-trinity_user}:${DB_PASSWORD:-trinity_password}@postgres:5432/${DB_NAME:-trinity_shuttle_db}
+      # Supabase Database 
+      DATABASE_URL: ${DATABASE_URL}
+      
+      # Or construct from Supabase connection details
+      # DATABASE_URL: postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 
       # OpenAI
       OPENAI_API_KEY: ${OPENAI_API_KEY}
@@ -61,16 +42,13 @@ services:
       # CORS
       ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
 
-      # Optional
+      # Supabase
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_KEY: ${SUPABASE_KEY}
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
-      SUPABASE_URL: ${SUPABASE_URL:-}
-      SUPABASE_KEY: ${SUPABASE_KEY:-}
 
     ports:
       - "8083:8083"
-    depends_on:
-      postgres:
-        condition: service_healthy
     volumes:
       - ./data:/app/data
       - ./logs:/app/logs
@@ -83,10 +61,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
-
-volumes:
-  postgres_data:
-    driver: local
 
 networks:
   trinity-network:

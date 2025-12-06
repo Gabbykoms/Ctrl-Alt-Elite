@@ -36,12 +36,16 @@ ENV PATH=/root/.local/bin:$PATH \
 # Copy application code
 COPY . .
 
-# Health check
+# Copy and set permissions on entrypoint script
+COPY docker/entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
+# Health check (use full path to python)
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:8083/health')" || exit 1
+    CMD /root/.local/bin/python -c "import requests; requests.get('http://localhost:8083/health')" || exit 1
 
 # Expose port
 EXPOSE 8083
 
-# Run application
-CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8083"]
+# Use entrypoint script for validation and startup
+ENTRYPOINT ["/app/entrypoint.sh"]
