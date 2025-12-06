@@ -35,25 +35,31 @@ function AppRoutes() {
       {/* Student Routes */}
       <Route
         element={
-          <AppLayout onLogout={logout} userRole="student">
-            <StudentDashboard />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="student">
+              <StudentDashboard />
+            </AppLayout>
+          </ProtectedRoute>
         }
         path="/student"
       />
       <Route
         element={
-          <AppLayout onLogout={logout} userRole="student">
-            <SchedulePage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="student">
+              <SchedulePage />
+            </AppLayout>
+          </ProtectedRoute>
         }
         path="/student/schedule"
       />
       <Route
         element={
-          <AppLayout onLogout={logout} userRole="student">
-            <ProfilePage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="student">
+              <ProfilePage />
+            </AppLayout>
+          </ProtectedRoute>
         }
         path="/student/profile"
       />
@@ -61,9 +67,11 @@ function AppRoutes() {
       {/* Driver Routes */}
       <Route
         element={
-          <AppLayout onLogout={logout} userRole="driver">
-            <DriverDashboard />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="driver">
+              <DriverDashboard />
+            </AppLayout>
+          </ProtectedRoute>
         }
         path="/driver"
       />
@@ -71,25 +79,31 @@ function AppRoutes() {
       {/* Admin Routes */}
       <Route
         element={
-          <AppLayout onLogout={logout} userRole="admin">
-            <AdminDashboard />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="admin">
+              <AdminDashboard />
+            </AppLayout>
+          </ProtectedRoute>
         }
         path="/admin"
       />
       <Route
         element={
-          <AppLayout onLogout={logout} userRole="admin">
-            <DriverManagementPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="admin">
+              <DriverManagementPage />
+            </AppLayout>
+          </ProtectedRoute>
         }
         path="/admin/drivers"
       />
       <Route
         element={
-          <AppLayout onLogout={logout} userRole="admin">
-            <RouteManagementPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="admin">
+              <RouteManagementPage />
+            </AppLayout>
+          </ProtectedRoute>
         }
         path="/admin/routes"
       />

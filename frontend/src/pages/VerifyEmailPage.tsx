@@ -16,9 +16,18 @@ export default function VerifyEmailPage() {
     }
   }, [resendCooldown])
 
-  const handleResendEmail = () => {
+  const handleResendEmail = async () => {
     setResendCooldown(60)
     setHasResent(true)
+    try {
+      // Get email from localStorage if available
+      const email = localStorage.getItem('registrationEmail') || ''
+      if (email) {
+        await authAPI.resendVerificationEmail(email)
+      }
+    } catch (error) {
+      console.error('Failed to resend verification email:', error)
+    }
   }
 
   if (isVerified) {
