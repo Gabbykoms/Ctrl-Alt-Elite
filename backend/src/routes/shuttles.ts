@@ -4,6 +4,31 @@ import { db } from '../services/database.js'
 
 const router = express.Router()
 
+/**
+ * @swagger
+ * /api/shuttles:
+ *   get:
+ *     summary: Get all shuttles
+ *     description: Retrieve all active shuttles with their current status and location
+ *     tags:
+ *       - Shuttles
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved shuttles
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 shuttles:
+ *                   type: array
+ *                   items:
+ *                     $ref: '#/components/schemas/Shuttle'
+ *                 total:
+ *                   type: integer
+ *       500:
+ *         description: Failed to fetch shuttles
+ */
 // Get all shuttles (public - anyone can view)
 router.get('/', async (req: Request, res: Response) => {
   try {
@@ -45,6 +70,30 @@ router.get('/', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/shuttles/{id}:
+ *   get:
+ *     summary: Get a specific shuttle
+ *     tags:
+ *       - Shuttles
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Shuttle details
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Shuttle'
+ *       404:
+ *         description: Shuttle not found
+ */
 // Get single shuttle (public)
 router.get('/:id', async (req: Request, res: Response) => {
   try {
@@ -83,6 +132,45 @@ router.get('/:id', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/shuttles:
+ *   post:
+ *     summary: Create a new shuttle
+ *     description: Create a new shuttle (admin only)
+ *     tags:
+ *       - Shuttles
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *               vehicleNumber:
+ *                 type: string
+ *               capacity:
+ *                 type: integer
+ *     responses:
+ *       201:
+ *         description: Shuttle created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Shuttle'
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin only
+ */
 // Create shuttle (admin only)
 router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
@@ -122,6 +210,55 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
   }
 })
 
+/**
+ * @swagger
+ * /api/shuttles/{id}:
+ *   patch:
+ *     summary: Update a shuttle
+ *     description: Update shuttle details (admin or assigned driver)
+ *     tags:
+ *       - Shuttles
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               vehicleNumber:
+ *                 type: string
+ *               capacity:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               currentPassengers:
+ *                 type: integer
+ *     responses:
+ *       200:
+ *         description: Shuttle updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Shuttle'
+ *       403:
+ *         description: Forbidden
+ *       401:
+ *         description: Unauthorized
+ */
 // Update shuttle (admin or assigned driver)
 router.patch('/:id', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
@@ -183,6 +320,31 @@ router.patch('/:id', authenticateToken, async (req: AuthRequest, res: Response) 
   }
 })
 
+/**
+ * @swagger
+ * /api/shuttles/{id}:
+ *   delete:
+ *     summary: Delete a shuttle
+ *     description: Delete a shuttle (admin only)
+ *     tags:
+ *       - Shuttles
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Shuttle deleted successfully
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - admin only
+ */
 // Delete shuttle (admin only)
 router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
   try {
@@ -201,6 +363,51 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, 
   }
 })
 
+/**
+ * @swagger
+ * /api/shuttles/{id}/location:
+ *   post:
+ *     summary: Update shuttle location
+ *     description: Update real-time shuttle location (drivers only)
+ *     tags:
+ *       - Shuttles
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - latitude
+ *               - longitude
+ *             properties:
+ *               latitude:
+ *                 type: number
+ *               longitude:
+ *                 type: number
+ *               speed:
+ *                 type: number
+ *               heading:
+ *                 type: number
+ *     responses:
+ *       200:
+ *         description: Location updated successfully
+ *       400:
+ *         description: Missing required fields
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - not assigned to this shuttle
+ */
 // Update shuttle location (driver only - for real-time tracking)
 router.post('/:id/location', authenticateToken, requireDriver, async (req: AuthRequest, res: Response) => {
   try {

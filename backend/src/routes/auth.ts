@@ -8,10 +8,30 @@ dotenv.config()
 
 const router = express.Router()
 
-// Initialize Supabase client
+// Initialize Supabase clients
+// Anon key for regular auth
 const supabase = createClient(
   process.env.SUPABASE_URL || '',
   process.env.SUPABASE_ANON_KEY || ''
+)
+
+// Service role key for admin operations (bypasses RLS)
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
+if (!serviceRoleKey) {
+  console.warn('⚠️  SUPABASE_SERVICE_ROLE_KEY is missing. Admin operations may fail.')
+} else {
+  console.log('✅ SUPABASE_SERVICE_ROLE_KEY is loaded (starts with: ' + serviceRoleKey.substring(0, 5) + '...)')
+}
+
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL || '',
+  serviceRoleKey,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 )
 
 // Validation schemas
@@ -27,6 +47,68 @@ const loginSchema = z.object({
   password: z.string().min(1, 'Password is required'),
 })
 
+/**
+ * @swagger
+ * /api/auth/register:
+ * post:
+ * summary: Register a new user
+ * description: Create a new account with @trincoll.edu email. Supported roles are student, driver, and admin.
+ * tags:
+ * - Authentication
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * required:
+ * - email
+ * - password
+ * - name
+ * properties:
+ * email:
+ * type: string
+ * format: email
+ * example: student@trincoll.edu
+ * password:
+ * type: string
+ * format: password
+ * minLength: 8
+ * name:
+ * type: string
+ * minLength: 2
+ * example: John Doe
+ * role:
+ * type: string
+ * enum: [student, driver, admin]
+ * default: student
+ * responses:
+ * 201:
+ * description: User registered successfully
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * user:
+ * type: object
+ * properties:
+ * id:
+ * type: string
+ * format: uuid
+ * email:
+ * type: string
+ * name:
+ * type: string
+ * role:
+ * type: string
+ * 400:
+ * description: Invalid input or email domain
+ * 500:
+ * description: Registration failed
+ */
 // Register endpoint
 router.post('/register', async (req: Request, res: Response) => {
   try {
@@ -70,19 +152,35 @@ router.post('/register', async (req: Request, res: Response) => {
       })
     }
 
+    console.log('✅ Auth user created with ID:', authData.user.id)
+
+    // Small delay to ensure auth.users record is fully committed
+    await new Promise(resolve => setTimeout(resolve, 100))
+
     // Create user profile in database
-    const { error: profileError } = await supabase.from('users').insert({
+    console.log('Attempting to create user profile with admin client...')
+    const { error: profileError } = await supabaseAdmin.from('profiles').insert({
       id: authData.user.id,
       email: data.email,
       name: data.name,
       role: data.role,
-      created_at: new Date(),
     })
 
     if (profileError) {
-      console.error('⚠️  Profile creation warning:', profileError.message)
-      // Don't fail registration if profile creation fails - user can verify email
+      console.error('⚠️  Profile creation error:', profileError.message)
+      console.error('Profile Error Details:', profileError)
+      
+      // This is critical - if profile creation fails, we should clean up the auth user
+      await supabase.auth.admin.deleteUser(authData.user.id)
+      
+      return res.status(500).json({
+        error: 'Profile creation failed',
+        message: 'Failed to create user profile. Please try again.',
+        details: profileError.message,
+      })
     }
+
+    console.log('✅ User profile created successfully in database')
 
     console.log(`✅ User registered successfully: ${data.email}`)
 
@@ -114,6 +212,63 @@ router.post('/register', async (req: Request, res: Response) => {
   }
 })
 
+/**
+ * @swagger
+ * /api/auth/login:
+ * post:
+ * summary: Login user
+ * description: Authenticate with email and password to receive JWT token
+ * tags:
+ * - Authentication
+ * requestBody:
+ * required: true
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * required:
+ * - email
+ * - password
+ * properties:
+ * email:
+ * type: string
+ * format: email
+ * example: student@trincoll.edu
+ * password:
+ * type: string
+ * format: password
+ * responses:
+ * 200:
+ * description: Login successful
+ * content:
+ * application/json:
+ * schema:
+ * type: object
+ * properties:
+ * message:
+ * type: string
+ * token:
+ * type: string
+ * description: JWT access token for API requests
+ * refreshToken:
+ * type: string
+ * user:
+ * type: object
+ * properties:
+ * id:
+ * type: string
+ * format: uuid
+ * email:
+ * type: string
+ * name:
+ * type: string
+ * role:
+ * type: string
+ * 401:
+ * description: Invalid email or password
+ * 400:
+ * description: Validation failed
+ */
 // Login endpoint
 router.post('/login', async (req: Request, res: Response) => {
   try {
@@ -143,15 +298,15 @@ router.post('/login', async (req: Request, res: Response) => {
     }
 
     // Get user profile from database
+    // FIX: Using 'profiles' table
     const { data: profile, error: profileError } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, email, name, role')
       .eq('id', authData.user.id)
       .single()
 
     if (profileError || !profile) {
       console.warn('⚠️  Profile not found for user:', authData.user.id)
-      // Return user from auth, role defaults to student
       return res.json({
         message: 'Login successful',
         token: authData.session.access_token,
@@ -230,8 +385,9 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
     console.log(`👤 Fetching user profile: ${req.userId}`)
 
     // Get user profile from database
+    // FIX: Using 'profiles' table
     const { data: profile, error } = await supabase
-      .from('users')
+      .from('profiles')
       .select('id, email, name, role, created_at')
       .eq('id', req.userId)
       .single()

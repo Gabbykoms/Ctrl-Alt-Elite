@@ -3,6 +3,7 @@ import cors from 'cors'
 import { createServer } from 'http'
 import { Server as SocketIOServer } from 'socket.io'
 import dotenv from 'dotenv'
+import swaggerUi from 'swagger-ui-express'
 
 // Import routes
 import authRoutes from './routes/auth.js'
@@ -14,6 +15,9 @@ import driverRoutes from './routes/drivers.js'
 
 // Import middleware
 import { errorHandler } from './middleware/errorHandler.js'
+
+// Import Swagger config
+import { swaggerSpec } from './config/swagger.js'
 
 dotenv.config()
 
@@ -41,6 +45,13 @@ app.use(express.urlencoded({ extended: true }))
 
 // Store io instance for use in routes
 app.set('io', io)
+
+// Swagger API Documentation
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, { 
+  swaggerOptions: { 
+    persistAuthorization: true,
+  } 
+}))
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -115,6 +126,7 @@ httpServer.listen(PORT, () => {
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
   console.log(`✅ Server running on http://localhost:${PORT}`)
   console.log(`📝 API endpoints: http://localhost:${PORT}/api`)
+  console.log(`📚 Swagger UI: http://localhost:${PORT}/api-docs`)
   console.log(`🏥 Health check: http://localhost:${PORT}/health`)
   console.log(`🔌 WebSocket: ws://localhost:${PORT}`)
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
