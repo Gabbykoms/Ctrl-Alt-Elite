@@ -24,7 +24,11 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310")
 
-    // Redis for persistent location storage and pub/sub
+    // PostgreSQL for persistent stop storage
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.postgresql:postgresql:42.7.1")
+
+    // Redis for caching and pub/sub
     implementation("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("io.lettuce:lettuce-core:6.5.3.RELEASE")
 

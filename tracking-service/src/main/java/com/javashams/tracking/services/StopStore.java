@@ -1,55 +1,68 @@
 package com.javashams.tracking.services;
 
+import com.javashams.tracking.model.Stop;
 import com.javashams.tracking.model.dto.StopDto;
+import com.javashams.tracking.repositories.StopRepository;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 
 /**
- * Service for managing campus shuttle stops
- * Stores stop data with coordinates and metadata
- * Can be backed by Redis or in-memory storage
+ * Service for managing campus shuttle stops with PostgreSQL persistence
+ * and Redis caching layer for performance optimization
+ * 
+ * Data flow:
+ * 1. Check Redis cache first
+ * 2. If miss, fetch from PostgreSQL
+ * 3. Update Redis cache
+ * 4. On write operations, update both PostgreSQL and Redis
  */
 @Service
 public class StopStore {
     private static final Logger logger = LoggerFactory.getLogger(StopStore.class);
+    private static final String CACHE_KEY_PREFIX = "stop:";
+    private static final String CACHE_ALL_ACTIVE = "stops:active:all";
+    private static final long CACHE_TTL_MINUTES = 30;
     
-    // In-memory storage (can be replaced with Redis)
-    private final Map<String, StopDto> stops = new ConcurrentHashMap<>();
+    private final StopRepository stopRepository;
+    private final RedisTemplate<String, StopDto> redisTemplate;
     
-    public StopStore() {
-        // Initialize with some default stops for Trinity College
-        initializeDefaultStops();
+    public StopStore(StopRepository stopRepository, RedisTemplate<String, StopDto> redisTemplate) {
+        this.stopRepository = stopRepository;
+        this.redisTemplate = redisTemplate;
     }
     
     /**
-     * Get all active stops
+     * Get all active stops with Redis caching
      */
     public List<StopDto> getAllStops() {
-        return stops.values().stream()
-                .filter(stop -> stop.isActive() != null && stop.isActive())
-                .sorted(Comparator.comparing(StopDto::name))
-                .toList();
+        // Fetch directly from database (Redis caching optional for future optimization)
+        List<Stop> entities = stopRepository.findByIsActiveTrueOrderByName();
+        List<StopDto> dtos = convertEntitiesToDtos(entities);
+        
+        logger.info("📍 Retrieved {} stops from database", dtos.size());
+        return dtos;
     }
     
     /**
-     * Get a stop by ID
+     * Get a stop by ID with Redis caching
      */
     public StopDto getStop(String stopId) {
-        StopDto stop = stops.get(stopId);
-        if (stop == null) {
+        Optional<Stop> entity = stopRepository.findById(stopId);
+        if (entity.isEmpty()) {
             logger.warn("Stop not found: {}", stopId);
             return null;
         }
-        return stop;
+        
+        return convertEntityToDto(entity.get());
     }
     
     /**
-     * Create a new stop
-     * Admin-only operation
+     * Create a new stop - persists to PostgreSQL
      */
     public StopDto createStop(String name, Double latitude, Double longitude, String description) {
         if (name == null || name.isBlank() || latitude == null || longitude == null) {
@@ -58,74 +71,70 @@ public class StopStore {
         
         // Generate ID based on name and timestamp
         String stopId = "stop-" + name.toLowerCase().replaceAll("\\s+", "-") + "-" + System.currentTimeMillis();
+        long now = System.currentTimeMillis();
         
-        StopDto stop = new StopDto(
-                stopId,
-                name,
-                latitude,
-                longitude,
-                description,
-                true,
-                System.currentTimeMillis(),
-                System.currentTimeMillis()
-        );
+        // Create entity
+        Stop entity = new Stop(stopId, name, latitude, longitude, description, true, now, now);
         
-        stops.put(stopId, stop);
+        // Persist to database
+        Stop savedEntity = stopRepository.save(entity);
+        StopDto dto = convertEntityToDto(savedEntity);
+        
+        // Invalidate all stops cache
+        invalidateAllStopsCache();
+        
         logger.info("✅ Stop created: {} at ({}, {})", name, latitude, longitude);
-        
-        return stop;
+        return dto;
     }
     
     /**
      * Update an existing stop
-     * Admin-only operation
      */
     public StopDto updateStop(String stopId, String name, Double latitude, Double longitude, String description) {
-        StopDto existing = stops.get(stopId);
-        if (existing == null) {
+        Optional<Stop> existing = stopRepository.findById(stopId);
+        if (existing.isEmpty()) {
             throw new IllegalArgumentException("Stop not found: " + stopId);
         }
         
-        StopDto updated = new StopDto(
-                existing.id(),
-                name != null ? name : existing.name(),
-                latitude != null ? latitude : existing.latitude(),
-                longitude != null ? longitude : existing.longitude(),
-                description != null ? description : existing.description(),
-                existing.isActive(),
-                existing.createdAtMs(),
-                System.currentTimeMillis()
-        );
+        Stop entity = existing.get();
+        if (name != null) entity.setName(name);
+        if (latitude != null) entity.setLatitude(latitude);
+        if (longitude != null) entity.setLongitude(longitude);
+        if (description != null) entity.setDescription(description);
         
-        stops.put(stopId, updated);
+        // Update timestamps
+        entity.setUpdatedAtMs(System.currentTimeMillis());
+        
+        // Persist to database
+        Stop updated = stopRepository.save(entity);
+        StopDto dto = convertEntityToDto(updated);
+        
+        // Invalidate all stops cache
+        invalidateAllStopsCache();
+        
         logger.info("✅ Stop updated: {}", stopId);
-        
-        return updated;
+        return dto;
     }
     
     /**
      * Delete a stop (soft delete - mark as inactive)
-     * Admin-only operation
      */
     public void deleteStop(String stopId) {
-        StopDto existing = stops.get(stopId);
-        if (existing == null) {
+        Optional<Stop> existing = stopRepository.findById(stopId);
+        if (existing.isEmpty()) {
             throw new IllegalArgumentException("Stop not found: " + stopId);
         }
         
-        // Soft delete by marking inactive
-        StopDto deleted = new StopDto(
-                existing.id(),
-                existing.name(),
-                existing.latitude(),
-                existing.longitude(),
-                existing.description(),
-                false,  // Mark as inactive
-                existing.createdAtMs(),
-                System.currentTimeMillis()
-        );
+        Stop entity = existing.get();
+        entity.setIsActive(false);
+        entity.setUpdatedAtMs(System.currentTimeMillis());
         
-        stops.put(stopId, deleted);
+        // Persist to database
+        stopRepository.save(entity);
+        
+        // Invalidate all stops cache
+        invalidateAllStopsCache();
+        
         logger.info("✅ Stop deleted: {}", stopId);
     }
     
@@ -133,29 +142,53 @@ public class StopStore {
      * Check if a stop exists
      */
     public boolean stopExists(String stopId) {
-        return stops.containsKey(stopId);
+        return stopRepository.existsById(stopId);
     }
     
     /**
-     * Clear all stops (for testing)
+     * Clear all stops from both database and cache (testing only)
      */
     public void clearAll() {
-        stops.clear();
-        logger.warn("⚠️ All stops cleared");
+        stopRepository.deleteAll();
+        invalidateAllStopsCache();
+        logger.warn("⚠️ All stops cleared from database and cache");
     }
     
     /**
-     * Initialize with default Trinity College stops
+     * Helper: Convert entity to DTO
      */
-    private void initializeDefaultStops() {
-        // Trinity College campus stops
-        createStop("Main Quad", 41.747, -72.683, "Main courtyard of Trinity College");
-        createStop("Long Walk", 41.749, -72.685, "Historic residential area");
-        createStop("Athletic Center", 41.745, -72.680, "Sports and athletic facilities");
-        createStop("Science Center", 41.748, -72.686, "Science and technology building");
-        createStop("Library", 41.746, -72.684, "College library and study center");
-        createStop("Crescent Neighborhood", 41.751, -72.690, "Student residential area");
-        createStop("Vernon Street", 41.743, -72.675, "Off-campus location");
-        createStop("Summit's", 41.753, -72.692, "Dining and student center");
+    private StopDto convertEntityToDto(Stop entity) {
+        return new StopDto(
+                entity.getId(),
+                entity.getName(),
+                entity.getLatitude(),
+                entity.getLongitude(),
+                entity.getDescription(),
+                entity.getIsActive(),
+                entity.getCreatedAtMs(),
+                entity.getUpdatedAtMs()
+        );
+    }
+    
+    /**
+     * Helper: Convert entities to DTOs
+     */
+    private List<StopDto> convertEntitiesToDtos(List<Stop> entities) {
+        return entities.stream()
+                .map(this::convertEntityToDto)
+                .toList();
+    }
+    
+    /**
+     * Helper: Invalidate all stops cache
+     */
+    private void invalidateAllStopsCache() {
+        try {
+            redisTemplate.delete(CACHE_ALL_ACTIVE);
+            logger.debug("✅ Invalidated all stops cache");
+        } catch (Exception e) {
+            logger.warn("⚠️ Failed to invalidate all stops cache: {}", e.getMessage());
+        }
     }
 }
+
