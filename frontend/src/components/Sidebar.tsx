@@ -35,7 +35,6 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
     return [
       { label: 'Map', path: '/student', icon: MapPin },
       { label: 'Schedule', path: '/student/schedule', icon: Calendar },
-      { label: 'Profile', path: '/student/profile', icon: User },
       { label: 'Settings', path: '/student/settings', icon: Settings },
     ]
   }
@@ -56,8 +55,8 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
             onClick={onClose}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive(path)
-                ? 'bg-white bg-opacity-20 text-white'
-                : 'text-white hover:bg-white hover:bg-opacity-10'
+                ? 'bg-blue-700 text-white font-semibold'
+                : 'text-white hover:bg-blue-500'
             }`}
           >
             <Icon size={20} />

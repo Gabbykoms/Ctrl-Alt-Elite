@@ -7,14 +7,14 @@ export default function NotFound404() {
       <div className="text-center max-w-md">
         {/* Animated Icon */}
         <div className="mb-8 flex justify-center animate-bounce">
-          <div className="text-6xl">🚌</div>
+          <div className="text-6xl text-gray-400">404</div>
         </div>
 
-        <h1 className="text-8xl font-bold text-primary mb-4 animate-in slide-in-from-top">404</h1>
+        <h1 className="text-8xl font-bold text-primary mb-4 animate-in slide-in-from-top">Not Found</h1>
         <h2 className="text-3xl font-bold text-dark mb-3">Oops! Lost Route?</h2>
         
         <p className="text-gray-600 mb-8 text-lg">
-          The page you're looking for doesn't exist. Maybe the shuttle already departed! 🚌
+          The page you're looking for doesn't exist. Maybe the shuttle already departed!
         </p>
 
         {/* Quick Navigation */}

@@ -79,14 +79,14 @@ export default function DriverDashboard() {
             capacity: 25,
           }))
           
-          console.log('✅ Loaded shuttles from tracking service:', formattedShuttles)
+          console.log('Loaded shuttles from tracking service:', formattedShuttles)
           setShuttles(formattedShuttles)
         } else {
-          console.warn('⚠️ No buses found in tracking service')
+          console.warn('No buses found in tracking service')
           setShuttles([])
         }
       } catch (error) {
-        console.error('❌ Error loading shuttles from tracking service:', error)
+        console.error('Error loading shuttles from tracking service:', error)
         setShuttles([])
       } finally {
         setIsLoadingShuttles(false)

@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(demoUser)
         localStorage.setItem('token', 'demo-token')
         localStorage.setItem('user', JSON.stringify(demoUser))
-        console.log(`✅ Test mode enabled as ${testRole}`)
+        console.log(`Test mode enabled as ${testRole}`)
         setLoading(false)
         return
       }

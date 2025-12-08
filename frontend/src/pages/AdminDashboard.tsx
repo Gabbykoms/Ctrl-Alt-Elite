@@ -226,7 +226,7 @@ export default function AdminDashboard() {
     // Add temporary pin being placed during add stop process
     ...(showAddStopModal && clickPosition ? [{
       id: 'temp-pin',
-      name: `📍 ${stopName}`,
+      name: stopName,
       type: 'stop' as const,
       lat: clickPosition.lat,
       lng: clickPosition.lng,
@@ -272,7 +272,7 @@ export default function AdminDashboard() {
               {/* Top Info Banner - Only when in add mode */}
               {showAddStopModal && (
                 <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-50 border-l-4 border-primary text-primary px-6 py-3 rounded-lg shadow-lg z-40 max-w-md">
-                  <p className="font-bold text-base mb-1">📍 Click anywhere on the map to place your stop pin</p>
+                  <p className="font-bold text-base mb-1">Click anywhere on the map to place your stop pin</p>
                   <p className="text-sm">Then click "Complete" to finish</p>
                 </div>
               )}
@@ -411,7 +411,7 @@ export default function AdminDashboard() {
                       disabled={!clickPosition || isLoading}
                       className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed font-bold flex items-center gap-2 whitespace-nowrap"
                     >
-                      {isLoading ? <Loader size={20} className="animate-spin" /> : '✓'}
+                      {isLoading ? <Loader size={20} className="animate-spin" /> : 'Add Stop'}
                       Complete
                     </button>
                     <button

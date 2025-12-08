@@ -208,7 +208,7 @@ export function SchedulePage() {
                           : 'bg-blue-100 text-blue-700'
                       }`}
                     >
-                      {item.status === 'active' ? '🟢 Active' : '🔵 Scheduled'}
+                      {item.status === 'active' ? 'Active' : 'Scheduled'}
                     </span>
                   </td>
                 </tr>
@@ -441,7 +441,7 @@ export function DriverManagementPage() {
                             : 'bg-gray-100 text-gray-700'
                       }`}
                     >
-                      {driver.status === 'active' ? '🟢' : driver.status === 'on-break' ? '🟡' : '⚫'} {driver.status}
+                      {driver.status}
                     </span>
                   </td>
                   <td className="px-6 py-4 font-medium text-dark">{driver.hoursWorked}h</td>

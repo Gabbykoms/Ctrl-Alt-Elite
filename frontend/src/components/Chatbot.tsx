@@ -18,7 +18,7 @@ const CHATBOT_RESPONSES: Record<string, string> = {
   'delay': 'Real-time delay information is available in the live map. If you notice a delay, you can report it through the app.',
   'next shuttle': 'The next shuttle for North Campus Loop departs at 2:30 PM from Main Quad.',
   'how many': 'We currently operate 5 main routes with 12 total shuttles serving the campus.',
-  'hello': 'Hi there! 👋 How can I help you with shuttle information today?',
+  'hello': 'Hi there! How can I help you with shuttle information today?',
   'help': 'I can help you with:\n• Route information and schedules\n• Shuttle locations and times\n• Current delays\n• General campus shuttle info',
   'thank': 'You\'re welcome! Feel free to ask if you have more questions.',
 }
@@ -51,7 +51,7 @@ export default function Chatbot() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
-      text: 'Hi! 👋 I\'m ShuttleBot. I can help you with shuttle times, routes, and campus transportation. What would you like to know?',
+      text: 'Hi! I\'m ShuttleBot. I can help you with shuttle times, routes, and campus transportation. What would you like to know?',
       sender: 'bot',
       timestamp: new Date(),
       type: 'suggestions',

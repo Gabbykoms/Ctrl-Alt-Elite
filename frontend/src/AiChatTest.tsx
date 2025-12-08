@@ -16,8 +16,8 @@ const AiChatTest: React.FC = () => {
 
     try {
       const url = `${AI_URL}/chat/`;
-      console.log(`🔵 Sending request to: ${url}`);
-      console.log(`📨 Request body:`, { message: input });
+      console.log(`Sending request to: ${url}`);
+      console.log(`Request body:`, { message: input });
       
       const response = await fetch(url, {
         method: 'POST',
@@ -27,8 +27,8 @@ const AiChatTest: React.FC = () => {
         body: JSON.stringify({ message: input }), 
       });
 
-      console.log(`📊 Response status: ${response.status}`);
-      console.log(`📊 Response headers:`, Object.fromEntries(response.headers));
+      console.log(`Response status: ${response.status}`);
+      console.log(`Response headers:`, Object.fromEntries(response.headers));
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -37,22 +37,22 @@ const AiChatTest: React.FC = () => {
       }
 
       const data = await response.json();
-      console.log("✅ AI Replied:", data);
+      console.log("AI Replied:", data);
       
       // Handle different possible response formats
       const aiText = data.response || data.answer || data.message || JSON.stringify(data);
       setReply(aiText);
       
     } catch (error: any) {
-      console.error('❌ Full error:', error);
-      console.error('❌ Error message:', error.message);
-      console.error('❌ Stack:', error.stack);
+      console.error('Full error:', error);
+      console.error('Error message:', error.message);
+      console.error('Stack:', error.stack);
       
       // More specific error messages
       if (error.message.includes('Failed to fetch')) {
-        setReply('❌ Network error - AI service may be down or CORS blocked. Check console.');
+        setReply('Network error - AI service may be down or CORS blocked. Check console.');
       } else {
-        setReply(`❌ Error: ${error.message}`);
+        setReply(`Error: ${error.message}`);
       }
     } finally {
       setLoading(false);
