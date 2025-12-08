@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Mail, AlertCircle, CheckCircle, Clock } from 'lucide-react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { authAPI } from '../services/apiService'
+
 
 export default function VerifyEmailPage() {
   const [resendCooldown, setResendCooldown] = useState(0)

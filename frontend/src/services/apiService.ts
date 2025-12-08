@@ -58,10 +58,14 @@ export const authAPI = {
   
   verifyEmail: (token: string, type: string) =>
     apiClient.post('/auth/verify-email', { token, type }),
+  resendVerificationEmail: (email: string) => 
+    apiClient.post('/auth/resend-verification', { email }),
   
   refreshToken: (refreshToken: string) =>
     apiClient.post('/auth/refresh', { refreshToken }),
 }
+
+
 
 // ============================================
 // SHUTTLE API
@@ -304,3 +308,4 @@ export const studentAPI = {
   updateStudentProfile: (data: any) =>
     apiClient.patch('/students/me', data),
 }
+
