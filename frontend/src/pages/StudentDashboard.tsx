@@ -282,12 +282,7 @@ export default function StudentDashboard() {
           </div>
         )}
 
-        {/* Order Ride Button
-        <div className="bg-white border-b border-gray-200 p-4">
-          <button
-            onClick={() => setShowRideModal(true)}
-            className="w-full flex items-center justify-center gap-2 px-6 py-3 bg-primary hover:bg-opacity-90 text-white rounded-lg font-semibold transition-all transform hover:scale-105 shadow-lg border-2 border-primary"
-          > */}
+        
           <div className="bg-white border-b border-gray-200 p-4">
             <button
               onClick={() => setShowRideModal(true)}

@@ -12,7 +12,7 @@ const AiChat: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '0',
-      text: 'Hi! 👋 I\'m your AI Assistant. How can I help you with shuttle information today?',
+      text: 'Hi! I\'m your AI Assistant. How can I help you with shuttle information today?',
       sender: 'ai',
       timestamp: new Date(),
     },
@@ -74,7 +74,7 @@ const AiChat: React.FC = () => {
       console.error('AI Error:', error)
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
-        text: '❌ Sorry, I encountered an error. Please try again.',
+        text: ' Sorry, I encountered an error. Please try again.',
         sender: 'ai',
         timestamp: new Date(),
       }

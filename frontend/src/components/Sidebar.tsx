@@ -65,15 +65,6 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
         ))}
       </nav>
 
-      {/* <div className="p-6 border-t border-opacity-20 border-gray">
-        <button
-          onClick={onLogout}
-          className="w-full flex items-center gap-3 px-4 py-3 bg-white bg-opacity-20 text-white rounded-lg hover:bg-opacity-30 transition-colors font-medium"
-        >
-          <LogOut size={20} />
-          <span>Log Out</span>
-        </button>
-      </div> */}
       <div className="p-6 border-t border-gray-200">
   <button
     onClick={onLogout}

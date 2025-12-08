@@ -92,14 +92,14 @@ export default function AdminDashboard() {
             capacity: 25,
           }))
           
-          console.log('✅ Loaded shuttles from tracking service:', formattedShuttles)
+          console.log(' Loaded shuttles from tracking service:', formattedShuttles)
           setShuttles(formattedShuttles)
         } else {
-          console.warn('⚠️ No buses found in tracking service')
+          console.warn(' No buses found in tracking service')
           setShuttles([])
         }
       } catch (error) {
-        console.error('❌ Error loading shuttles from tracking service:', error)
+        console.error(' Error loading shuttles from tracking service:', error)
         setShuttles([])
       } finally {
         setIsLoadingShuttles(false)
@@ -394,7 +394,7 @@ export default function AdminDashboard() {
                     {clickPosition ? (
                       <>
                         <p className="text-sm text-green-600 font-semibold">
-                          ✅ Location Selected: ({clickPosition.lat.toFixed(4)}, {clickPosition.lng.toFixed(4)})
+                           Location Selected: ({clickPosition.lat.toFixed(4)}, {clickPosition.lng.toFixed(4)})
                         </p>
                         <p className="text-xs text-gray-500 mt-1">Click the same spot again to deselect, or click elsewhere to move the pin</p>
                       </>
