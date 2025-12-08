@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bantam-shuttle-backend
+  labels:
+    app: bantam-shuttle-backend
+    tier: backend
+    team: ctrl-alt-elite
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: bantam-shuttle-backend
+  template:
+    metadata:
+      labels:
+        app: bantam-shuttle-backend
+        tier: backend
+        team: ctrl-alt-elite
+    spec:
+      containers:
+      - name: backend
+        image: bantam-shuttle-backend:latest
+        imagePullPolicy: IfNotPresent
+        ports:
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        - name: websocket
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: PORT
+          value: "8080"
+        - name: FRONTEND_URL
+          valueFrom:
+            configMapKeyRef:
+              name: bantam-config
+              key: frontend-url
+        - name: SUPABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: bantam-secrets
+              key: supabase-url
+        - name: SUPABASE_ANON_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bantam-secrets
+              key: supabase-anon-key
+        - name: SUPABASE_SERVICE_ROLE_KEY
+          valueFrom:
+            secretKeyRef:
+              name: bantam-secrets
+              key: supabase-service-role-key
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: bantam-secrets
+              key: jwt-secret
+        - name: TRACKING_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: bantam-config
+              key: tracking-service-url
+        - name: AI_SERVICE_URL
+          valueFrom:
+            configMapKeyRef:
+              name: bantam-config
+              key: ai-service-url
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 40
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 20
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1001
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: false
+      restartPolicy: Always
