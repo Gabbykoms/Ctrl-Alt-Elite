@@ -1,5 +1,5 @@
--- Initialize tracking database with stops table
--- This script creates the schema for persistent stop storage
+-- Initialize tracking database with stops, drivers, and rides tables
+-- This script creates the schema for persistent tracking storage
 
 -- Create stops table
 CREATE TABLE IF NOT EXISTS stops (
@@ -44,3 +44,53 @@ INSERT INTO stops (id, name, latitude, longitude, description, is_active, create
 VALUES
     ('stop-mather-' || EXTRACT(EPOCH FROM NOW())::BIGINT, 'Mather', 41.746210, -72.692788, 'Mather', true, EXTRACT(EPOCH FROM NOW())::BIGINT * 1000, EXTRACT(EPOCH FROM NOW())::BIGINT * 1000)
 ON CONFLICT (id) DO NOTHING;
+
+-- ============================================================================
+-- DRIVERS TABLE
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS drivers (
+    id VARCHAR(255) PRIMARY KEY,
+    name VARCHAR(255) NOT NULL,
+    shuttle_id VARCHAR(255),
+    route_id VARCHAR(255),
+    current_lat DECIMAL(10, 6),
+    current_lng DECIMAL(10, 6),
+    last_location_update_at_ms BIGINT,
+    status VARCHAR(50) NOT NULL DEFAULT 'OFFLINE' -- OFFLINE | ONLINE
+);
+
+-- Create indexes for drivers table
+CREATE INDEX idx_drivers_status ON drivers(status);
+CREATE INDEX idx_drivers_shuttle_id ON drivers(shuttle_id);
+CREATE INDEX idx_drivers_route_id ON drivers(route_id);
+
+-- Note: Drivers table manages its own updated_at_ms timestamp (no trigger needed)
+
+-- ============================================================================
+-- RIDES TABLE
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS rides (
+    ride_id VARCHAR(255) PRIMARY KEY,
+    student_id VARCHAR(255) NOT NULL,
+    driver_id VARCHAR(255), -- Nullable - driver might not be assigned yet
+    shuttle_id VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL DEFAULT 'REQUESTED', -- REQUESTED | IN_PROGRESS | COMPLETED | CANCELED
+    pickup_lat DECIMAL(10, 6) NOT NULL,
+    pickup_lng DECIMAL(10, 6) NOT NULL,
+    dropoff_lat DECIMAL(10, 6) NOT NULL,
+    dropoff_lng DECIMAL(10, 6) NOT NULL,
+    created_at_ms BIGINT NOT NULL,
+    completed_at_ms BIGINT
+);
+
+-- Create indexes for rides table
+CREATE INDEX idx_rides_student_id ON rides(student_id);
+CREATE INDEX idx_rides_driver_id ON rides(driver_id);
+CREATE INDEX idx_rides_shuttle_id ON rides(shuttle_id);
+CREATE INDEX idx_rides_status ON rides(status);
+CREATE INDEX idx_rides_created_at_ms ON rides(created_at_ms);
+CREATE INDEX idx_rides_active ON rides(status) WHERE status IN ('REQUESTED', 'IN_PROGRESS');
+
+-- Create trigger to update updated_at_ms timestamp for rides
+-- Note: rides table uses separate completed_at_ms for explicit control
+-- We'll rely on application logic for timestamp management
