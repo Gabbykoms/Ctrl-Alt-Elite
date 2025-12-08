@@ -30,7 +30,7 @@ export const authenticateToken = async (
     const token = authHeader && authHeader.split(' ')[1]
 
     if (!token) {
-      console.warn('⚠️  No token provided in request')
+      console.warn('  No token provided in request')
       return res.status(401).json({
         error: 'Unauthorized',
         message: 'No authentication token provided',
@@ -44,7 +44,7 @@ export const authenticateToken = async (
     } = await supabase.auth.getUser(token)
 
     if (error || !user) {
-      console.warn('⚠️  Invalid token:', error?.message)
+      console.warn('  Invalid token:', error?.message)
       return res.status(403).json({
         error: 'Forbidden',
         message: 'Invalid or expired token',
@@ -56,10 +56,10 @@ export const authenticateToken = async (
     req.userEmail = user.email
     req.userRole = user.user_metadata?.role || 'student'
 
-    console.log(`✅ Token verified for user: ${user.email}`)
+    console.log(` Token verified for user: ${user.email}`)
     next()
   } catch (error) {
-    console.error('❌ Token verification error:', error)
+    console.error(' Token verification error:', error)
     return res.status(500).json({
       error: 'Authentication error',
       message: 'Failed to verify token',
@@ -81,14 +81,14 @@ export const requireRole = (allowedRoles: string[]) => {
     }
 
     if (!allowedRoles.includes(req.userRole)) {
-      console.warn(`⚠️  Access denied - Role '${req.userRole}' not in allowed roles:`, allowedRoles)
+      console.warn(`  Access denied - Role '${req.userRole}' not in allowed roles:`, allowedRoles)
       return res.status(403).json({
         error: 'Forbidden',
         message: `You need one of these roles: ${allowedRoles.join(', ')}`,
       })
     }
 
-    console.log(`✅ Role check passed for ${req.userRole}`)
+    console.log(` Role check passed for ${req.userRole}`)
     next()
   }
 }
@@ -132,14 +132,14 @@ export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFu
       req.userId = user.id
       req.userEmail = user.email
       req.userRole = user.user_metadata?.role || 'student'
-      console.log(`✅ Optional auth - User authenticated: ${user.email}`)
+      console.log(` Optional auth - User authenticated: ${user.email}`)
     } else {
-      console.warn('⚠️  Optional auth - Invalid token, continuing without auth')
+      console.warn('  Optional auth - Invalid token, continuing without auth')
     }
 
     next()
   } catch (error) {
-    console.error('❌ Optional auth error:', error)
+    console.error(' Optional auth error:', error)
     // Don't fail - continue without user info
     next()
   }

@@ -15,7 +15,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'http://localhost:8080', // Updated to match your actual port
         description: 'Development server',
       },
       {
@@ -96,7 +96,10 @@ const options = {
       },
     },
   },
-  apis: ['./src/routes/*.ts'],
+  // ✅ FIX: Dynamically switch paths based on environment
+  apis: process.env.NODE_ENV === 'production' 
+    ? ['./dist/routes/*.js'] 
+    : ['./src/routes/*.ts'],
 }
 
 export const swaggerSpec = swaggerJsdoc(options)

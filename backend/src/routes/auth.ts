@@ -18,9 +18,9 @@ const supabase = createClient(
 // Service role key for admin operations (bypasses RLS)
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 if (!serviceRoleKey) {
-  console.warn('⚠️  SUPABASE_SERVICE_ROLE_KEY is missing. Admin operations may fail.')
+  console.warn('  SUPABASE_SERVICE_ROLE_KEY is missing. Admin operations may fail.')
 } else {
-  console.log('✅ SUPABASE_SERVICE_ROLE_KEY is loaded (starts with: ' + serviceRoleKey.substring(0, 5) + '...)')
+  console.log(' SUPABASE_SERVICE_ROLE_KEY is loaded (starts with: ' + serviceRoleKey.substring(0, 5) + '...)')
 }
 
 const supabaseAdmin = createClient(
@@ -50,64 +50,64 @@ const loginSchema = z.object({
 /**
  * @swagger
  * /api/auth/register:
- * post:
- * summary: Register a new user
- * description: Create a new account with @trincoll.edu email. Supported roles are student, driver, and admin.
- * tags:
- * - Authentication
- * requestBody:
- * required: true
- * content:
- * application/json:
- * schema:
- * type: object
- * required:
- * - email
- * - password
- * - name
- * properties:
- * email:
- * type: string
- * format: email
- * example: student@trincoll.edu
- * password:
- * type: string
- * format: password
- * minLength: 8
- * name:
- * type: string
- * minLength: 2
- * example: John Doe
- * role:
- * type: string
- * enum: [student, driver, admin]
- * default: student
- * responses:
- * 201:
- * description: User registered successfully
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * message:
- * type: string
- * user:
- * type: object
- * properties:
- * id:
- * type: string
- * format: uuid
- * email:
- * type: string
- * name:
- * type: string
- * role:
- * type: string
- * 400:
- * description: Invalid input or email domain
- * 500:
- * description: Registration failed
+ *   post:
+ *     summary: Register a new user
+ *     description: Create a new account with @trincoll.edu email. Supported roles are student, driver, and admin.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: student@trincoll.edu
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 example: John Doe
+ *               role:
+ *                 type: string
+ *                 enum: [student, driver, admin]
+ *                 default: student
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     email:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *       400:
+ *         description: Invalid input or email domain
+ *       500:
+ *         description: Registration failed
  */
 // Register endpoint
 router.post('/register', async (req: Request, res: Response) => {
@@ -122,7 +122,7 @@ router.post('/register', async (req: Request, res: Response) => {
       })
     }
 
-    console.log(`📝 Attempting to register user: ${data.email}`)
+    console.log(` Attempting to register user: ${data.email}`)
 
     // Create user in Supabase Auth
     const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -138,7 +138,7 @@ router.post('/register', async (req: Request, res: Response) => {
     })
 
     if (authError) {
-      console.error('❌ Auth signup error:', authError.message)
+      console.error(' Auth signup error:', authError.message)
       return res.status(400).json({
         error: 'Registration failed',
         message: authError.message,
@@ -152,7 +152,7 @@ router.post('/register', async (req: Request, res: Response) => {
       })
     }
 
-    console.log('✅ Auth user created with ID:', authData.user.id)
+    console.log(' Auth user created with ID:', authData.user.id)
 
     // Small delay to ensure auth.users record is fully committed
     await new Promise(resolve => setTimeout(resolve, 100))
@@ -167,7 +167,7 @@ router.post('/register', async (req: Request, res: Response) => {
     })
 
     if (profileError) {
-      console.error('⚠️  Profile creation error:', profileError.message)
+      console.error('  Profile creation error:', profileError.message)
       console.error('Profile Error Details:', profileError)
       
       // This is critical - if profile creation fails, we should clean up the auth user
@@ -180,9 +180,70 @@ router.post('/register', async (req: Request, res: Response) => {
       })
     }
 
-    console.log('✅ User profile created successfully in database')
+    console.log(' User profile created successfully in database')
 
-    console.log(`✅ User registered successfully: ${data.email}`)
+    // Create role-specific record (student or driver)
+    if (data.role === 'student') {
+      console.log(' Creating student record...')
+      const { error: studentError } = await supabaseAdmin.from('students').insert({
+        user_id: authData.user.id,
+        // Add any additional fields with defaults
+        student_id: null,
+        grade_level: null,
+        school: null,
+        phone: null,
+        address: null,
+        emergency_contact: null,
+        emergency_phone: null,
+      })
+
+      if (studentError) {
+        console.error('  Student record creation error:', studentError.message)
+        console.error('Student Error Details:', studentError)
+        
+        // Clean up profile and auth user since student record is critical
+        await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id)
+        await supabase.auth.admin.deleteUser(authData.user.id)
+        
+        return res.status(500).json({
+          error: 'Student record creation failed',
+          message: 'Failed to create student record. Please try again.',
+          details: studentError.message,
+        })
+      }
+      console.log(' Student record created successfully')
+      
+    } else if (data.role === 'driver') {
+      console.log(' Creating driver record...')
+      const { error: driverError } = await supabaseAdmin.from('drivers').insert({
+        user_id: authData.user.id,
+        license_number: null,
+        phone: null,
+        vehicle_make: null,
+        vehicle_model: null,
+        vehicle_year: null,
+        vehicle_plate: null,
+        is_available: false,
+      })
+
+      if (driverError) {
+        console.error('  Driver record creation error:', driverError.message)
+        console.error('Driver Error Details:', driverError)
+        
+        // Clean up profile and auth user since driver record is critical
+        await supabaseAdmin.from('profiles').delete().eq('id', authData.user.id)
+        await supabase.auth.admin.deleteUser(authData.user.id)
+        
+        return res.status(500).json({
+          error: 'Driver record creation failed',
+          message: 'Failed to create driver record. Please try again.',
+          details: driverError.message,
+        })
+      }
+      console.log(' Driver record created successfully')
+    }
+
+    console.log(` User registered successfully: ${data.email}`)
 
     return res.status(201).json({
       message: 'Registration successful! Please verify your email address.',
@@ -204,7 +265,7 @@ router.post('/register', async (req: Request, res: Response) => {
       })
     }
 
-    console.error('❌ Registration error:', error)
+    console.error(' Registration error:', error)
     return res.status(500).json({
       error: 'Registration failed',
       message: 'An unexpected error occurred during registration',
@@ -215,59 +276,59 @@ router.post('/register', async (req: Request, res: Response) => {
 /**
  * @swagger
  * /api/auth/login:
- * post:
- * summary: Login user
- * description: Authenticate with email and password to receive JWT token
- * tags:
- * - Authentication
- * requestBody:
- * required: true
- * content:
- * application/json:
- * schema:
- * type: object
- * required:
- * - email
- * - password
- * properties:
- * email:
- * type: string
- * format: email
- * example: student@trincoll.edu
- * password:
- * type: string
- * format: password
- * responses:
- * 200:
- * description: Login successful
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * message:
- * type: string
- * token:
- * type: string
- * description: JWT access token for API requests
- * refreshToken:
- * type: string
- * user:
- * type: object
- * properties:
- * id:
- * type: string
- * format: uuid
- * email:
- * type: string
- * name:
- * type: string
- * role:
- * type: string
- * 401:
- * description: Invalid email or password
- * 400:
- * description: Validation failed
+ *   post:
+ *     summary: Login user
+ *     description: Authenticate with email and password to receive JWT token
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: student@trincoll.edu
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                   description: JWT access token for API requests
+ *                 refreshToken:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     email:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *       401:
+ *         description: Invalid email or password
+ *       400:
+ *         description: Validation failed
  */
 // Login endpoint
 router.post('/login', async (req: Request, res: Response) => {
@@ -283,7 +344,7 @@ router.post('/login', async (req: Request, res: Response) => {
     })
 
     if (authError) {
-      console.error('❌ Login error:', authError.message)
+      console.error(' Login error:', authError.message)
       return res.status(401).json({
         error: 'Authentication failed',
         message: 'Invalid email or password',
@@ -306,7 +367,7 @@ router.post('/login', async (req: Request, res: Response) => {
       .single()
 
     if (profileError || !profile) {
-      console.warn('⚠️  Profile not found for user:', authData.user.id)
+      console.warn('  Profile not found for user:', authData.user.id)
       return res.json({
         message: 'Login successful',
         token: authData.session.access_token,
@@ -320,7 +381,7 @@ router.post('/login', async (req: Request, res: Response) => {
       })
     }
 
-    console.log(`✅ Login successful for: ${data.email}`)
+    console.log(` Login successful for: ${data.email}`)
 
     return res.json({
       message: 'Login successful',
@@ -344,7 +405,7 @@ router.post('/login', async (req: Request, res: Response) => {
       })
     }
 
-    console.error('❌ Login error:', error)
+    console.error(' Login error:', error)
     return res.status(500).json({
       error: 'Login failed',
       message: 'An unexpected error occurred',
@@ -355,7 +416,7 @@ router.post('/login', async (req: Request, res: Response) => {
 // Logout endpoint
 router.post('/logout', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
-    console.log(`👋 Logging out user: ${req.userId}`)
+    console.log(` Logging out user: ${req.userId}`)
 
     // Sign out from Supabase
     await supabase.auth.signOut()
@@ -364,7 +425,7 @@ router.post('/logout', authenticateToken, async (req: AuthRequest, res: Response
       message: 'Logged out successfully',
     })
   } catch (error) {
-    console.error('❌ Logout error:', error)
+    console.error(' Logout error:', error)
     return res.status(500).json({
       error: 'Logout failed',
       message: 'An error occurred during logout',
@@ -393,20 +454,20 @@ router.get('/me', authenticateToken, async (req: AuthRequest, res: Response) => 
       .single()
 
     if (error || !profile) {
-      console.error('❌ Profile fetch error:', error)
+      console.error(' Profile fetch error:', error)
       return res.status(404).json({
         error: 'User not found',
         message: 'Could not find user profile',
       })
     }
 
-    console.log(`✅ Retrieved profile for: ${profile.email}`)
+    console.log(` Retrieved profile for: ${profile.email}`)
 
     return res.json({
       user: profile,
     })
   } catch (error) {
-    console.error('❌ Get user error:', error)
+    console.error(' Get user error:', error)
     return res.status(500).json({
       error: 'Failed to fetch user',
       message: 'An unexpected error occurred',
@@ -435,7 +496,7 @@ router.post('/verify-email', async (req: Request, res: Response) => {
     })
 
     if (error) {
-      console.error('❌ Verification error:', error.message)
+      console.error(' Verification error:', error.message)
       return res.status(400).json({
         error: 'Verification failed',
         message: error.message,
@@ -449,7 +510,7 @@ router.post('/verify-email', async (req: Request, res: Response) => {
       })
     }
 
-    console.log(`✅ Email verified for: ${data.user.email}`)
+    console.log(` Email verified for: ${data.user.email}`)
 
     return res.json({
       message: 'Email verified successfully',
@@ -459,7 +520,7 @@ router.post('/verify-email', async (req: Request, res: Response) => {
       },
     })
   } catch (error) {
-    console.error('❌ Verification error:', error)
+    console.error(' Verification error:', error)
     return res.status(500).json({
       error: 'Verification failed',
       message: 'An unexpected error occurred',
@@ -478,7 +539,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
       })
     }
 
-    console.log('🔄 Refreshing access token')
+    console.log(' Refreshing access token')
 
     // Refresh session with Supabase
     const { data, error } = await supabase.auth.refreshSession({
@@ -486,21 +547,21 @@ router.post('/refresh', async (req: Request, res: Response) => {
     })
 
     if (error || !data.session) {
-      console.error('❌ Token refresh error:', error?.message)
+      console.error(' Token refresh error:', error?.message)
       return res.status(401).json({
         error: 'Token refresh failed',
         message: 'Invalid refresh token',
       })
     }
 
-    console.log('✅ Token refreshed successfully')
+    console.log(' Token refreshed successfully')
 
     return res.json({
       token: data.session.access_token,
       refreshToken: data.session.refresh_token,
     })
   } catch (error) {
-    console.error('❌ Refresh error:', error)
+    console.error(' Refresh error:', error)
     return res.status(500).json({
       error: 'Token refresh failed',
       message: 'An unexpected error occurred',

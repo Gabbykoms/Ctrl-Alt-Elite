@@ -162,7 +162,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
     })
 
     if (authError || !authData.user) {
-      console.error('❌ Auth creation error:', authError)
+      console.error(' Auth creation error:', authError)
       return res.status(400).json({
         error: 'Driver creation failed',
         message: authError?.message || 'Failed to create driver account'
@@ -178,7 +178,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
     })
 
     if (profileError) {
-      console.error('⚠️ Profile creation error:', profileError)
+      console.error(' Profile creation error:', profileError)
       // Clean up auth user if profile creation fails
       await supabase.auth.admin.deleteUser(authData.user.id)
       return res.status(500).json({
@@ -201,7 +201,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
 
     await db.createDriver(driverData)
 
-    console.log(`✅ Driver created: ${name}`)
+    console.log(` Driver created: ${name}`)
     return res.status(201).json({
       message: 'Driver created successfully',
       driver: {
@@ -211,7 +211,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
       }
     })
   } catch (error) {
-    console.error('❌ Driver creation error:', error)
+    console.error(' Driver creation error:', error)
     return res.status(500).json({
       error: 'Driver creation failed',
       message: 'An unexpected error occurred'
@@ -247,7 +247,7 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, r
       await db.updateDriver(req.params.id, driverUpdates)
     }
 
-    console.log(`✅ Driver updated: ${req.params.id}`)
+    console.log(` Driver updated: ${req.params.id}`)
     return res.json({ 
       message: 'Driver updated successfully' 
     })
@@ -268,7 +268,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, 
     
     if (error) throw error
 
-    console.log(`✅ Driver deleted: ${req.params.id}`)
+    console.log(` Driver deleted: ${req.params.id}`)
     return res.json({ 
       message: 'Driver deleted successfully' 
     })
@@ -315,7 +315,7 @@ router.post('/:id/clock-in', authenticateToken, async (req: AuthRequest, res: Re
       })
     }
 
-    console.log(`✅ Driver clocked in: ${driverId}`)
+    console.log(` Driver clocked in: ${driverId}`)
     return res.json({
       message: 'Clocked in successfully',
       shift: {
@@ -366,7 +366,7 @@ router.post('/:id/clock-out', authenticateToken, async (req: AuthRequest, res: R
       })
     }
 
-    console.log(`✅ Driver clocked out: ${driverId}`)
+    console.log(` Driver clocked out: ${driverId}`)
     return res.json({
       message: 'Clocked out successfully',
       shift: {

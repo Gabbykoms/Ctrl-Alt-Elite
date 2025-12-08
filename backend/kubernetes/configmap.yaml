@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bantam-config
+  labels:
+    app: bantam-shuttle
+data:
+  frontend-url: "http://localhost:5173"
+  tracking-service-url: "http://tracking-service:8080"
+  ai-service-url: "http://ai-service:8083"
