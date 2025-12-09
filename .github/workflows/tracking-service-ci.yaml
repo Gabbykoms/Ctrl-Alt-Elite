@@ -80,6 +80,21 @@ jobs:
           # Wait for container to be ready
           sleep 15
 
+      - name: Initialize database schema
+        run: |
+          # Wait for PostgreSQL to be ready
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U tracking_user; then
+              echo "✅ PostgreSQL is ready"
+              break
+            fi
+            echo "Attempt $i/30 - Waiting for PostgreSQL..."
+            sleep 2
+          done
+          
+          # Run the init script to create tables and seed data
+          PGPASSWORD=tracking_password psql -h localhost -p 5432 -U tracking_user -d tracking_db -f tracking-service/scripts/init_db.sql
+
       - name: Health check - Test if container is alive
         run: |
           # Try to reach the health endpoint
