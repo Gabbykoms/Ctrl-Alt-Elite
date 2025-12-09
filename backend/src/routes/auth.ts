@@ -50,64 +50,64 @@ const loginSchema = z.object({
 /**
  * @swagger
  * /api/auth/register:
- * post:
- * summary: Register a new user
- * description: Create a new account with @trincoll.edu email. Supported roles are student, driver, and admin.
- * tags:
- * - Authentication
- * requestBody:
- * required: true
- * content:
- * application/json:
- * schema:
- * type: object
- * required:
- * - email
- * - password
- * - name
- * properties:
- * email:
- * type: string
- * format: email
- * example: student@trincoll.edu
- * password:
- * type: string
- * format: password
- * minLength: 8
- * name:
- * type: string
- * minLength: 2
- * example: John Doe
- * role:
- * type: string
- * enum: [student, driver, admin]
- * default: student
- * responses:
- * 201:
- * description: User registered successfully
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * message:
- * type: string
- * user:
- * type: object
- * properties:
- * id:
- * type: string
- * format: uuid
- * email:
- * type: string
- * name:
- * type: string
- * role:
- * type: string
- * 400:
- * description: Invalid input or email domain
- * 500:
- * description: Registration failed
+ *   post:
+ *     summary: Register a new user
+ *     description: Create a new account with @trincoll.edu email. Supported roles are student, driver, and admin.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *               - name
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: student@trincoll.edu
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *               name:
+ *                 type: string
+ *                 minLength: 2
+ *                 example: John Doe
+ *               role:
+ *                 type: string
+ *                 enum: [student, driver, admin]
+ *                 default: student
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     email:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *       400:
+ *         description: Invalid input or email domain
+ *       500:
+ *         description: Registration failed
  */
 // Register endpoint
 router.post('/register', async (req: Request, res: Response) => {
@@ -215,59 +215,59 @@ router.post('/register', async (req: Request, res: Response) => {
 /**
  * @swagger
  * /api/auth/login:
- * post:
- * summary: Login user
- * description: Authenticate with email and password to receive JWT token
- * tags:
- * - Authentication
- * requestBody:
- * required: true
- * content:
- * application/json:
- * schema:
- * type: object
- * required:
- * - email
- * - password
- * properties:
- * email:
- * type: string
- * format: email
- * example: student@trincoll.edu
- * password:
- * type: string
- * format: password
- * responses:
- * 200:
- * description: Login successful
- * content:
- * application/json:
- * schema:
- * type: object
- * properties:
- * message:
- * type: string
- * token:
- * type: string
- * description: JWT access token for API requests
- * refreshToken:
- * type: string
- * user:
- * type: object
- * properties:
- * id:
- * type: string
- * format: uuid
- * email:
- * type: string
- * name:
- * type: string
- * role:
- * type: string
- * 401:
- * description: Invalid email or password
- * 400:
- * description: Validation failed
+ *   post:
+ *     summary: Login user
+ *     description: Authenticate with email and password to receive JWT token
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 example: student@trincoll.edu
+ *               password:
+ *                 type: string
+ *                 format: password
+ *     responses:
+ *       200:
+ *         description: Login successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 token:
+ *                   type: string
+ *                   description: JWT access token for API requests
+ *                 refreshToken:
+ *                   type: string
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     email:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *       401:
+ *         description: Invalid email or password
+ *       400:
+ *         description: Validation failed
  */
 // Login endpoint
 router.post('/login', async (req: Request, res: Response) => {

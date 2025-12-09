@@ -17,9 +17,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+    "removeComments": false
   },
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist"]
 }
-

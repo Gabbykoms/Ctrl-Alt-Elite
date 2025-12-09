@@ -1,6 +1,6 @@
-import express, { Request, Response } from 'express'
+import express, { Response } from 'express'
 import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth.js'
-import { db } from '../services/database.js'
+import { db, supabase } from '../services/database.js'
 
 const router = express.Router()
 
@@ -115,15 +115,15 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       rides = await db.getRidesByStudent(req.userId!)
     } else if (req.userRole === 'driver') {
       // Driver sees rides assigned to their shuttle
-      const { data: shuttles } = await db.supabase
+      const { data: shuttles } = await supabase
         .from('shuttles')
         .select('id')
         .eq('assigned_driver_id', req.userId!)
       
-      const shuttleIds = shuttles?.map(s => s.id) || []
+      const shuttleIds = shuttles?.map((s: any) => s.id) || []
       
       if (shuttleIds.length > 0) {
-        const { data: driverRides } = await db.supabase
+        const { data: driverRides } = await supabase
           .from('rides')
           .select(`
             *,

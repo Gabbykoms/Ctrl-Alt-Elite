@@ -24,7 +24,7 @@ export const authenticateToken = async (
   req: AuthRequest,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void | Response> => {
   try {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]
@@ -72,7 +72,7 @@ export const authenticateToken = async (
  * Use after authenticateToken middleware
  */
 export const requireRole = (allowedRoles: string[]) => {
-  return (req: AuthRequest, res: Response, next: NextFunction) => {
+  return (req: AuthRequest, res: Response, next: NextFunction): void | Response => {
     if (!req.userRole) {
       return res.status(401).json({
         error: 'Unauthorized',
@@ -96,22 +96,22 @@ export const requireRole = (allowedRoles: string[]) => {
 /**
  * Middleware to require admin role
  */
-export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction) => {
+export const requireAdmin = (req: AuthRequest, res: Response, next: NextFunction): void | Response => {
   return requireRole(['admin'])(req, res, next)
 }
 
 /**
  * Middleware to require driver role
  */
-export const requireDriver = (req: AuthRequest, res: Response, next: NextFunction) => {
-  return requireRole(['driver'])(req, res, next)
+export const requireDriver = (req: AuthRequest, _res: Response, next: NextFunction): void | Response => {
+  return requireRole(['driver'])(req, _res, next)
 }
 
 /**
  * Optional authentication - doesn't fail if no token
  * Useful for endpoints that can work with or without auth
  */
-export const optionalAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
+export const optionalAuth = async (req: AuthRequest, _res: Response, next: NextFunction) => {
   try {
     const authHeader = req.headers['authorization']
     const token = authHeader && authHeader.split(' ')[1]

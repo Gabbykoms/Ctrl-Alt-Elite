@@ -15,7 +15,7 @@ const options = {
     },
     servers: [
       {
-        url: 'http://localhost:3000',
+        url: 'http://localhost:8080',
         description: 'Development server',
       },
       {
@@ -96,7 +96,8 @@ const options = {
       },
     },
   },
-  apis: ['./src/routes/*.ts'],
+  // EDITED: Now looks for .ts in src AND .js in dist
+  apis: ['./src/routes/*.ts', './dist/routes/*.js'],
 }
 
 export const swaggerSpec = swaggerJsdoc(options)

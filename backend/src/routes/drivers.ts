@@ -1,11 +1,11 @@
-import express, { Request, Response } from 'express'
-import { authenticateToken, requireAdmin, requireDriver, AuthRequest } from '../middleware/auth.js'
+import express, { Response } from 'express'
+import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth.js'
 import { db, supabase } from '../services/database.js'
 
 const router = express.Router()
 
 // Get all drivers (admin only)
-router.get('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: Response) => {
+router.get('/', authenticateToken, requireAdmin, async (_req: AuthRequest, res: Response) => {
   try {
     const { data: drivers, error } = await supabase
       .from('users')
@@ -362,7 +362,7 @@ router.post('/:id/clock-out', authenticateToken, async (req: AuthRequest, res: R
     if (currentShift.shuttle_id) {
       await db.updateShuttle(currentShift.shuttle_id, {
         status: 'offline',
-        assigned_driver_id: null,
+        assigned_driver_id: undefined,
       })
     }
 

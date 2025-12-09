@@ -5,7 +5,7 @@ import { db, supabase } from '../services/database.js'
 const router = express.Router()
 
 // Get all routes (public - anyone can view)
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
     const routes = await db.getAllRoutes()
     
@@ -70,9 +70,9 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
     const routeData = {
       name,
       description,
-      distance: distance ? parseFloat(distance) : null,
-      duration: duration ? parseInt(duration) : null,
-      frequency: frequency ? parseInt(frequency) : null,
+      distance: distance ? parseFloat(distance) : undefined,
+      duration: duration ? parseInt(duration) : undefined,
+      frequency: frequency ? parseInt(frequency) : undefined,
       is_active: true,
     }
 

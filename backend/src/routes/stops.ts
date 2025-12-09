@@ -70,7 +70,7 @@ const router = express.Router()
  *         description: Failed to fetch stops
  */
 // Get all stops (public - anyone can view)
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
     const stops = await db.getAllStops()
     return res.json({ 

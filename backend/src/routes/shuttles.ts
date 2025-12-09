@@ -30,7 +30,7 @@ const router = express.Router()
  *         description: Failed to fetch shuttles
  */
 // Get all shuttles (public - anyone can view)
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
     const shuttles = await db.getAllShuttles()
     
@@ -190,11 +190,11 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
       capacity: capacity || 25,
       current_passengers: 0,
       status: 'offline' as const,
-      current_latitude: null,
-      current_longitude: null,
-      last_location_update: null,
-      assigned_driver_id: null,
-      assigned_route_id: null,
+      current_latitude: undefined,
+      current_longitude: undefined,
+      last_location_update: undefined,
+      assigned_driver_id: undefined,
+      assigned_route_id: undefined,
     }
 
     const shuttle = await db.createShuttle(shuttleData)
@@ -411,7 +411,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, 
 // Update shuttle location (driver only - for real-time tracking)
 router.post('/:id/location', authenticateToken, requireDriver, async (req: AuthRequest, res: Response) => {
   try {
-    const { latitude, longitude, speed, heading } = req.body
+    const { latitude, longitude } = req.body
 
     if (!latitude || !longitude) {
       return res.status(400).json({

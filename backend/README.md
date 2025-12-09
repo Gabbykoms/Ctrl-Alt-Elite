@@ -21,7 +21,9 @@ npm install
 npm run dev
 ```
 
-Server runs on `http://localhost:3000`
+Server runs on `http://localhost:8080`
+
+API Documentation available at `http://localhost:8080/api-docs`
 
 ### Build
 
@@ -196,12 +198,43 @@ npm run lint         # Run linter (coming soon)
 - **zod** - Schema validation
 - **@supabase/supabase-js** - Supabase client
 
+## 🐳 Docker
+
+### Build and Run with Docker Compose
+```bash
+npm run docker:build  # Build image
+npm run docker:up     # Start container
+npm run docker:down   # Stop container
+```
+
+### Manual Docker Commands
+```bash
+docker build -t bantam-shuttle-backend .
+docker run -p 8080:8080 --env-file .env bantam-shuttle-backend
+```
+
+## 🚢 CI/CD
+
+This project includes a complete CI/CD pipeline with:
+- ✅ Automated linting and type checking
+- ✅ Docker image building and pushing to GitHub Container Registry
+- ✅ Security scanning with Trivy
+- ✅ Kubernetes deployment manifests
+
+See [CI_CD.md](./CI_CD.md) for detailed documentation.
+
+### GitHub Actions Workflows
+- `.github/workflows/ci.yml` - Main CI/CD pipeline
+- `.github/workflows/docker-build.yml` - Docker build (legacy)
+
 ## 🤝 Contributing
 
 1. Create a feature branch
 2. Make changes
-3. Test thoroughly
-4. Create pull request
+3. Run `npm run type-check` and `npm run lint:fix`
+4. Test thoroughly
+5. Create pull request
+6. CI pipeline runs automatically
 
 ## 📄 License
 

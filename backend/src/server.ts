@@ -54,7 +54,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
 }))
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', (_req, res) => {
   res.json({
     status: 'ok',
     message: 'Bantam Shuttle Backend is running',
@@ -63,7 +63,7 @@ app.get('/health', (req, res) => {
 })
 
 // Root endpoint
-app.get('/', (req, res) => {
+app.get('/', (_req, res) => {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
   res.redirect(frontendUrl)
 })
