@@ -82,20 +82,20 @@ io.on('connection', (socket) => {
 
   // Listen for shuttle location updates from drivers
   socket.on('shuttle-location-update', (data) => {
-    console.log(`📍 Shuttle location update from ${socket.id}:`, data)
+    console.log(` Shuttle location update from ${socket.id}:`, data)
     // Broadcast to all connected clients
     io.emit('shuttle-location-update', data)
   })
 
   // Listen for driver status updates
   socket.on('driver-status-update', (data) => {
-    console.log(`👤 Driver status update:`, data)
+    console.log(` Driver status update:`, data)
     io.emit('driver-status-update', data)
   })
 
   // Listen for ride status updates
   socket.on('ride-status-update', (data) => {
-    console.log(`🚕 Ride status update:`, data)
+    console.log(` Ride status update:`, data)
     io.emit('ride-status-update', data)
   })
 
@@ -104,7 +104,7 @@ io.on('connection', (socket) => {
   })
 
   socket.on('error', (error) => {
-    console.error(`❌ Socket error:`, error)
+    console.error(` Socket error:`, error)
   })
 })
 
@@ -122,12 +122,12 @@ app.use(errorHandler)
 
 // Start server
 httpServer.listen(PORT, () => {
-  console.log(`\n🚀 Bantam Shuttle Backend Server`)
+  console.log(`\n Bantam Shuttle Backend Server`)
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
-  console.log(`✅ Server running on http://localhost:${PORT}`)
-  console.log(`📝 API endpoints: http://localhost:${PORT}/api`)
-  console.log(`📚 Swagger UI: http://localhost:${PORT}/api-docs`)
-  console.log(`🏥 Health check: http://localhost:${PORT}/health`)
+  console.log(` Server running on http://localhost:${PORT}`)
+  console.log(` API endpoints: http://localhost:${PORT}/api`)
+  console.log(` Swagger UI: http://localhost:${PORT}/api-docs`)
+  console.log(` Health check: http://localhost:${PORT}/health`)
   console.log(`🔌 WebSocket: ws://localhost:${PORT}`)
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
 })

@@ -96,7 +96,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
       }
     }
     
-    console.log(`✅ Route created: ${route.name}`)
+    console.log(` Route created: ${route.name}`)
     return res.status(201).json(route)
   } catch (error) {
     console.error('Error creating route:', error)
@@ -145,7 +145,7 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, r
       }
     }
     
-    console.log(`✅ Route updated: ${route.name}`)
+    console.log(` Route updated: ${route.name}`)
     return res.json(route)
   } catch (error) {
     console.error('Error updating route:', error)
@@ -162,7 +162,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, 
     // Route stops will be automatically deleted due to CASCADE
     await db.deleteRoute(req.params.id)
     
-    console.log(`✅ Route deleted: ${req.params.id}`)
+    console.log(` Route deleted: ${req.params.id}`)
     return res.json({ 
       message: 'Route deleted successfully' 
     })

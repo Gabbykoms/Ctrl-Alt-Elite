@@ -70,7 +70,7 @@ router.post('/request', authenticateToken, async (req: AuthRequest, res: Respons
       })
     }
 
-    console.log(`✅ Ride requested by student: ${req.userId}`)
+    console.log(` Ride requested by student: ${req.userId}`)
 
     // Emit socket event for real-time updates (if you have socket.io setup)
     const io = req.app.get('io')
@@ -211,7 +211,7 @@ router.patch('/:id/cancel', authenticateToken, async (req: AuthRequest, res: Res
       cancellation_reason: cancellationReason || 'Cancelled by student',
     })
 
-    console.log(`✅ Ride cancelled: ${req.params.id}`)
+    console.log(` Ride cancelled: ${req.params.id}`)
 
     // Emit socket event
     const io = req.app.get('io')
@@ -282,7 +282,7 @@ router.patch('/:id/status', authenticateToken, async (req: AuthRequest, res: Res
 
     const updatedRide = await db.updateRide(req.params.id, updates)
 
-    console.log(`✅ Ride status updated: ${req.params.id} -> ${status}`)
+    console.log(` Ride status updated: ${req.params.id} -> ${status}`)
 
     // Emit socket event
     const io = req.app.get('io')
@@ -320,7 +320,7 @@ router.patch('/:id/assign-shuttle', authenticateToken, requireAdmin, async (req:
       status: 'driver_assigned',
     })
 
-    console.log(`✅ Shuttle assigned to ride: ${req.params.id}`)
+    console.log(` Shuttle assigned to ride: ${req.params.id}`)
 
     // Emit socket event
     const io = req.app.get('io')

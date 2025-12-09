@@ -190,7 +190,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
 
     const stop = await db.createStop(stopData)
     
-    console.log(`✅ Stop created: ${stop.name}`)
+    console.log(` Stop created: ${stop.name}`)
     return res.status(201).json(stop)
   } catch (error) {
     console.error('Error creating stop:', error)
@@ -260,7 +260,7 @@ router.patch('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, r
 
     const stop = await db.updateStop(req.params.id, updates)
     
-    console.log(`✅ Stop updated: ${stop.name}`)
+    console.log(` Stop updated: ${stop.name}`)
     return res.json(stop)
   } catch (error) {
     console.error('Error updating stop:', error)
@@ -301,7 +301,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, 
   try {
     await db.deleteStop(req.params.id)
     
-    console.log(`✅ Stop deleted: ${req.params.id}`)
+    console.log(` Stop deleted: ${req.params.id}`)
     return res.json({ 
       message: 'Stop deleted successfully' 
     })

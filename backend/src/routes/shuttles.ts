@@ -199,7 +199,7 @@ router.post('/', authenticateToken, requireAdmin, async (req: AuthRequest, res: 
 
     const shuttle = await db.createShuttle(shuttleData)
     
-    console.log(`✅ Shuttle created: ${shuttle.name}`)
+    console.log(` Shuttle created: ${shuttle.name}`)
     return res.status(201).json(shuttle)
   } catch (error) {
     console.error('Error creating shuttle:', error)
@@ -309,7 +309,7 @@ router.patch('/:id', authenticateToken, async (req: AuthRequest, res: Response) 
 
     const updatedShuttle = await db.updateShuttle(req.params.id, updates)
     
-    console.log(`✅ Shuttle updated: ${updatedShuttle.name}`)
+    console.log(` Shuttle updated: ${updatedShuttle.name}`)
     return res.json(updatedShuttle)
   } catch (error) {
     console.error('Error updating shuttle:', error)
@@ -350,7 +350,7 @@ router.delete('/:id', authenticateToken, requireAdmin, async (req: AuthRequest, 
   try {
     await db.deleteShuttle(req.params.id)
     
-    console.log(`✅ Shuttle deleted: ${req.params.id}`)
+    console.log(` Shuttle deleted: ${req.params.id}`)
     return res.json({
       message: 'Shuttle deleted successfully'
     })
