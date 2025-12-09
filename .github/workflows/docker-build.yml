@@ -43,8 +43,8 @@ jobs:
           cd AI_Intergration_Service
           python -m pytest tests/test_basic.py -v --tb=short
         env:
-          DATABASE_URL: "postgresql://user:pass@localhost:5432/test_db"
-          OPENAI_API_KEY: "dummy-key-for-testing"
+          AI_DATABASE_URL: "postgresql://user:pass@localhost:5432/test_db"
+          AI_OPENAI_API_KEY: "dummy-key-for-testing"
           PYTHONDONTWRITEBYTECODE: 1
 
       - name: Run integration tests
@@ -52,8 +52,8 @@ jobs:
           cd AI_Intergration_Service
           python -m pytest tests/ -v --tb=short --cov=app --cov-report=xml --cov-report=html
         env:
-          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          AI_DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+          AI_OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PYTHONDONTWRITEBYTECODE: 1
         continue-on-error: true
 
