@@ -1,0 +1,192 @@
+name: Tracking Service CI
+
+on:
+  push:
+    branches:
+      - main
+      - tracking-service
+    paths:
+      - 'tracking-service/**'
+      - '.github/workflows/tracking-service-ci.yaml'
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'tracking-service/**'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: tracking_db
+          POSTGRES_USER: tracking_user
+          POSTGRES_PASSWORD: tracking_password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Build with Gradle
+        run: |
+          cd tracking-service
+          ./gradlew clean build -x test
+
+      - name: Build Docker image
+        run: |
+          cd tracking-service
+          ./gradlew bootBuildImage
+
+      - name: Run container and wait for startup
+        run: |
+          docker run -d \
+            --name tracking-app \
+            --network host \
+            -e SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/tracking_db" \
+            -e SPRING_DATASOURCE_USERNAME="tracking_user" \
+            -e SPRING_DATASOURCE_PASSWORD="tracking_password" \
+            -e SPRING_DATA_REDIS_HOST="localhost" \
+            -e SPRING_DATA_REDIS_PORT="6379" \
+            -e SPRING_DATA_REDIS_PASSWORD="redis_password" \
+            tracking-service:0.1.0
+          
+          # Wait for container to be ready
+          sleep 15
+
+      - name: Initialize database schema
+        run: |
+          # Wait for PostgreSQL to be ready
+          for i in {1..30}; do
+            if pg_isready -h localhost -p 5432 -U tracking_user; then
+              echo "✅ PostgreSQL is ready"
+              break
+            fi
+            echo "Attempt $i/30 - Waiting for PostgreSQL..."
+            sleep 2
+          done
+          
+          # Run the init script to create tables and seed data
+          PGPASSWORD=tracking_password psql -h localhost -p 5432 -U tracking_user -d tracking_db -f tracking-service/scripts/init_db.sql
+
+      - name: Health check - Test if container is alive
+        run: |
+          # Try to reach the health endpoint
+          for i in {1..30}; do
+            if curl -f http://localhost:8081/actuator/health; then
+              echo "✅ Service is healthy"
+              exit 0
+            fi
+            echo "Attempt $i/30 - Waiting for service to be ready..."
+            sleep 2
+          done
+          echo "❌ Service failed to become healthy"
+          docker logs tracking-app
+          exit 1
+
+      - name: Test API endpoints
+        run: |
+          BASE_URL="http://localhost:8081"
+          TIMESTAMP=$(date +%s)
+          
+          # Test 1: Create a driver first
+          echo "Test 1: Creating a driver..."
+          DRIVER_JSON="{\"id\":\"ci-test-driver-${TIMESTAMP}\",\"name\":\"CI Test Driver\"}"
+          DRIVER_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/v1/drivers" \
+            -H "Content-Type: application/json" \
+            -d "$DRIVER_JSON")
+          HTTP_CODE=$(echo "$DRIVER_RESPONSE" | tail -1)
+          BODY=$(echo "$DRIVER_RESPONSE" | sed '$d')
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "201" ]; then
+            echo "❌ POST /v1/drivers failed with status $HTTP_CODE"
+          fi
+          
+          # Test 2: GET /v1/drivers with retry
+          echo -e "\nTest 2: Getting drivers..."
+          SUCCESS=false
+          for i in {1..5}; do
+            DRIVERS=$(curl -s -w "\n%{http_code}" "$BASE_URL/v1/drivers")
+            HTTP_CODE=$(echo "$DRIVERS" | tail -1)
+            BODY=$(echo "$DRIVERS" | sed '$d')
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ GET /v1/drivers successful (HTTP 200)"
+              echo "Response (first 150 chars): $(echo "$BODY" | head -c 150)"
+              SUCCESS=true
+              break
+            fi
+            if [ $i -lt 5 ]; then
+              echo "Attempt $i/5 failed (HTTP $HTTP_CODE), retrying..."
+              sleep 2
+            fi
+          done
+          if [ "$SUCCESS" = "false" ]; then
+            echo "❌ GET /v1/drivers failed after 5 attempts"
+            exit 1
+          fi
+          
+          # Test 3: GET /v1/stops with retry
+          echo -e "\nTest 3: Getting stops (pre-seeded data)..."
+          SUCCESS=false
+          for i in {1..5}; do
+            STOPS=$(curl -s -w "\n%{http_code}" "$BASE_URL/v1/stops")
+            HTTP_CODE=$(echo "$STOPS" | tail -1)
+            BODY=$(echo "$STOPS" | sed '$d')
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ GET /v1/stops successful (HTTP 200)"
+              echo "Response (first 150 chars): $(echo "$BODY" | head -c 150)"
+              SUCCESS=true
+              break
+            fi
+            if [ $i -lt 5 ]; then
+              echo "Attempt $i/5 failed (HTTP $HTTP_CODE), retrying..."
+              sleep 2
+            fi
+          done
+          if [ "$SUCCESS" = "false" ]; then
+            echo "❌ GET /v1/stops failed after 5 attempts"
+            exit 1
+          fi
+          
+          echo -e "\n✅ All API tests passed"
+
+      - name: Show container logs on failure
+        if: failure()
+        run: |
+          echo "=== Container Logs ==="
+          docker logs tracking-app || true
+          echo "=== Running Containers ==="
+          docker ps -a || true
+
+      - name: Cleanup
+        if: always()
+        run: |
+          docker stop tracking-app || true
+          docker rm tracking-app || true

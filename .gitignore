@@ -34,6 +34,9 @@ coverage
 # Build output
 build
 
+.idea
+
+.env.local
 .ideanode_modules/
 node_modules/
 backend/node_modules/
