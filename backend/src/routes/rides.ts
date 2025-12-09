@@ -1,8 +1,25 @@
-import express, { Response } from 'express'
+import express, { Request, Response } from 'express'
 import { authenticateToken, requireAdmin, AuthRequest } from '../middleware/auth.js'
 import { db, supabase } from '../services/database.js'
 
 const router = express.Router()
+
+// Interface definitions to replace 'any'
+interface Shuttle {
+  id: string
+  status: string
+  current_passengers: number
+  capacity: number
+  assigned_driver_id?: string
+}
+
+interface RideUpdates {
+  status: string
+  actual_pickup_time?: string
+  actual_dropoff_time?: string
+  shuttle_id?: string
+  cancellation_reason?: string
+}
 
 // Request a ride (student)
 router.post('/request', authenticateToken, async (req: AuthRequest, res: Response) => {
@@ -19,6 +36,11 @@ router.post('/request', authenticateToken, async (req: AuthRequest, res: Respons
       passengerCount,
       notes
     } = req.body
+
+    // Safe check for user ID
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized', message: 'User ID missing' })
+    }
 
     // Validation
     if (!pickupLatitude || !pickupLongitude || !dropoffLatitude || !dropoffLongitude) {
@@ -37,7 +59,7 @@ router.post('/request', authenticateToken, async (req: AuthRequest, res: Respons
 
     // Create ride request
     const rideData = {
-      student_id: req.userId!,
+      student_id: req.userId,
       start_stop_id: startLocationId || null,
       end_stop_id: endLocationId || null,
       pickup_latitude: parseFloat(pickupLatitude),
@@ -59,7 +81,9 @@ router.post('/request', authenticateToken, async (req: AuthRequest, res: Respons
     // TODO: Implement shuttle assignment logic
     // For now, we'll auto-assign the first available shuttle
     const shuttles = await db.getAllShuttles()
-    const availableShuttle = shuttles.find((s: any) => 
+    
+    // FIX: Typed 's' as Shuttle instead of 'any'
+    const availableShuttle = shuttles.find((s: Shuttle) => 
       s.status === 'active' && s.current_passengers < s.capacity
     )
 
@@ -72,7 +96,7 @@ router.post('/request', authenticateToken, async (req: AuthRequest, res: Respons
 
     console.log(` Ride requested by student: ${req.userId}`)
 
-    // Emit socket event for real-time updates (if you have socket.io setup)
+    // Emit socket event for real-time updates
     const io = req.app.get('io')
     if (io) {
       io.emit('ride-status-update', {
@@ -105,6 +129,11 @@ router.post('/request', authenticateToken, async (req: AuthRequest, res: Respons
 // Get user's rides (student sees own, driver sees assigned, admin sees all)
 router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
+    // Safe check for user ID
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized', message: 'User ID missing' })
+    }
+
     let rides
 
     if (req.userRole === 'admin') {
@@ -112,15 +141,16 @@ router.get('/', authenticateToken, async (req: AuthRequest, res: Response) => {
       rides = await db.getAllRides()
     } else if (req.userRole === 'student') {
       // Student sees only their rides
-      rides = await db.getRidesByStudent(req.userId!)
+      rides = await db.getRidesByStudent(req.userId)
     } else if (req.userRole === 'driver') {
       // Driver sees rides assigned to their shuttle
       const { data: shuttles } = await supabase
         .from('shuttles')
         .select('id')
-        .eq('assigned_driver_id', req.userId!)
+        .eq('assigned_driver_id', req.userId)
       
-      const shuttleIds = shuttles?.map((s: any) => s.id) || []
+      // FIX: Added type for mapping
+      const shuttleIds = shuttles?.map((s: { id: string }) => s.id) || []
       
       if (shuttleIds.length > 0) {
         const { data: driverRides } = await supabase
@@ -161,6 +191,10 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
   try {
     const ride = await db.getRide(req.params.id)
 
+    if (!ride) {
+      return res.status(404).json({ error: 'Not Found', message: 'Ride not found' })
+    }
+
     // Check permissions
     const isStudent = ride.student_id === req.userId
     const isDriver = req.userRole === 'driver' // TODO: Check if assigned to shuttle
@@ -186,6 +220,11 @@ router.get('/:id', authenticateToken, async (req: AuthRequest, res: Response) =>
 // Cancel ride (student only, for their own rides)
 router.patch('/:id/cancel', authenticateToken, async (req: AuthRequest, res: Response) => {
   try {
+    // Safe check for user ID
+    if (!req.userId) {
+      return res.status(401).json({ error: 'Unauthorized', message: 'User ID missing' })
+    }
+
     const ride = await db.getRide(req.params.id)
 
     // Check if student owns this ride
@@ -269,8 +308,8 @@ router.patch('/:id/status', authenticateToken, async (req: AuthRequest, res: Res
       })
     }
 
-    // Update status and related fields
-    const updates: any = { status }
+    // FIX: Typed updates object instead of 'any'
+    const updates: RideUpdates = { status }
 
     // Set actual pickup/dropoff times based on status
     if (status === 'in_progress' && !ride.actual_pickup_time) {
