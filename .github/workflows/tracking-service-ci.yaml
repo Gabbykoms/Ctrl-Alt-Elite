@@ -102,7 +102,7 @@ jobs:
           
           # Test 1: Create a driver first
           echo "🧪 Test 1: Creating a driver..."
-          DRIVER_JSON="{\"id\":\"ci-test-driver-${TIMESTAMP}\",\"name\":\"CI Test Driver\",\"phoneNumber\":\"5551234567\"}"
+          DRIVER_JSON="{\"id\":\"ci-test-driver-${TIMESTAMP}\",\"name\":\"CI Test Driver\"}"
           DRIVER_RESPONSE=$(curl -s -X POST "$BASE_URL/v1/drivers" \
             -H "Content-Type: application/json" \
             -d "$DRIVER_JSON")
