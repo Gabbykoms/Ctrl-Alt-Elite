@@ -29,7 +29,7 @@ spec:
       containers:
       - name: ai-service
         image: ghcr.io/gabbykoms/trinity-ai-service:latest
-        imagePullPolicy: IfNotPresent
+        imagePullPolicy: Always
         
         ports:
         - name: http
@@ -41,10 +41,6 @@ spec:
             name: trinity-ai-config
         - secretRef:
             name: trinity-ai-secret
-        
-        env:
-        - name: DATABASE_URL
-          value: "postgresql://$(DB_USER):$(DB_PASSWORD)@$(DB_HOST):$(DB_PORT)/$(DB_NAME)"
         
         resources:
           requests:
@@ -73,14 +69,10 @@ spec:
           failureThreshold: 2
         
         volumeMounts:
-        - name: data
-          mountPath: /app/data
         - name: logs
           mountPath: /app/logs
       
       volumes:
-      - name: data
-        emptyDir: {}
       - name: logs
         emptyDir: {}
       
