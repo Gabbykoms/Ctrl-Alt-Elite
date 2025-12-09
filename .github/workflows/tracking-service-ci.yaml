@@ -103,46 +103,62 @@ jobs:
           # Test 1: Create a driver first
           echo "🧪 Test 1: Creating a driver..."
           DRIVER_JSON="{\"id\":\"ci-test-driver-${TIMESTAMP}\",\"name\":\"CI Test Driver\"}"
-          DRIVER_RESPONSE=$(curl -s -X POST "$BASE_URL/v1/drivers" \
+          DRIVER_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/v1/drivers" \
             -H "Content-Type: application/json" \
             -d "$DRIVER_JSON")
-          echo "Response: $DRIVER_RESPONSE"
+          HTTP_CODE=$(echo "$DRIVER_RESPONSE" | tail -1)
+          BODY=$(echo "$DRIVER_RESPONSE" | sed '$d')
+          echo "HTTP Status: $HTTP_CODE"
+          echo "Response: $BODY"
+          if [ "$HTTP_CODE" != "201" ]; then
+            echo "❌ POST /v1/drivers failed with status $HTTP_CODE"
+          fi
           
           # Test 2: GET /v1/drivers with retry
           echo -e "\n🧪 Test 2: Getting drivers..."
+          SUCCESS=false
           for i in {1..5}; do
-            DRIVERS=$(curl -s -f "$BASE_URL/v1/drivers")
-            if [ $? -eq 0 ]; then
-              echo "✅ GET /v1/drivers successful"
-              echo "Response (first 150 chars): $(echo "$DRIVERS" | head -c 150)"
+            DRIVERS=$(curl -s -w "\n%{http_code}" "$BASE_URL/v1/drivers")
+            HTTP_CODE=$(echo "$DRIVERS" | tail -1)
+            BODY=$(echo "$DRIVERS" | sed '$d')
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ GET /v1/drivers successful (HTTP 200)"
+              echo "Response (first 150 chars): $(echo "$BODY" | head -c 150)"
+              SUCCESS=true
               break
             fi
             if [ $i -lt 5 ]; then
-              echo "Attempt $i/5 failed, retrying..."
+              echo "Attempt $i/5 failed (HTTP $HTTP_CODE), retrying..."
               sleep 2
-            else
-              echo "❌ GET /v1/drivers failed after 5 attempts"
-              exit 1
             fi
           done
+          if [ "$SUCCESS" = "false" ]; then
+            echo "❌ GET /v1/drivers failed after 5 attempts"
+            exit 1
+          fi
           
           # Test 3: GET /v1/stops with retry
           echo -e "\n🧪 Test 3: Getting stops (pre-seeded data)..."
+          SUCCESS=false
           for i in {1..5}; do
-            STOPS=$(curl -s -f "$BASE_URL/v1/stops")
-            if [ $? -eq 0 ]; then
-              echo "✅ GET /v1/stops successful"
-              echo "Response (first 150 chars): $(echo "$STOPS" | head -c 150)"
+            STOPS=$(curl -s -w "\n%{http_code}" "$BASE_URL/v1/stops")
+            HTTP_CODE=$(echo "$STOPS" | tail -1)
+            BODY=$(echo "$STOPS" | sed '$d')
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ GET /v1/stops successful (HTTP 200)"
+              echo "Response (first 150 chars): $(echo "$BODY" | head -c 150)"
+              SUCCESS=true
               break
             fi
             if [ $i -lt 5 ]; then
-              echo "Attempt $i/5 failed, retrying..."
+              echo "Attempt $i/5 failed (HTTP $HTTP_CODE), retrying..."
               sleep 2
-            else
-              echo "❌ GET /v1/stops failed after 5 attempts"
-              exit 1
             fi
           done
+          if [ "$SUCCESS" = "false" ]; then
+            echo "❌ GET /v1/stops failed after 5 attempts"
+            exit 1
+          fi
           
           echo -e "\n✅ All API tests passed"
 
