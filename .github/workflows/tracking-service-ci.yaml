@@ -116,7 +116,7 @@ jobs:
           TIMESTAMP=$(date +%s)
           
           # Test 1: Create a driver first
-          echo "🧪 Test 1: Creating a driver..."
+          echo "Test 1: Creating a driver..."
           DRIVER_JSON="{\"id\":\"ci-test-driver-${TIMESTAMP}\",\"name\":\"CI Test Driver\"}"
           DRIVER_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST "$BASE_URL/v1/drivers" \
             -H "Content-Type: application/json" \
@@ -130,7 +130,7 @@ jobs:
           fi
           
           # Test 2: GET /v1/drivers with retry
-          echo -e "\n🧪 Test 2: Getting drivers..."
+          echo -e "\nTest 2: Getting drivers..."
           SUCCESS=false
           for i in {1..5}; do
             DRIVERS=$(curl -s -w "\n%{http_code}" "$BASE_URL/v1/drivers")
@@ -153,7 +153,7 @@ jobs:
           fi
           
           # Test 3: GET /v1/stops with retry
-          echo -e "\n🧪 Test 3: Getting stops (pre-seeded data)..."
+          echo -e "\nTest 3: Getting stops (pre-seeded data)..."
           SUCCESS=false
           for i in {1..5}; do
             STOPS=$(curl -s -w "\n%{http_code}" "$BASE_URL/v1/stops")

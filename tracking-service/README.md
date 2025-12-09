@@ -3,12 +3,12 @@
 **Driver management and ride-tracking service** for the Trinity College Bantam Shuttle system.
 
 This Spring Boot microservice manages:
-- 👨‍💼 **Driver lifecycle** - clock-in/out with location tracking, status management
-- 🚕 **Ride persistence** - ride creation with automatic driver assignment
-- 📍 **Real-time location tracking** - driver position updates and queries
-- 🗺️ **Stop management** - pre-loaded Trinity College shuttle stops (CRUD)
-- 💾 **Persistent storage** - PostgreSQL for drivers, rides, and stops
-- 🔄 **Auto-assignment** - automatically assigns available drivers to new rides
+- **Driver lifecycle** - clock-in/out with location tracking, status management
+- **Ride persistence** - ride creation with automatic driver assignment
+- **Real-time location tracking** - driver position updates and queries
+- **Stop management** - pre-loaded Trinity College shuttle stops (CRUD)
+- **Persistent storage** - PostgreSQL for drivers, rides, and stops
+- **Auto-assignment** - automatically assigns available drivers to new rides
 
 **Tech Stack**: Spring Boot 3.3.5 (Java 21) | PostgreSQL 16 | Redis 7 | Docker Compose | Spring Data JPA
 
@@ -90,10 +90,10 @@ Build a production-ready container image using Gradle:
 ```
 
 This command:
-- ✅ Compiles the application
-- ✅ Creates a Docker image named `tracking-service:0.1.0` (default version)
-- ✅ Image size: ~741MB
-- ✅ Uses Paketo buildpacks for optimized layering
+- Compiles the application
+- Creates a Docker image named `tracking-service:0.1.0` (default version)
+- Image size: ~741MB
+- Uses Paketo buildpacks for optimized layering
 
 **Customize the version:**
 

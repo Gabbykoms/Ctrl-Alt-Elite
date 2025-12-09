@@ -44,7 +44,7 @@ public class StopStore {
         List<Stop> entities = stopRepository.findByIsActiveTrueOrderByName();
         List<StopDto> dtos = convertEntitiesToDtos(entities);
         
-        logger.info("📍 Retrieved {} stops from database", dtos.size());
+        logger.info("Retrieved {} stops from database", dtos.size());
         return dtos;
     }
     
@@ -83,7 +83,7 @@ public class StopStore {
         // Invalidate all stops cache
         invalidateAllStopsCache();
         
-        logger.info("✅ Stop created: {} at ({}, {})", name, latitude, longitude);
+        logger.info("Stop created: {} at ({}, {})", name, latitude, longitude);
         return dto;
     }
     
@@ -112,7 +112,7 @@ public class StopStore {
         // Invalidate all stops cache
         invalidateAllStopsCache();
         
-        logger.info("✅ Stop updated: {}", stopId);
+        logger.info("Stop updated: {}", stopId);
         return dto;
     }
     
@@ -135,7 +135,7 @@ public class StopStore {
         // Invalidate all stops cache
         invalidateAllStopsCache();
         
-        logger.info("✅ Stop deleted: {}", stopId);
+        logger.info("Stop deleted: {}", stopId);
     }
     
     /**
@@ -151,7 +151,7 @@ public class StopStore {
     public void clearAll() {
         stopRepository.deleteAll();
         invalidateAllStopsCache();
-        logger.warn("⚠️ All stops cleared from database and cache");
+        logger.warn("All stops cleared from database and cache");
     }
     
     /**
@@ -185,9 +185,9 @@ public class StopStore {
     private void invalidateAllStopsCache() {
         try {
             redisTemplate.delete(CACHE_ALL_ACTIVE);
-            logger.debug("✅ Invalidated all stops cache");
+            logger.debug("Invalidated all stops cache");
         } catch (Exception e) {
-            logger.warn("⚠️ Failed to invalidate all stops cache: {}", e.getMessage());
+            logger.warn("Failed to invalidate all stops cache: {}", e.getMessage());
         }
     }
 }

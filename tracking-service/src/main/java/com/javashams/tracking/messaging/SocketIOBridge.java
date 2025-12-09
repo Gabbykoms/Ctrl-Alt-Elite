@@ -51,7 +51,7 @@ public class SocketIOBridge {
             socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    logger.info("✅ Connected to backend Socket.IO: {}", backendUrl);
+                    logger.info("Connected to backend Socket.IO: {}", backendUrl);
                 }
             });
 
@@ -59,7 +59,7 @@ public class SocketIOBridge {
             socket.on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    logger.warn("🔌 Disconnected from backend Socket.IO");
+                    logger.warn("Disconnected from backend Socket.IO");
                 }
             });
 
@@ -75,7 +75,7 @@ public class SocketIOBridge {
             socket.on("driver-status-update", new Emitter.Listener() {
                 @Override
                 public void call(Object... args) {
-                    logger.debug("📡 Driver status update: {}", args[0]);
+                    logger.debug("Driver status update: {}", args[0]);
                 }
             });
 
@@ -90,7 +90,7 @@ public class SocketIOBridge {
             socket.connect();
 
         } catch (Exception e) {
-            logger.error("❌ Failed to connect to backend Socket.IO", e);
+            logger.error("Failed to connect to backend Socket.IO", e);
         }
     }
 
@@ -117,7 +117,7 @@ public class SocketIOBridge {
             double heading = data.optDouble("heading", 0);
             long timestamp = data.optLong("timestamp", System.currentTimeMillis());
 
-            logger.debug("📍 Received shuttle location: {} at ({}, {})", shuttleId, latitude, longitude);
+            logger.debug("Received shuttle location: {} at ({}, {})", shuttleId, latitude, longitude);
 
             // Store in LocationSink (generic location storage)
             // We need to create a GeoPoint equivalent from the Socket.IO data
@@ -138,11 +138,11 @@ public class SocketIOBridge {
                         timestamp
                 );
                 rideTrackingService.updateRideDriverLocation(rideId, driverLocation);
-                logger.info("✅ Updated ride {} driver location", rideId);
+                logger.info("Updated ride {} driver location", rideId);
             }
 
         } catch (Exception e) {
-            logger.error("❌ Error handling shuttle location update", e);
+            logger.error("Error handling shuttle location update", e);
         }
     }
 
@@ -158,16 +158,16 @@ public class SocketIOBridge {
             String rideId = data.optString("rideId");
             String status = data.optString("status");
 
-            logger.debug("🚕 Ride {} status: {}", rideId, status);
+            logger.debug("Ride {} status: {}", rideId, status);
 
             // Handle ride lifecycle
             if ("completed".equals(status) || "cancelled".equals(status)) {
                 rideTrackingService.endRideTracking(rideId);
-                logger.info("✅ Ended tracking for ride {}", rideId);
+                logger.info("Ended tracking for ride {}", rideId);
             }
 
         } catch (Exception e) {
-            logger.error("❌ Error handling ride status update", e);
+            logger.error("Error handling ride status update", e);
         }
     }
 

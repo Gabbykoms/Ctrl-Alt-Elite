@@ -36,7 +36,7 @@ public class StopsController {
     public ResponseEntity<Map<String, Object>> getAllStops() {
         try {
             List<StopDto> stops = stopStore.getAllStops();
-            logger.info("📍 Retrieved {} stops", stops.size());
+            logger.info("Retrieved {} stops", stops.size());
             
             return ResponseEntity.ok(Map.of(
                     "stops", stops,
@@ -44,7 +44,7 @@ public class StopsController {
                     "timestamp", System.currentTimeMillis()
             ));
         } catch (Exception e) {
-            logger.error("❌ Error retrieving stops", e);
+            logger.error("Error retrieving stops", e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "Failed to retrieve stops", "message", e.getMessage()));
         }
@@ -62,10 +62,10 @@ public class StopsController {
                 return ResponseEntity.notFound().build();
             }
             
-            logger.info("📍 Retrieved stop: {}", stopId);
+            logger.info("Retrieved stop: {}", stopId);
             return ResponseEntity.ok(stop);
         } catch (Exception e) {
-            logger.error("❌ Error retrieving stop: {}", stopId, e);
+            logger.error("Error retrieving stop: {}", stopId, e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "Failed to retrieve stop", "message", e.getMessage()));
         }
@@ -114,15 +114,15 @@ public class StopsController {
             // Create the stop
             StopDto newStop = stopStore.createStop(name, latitude, longitude, description);
             
-            logger.info("✅ Stop created: {} (ID: {})", name, newStop.id());
+            logger.info("Stop created: {} (ID: {})", name, newStop.id());
             return ResponseEntity.status(201).body(newStop);
             
         } catch (IllegalArgumentException e) {
-            logger.warn("⚠️ Invalid stop data: {}", e.getMessage());
+            logger.warn("Invalid stop data: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid stop data", "message", e.getMessage()));
         } catch (Exception e) {
-            logger.error("❌ Error creating stop", e);
+            logger.error("Error creating stop", e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "Failed to create stop", "message", e.getMessage()));
         }
@@ -155,15 +155,15 @@ public class StopsController {
             // Update the stop
             StopDto updated = stopStore.updateStop(stopId, name, latitude, longitude, description);
             
-            logger.info("✅ Stop updated: {}", stopId);
+            logger.info("Stop updated: {}", stopId);
             return ResponseEntity.ok(updated);
             
         } catch (IllegalArgumentException e) {
-            logger.warn("⚠️ Stop not found or invalid data: {}", e.getMessage());
+            logger.warn("Stop not found or invalid data: {}", e.getMessage());
             return ResponseEntity.badRequest()
                     .body(Map.of("error", "Invalid stop data", "message", e.getMessage()));
         } catch (Exception e) {
-            logger.error("❌ Error updating stop: {}", stopId, e);
+            logger.error("Error updating stop: {}", stopId, e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "Failed to update stop", "message", e.getMessage()));
         }
@@ -179,7 +179,7 @@ public class StopsController {
         try {
             stopStore.deleteStop(stopId);
             
-            logger.info("✅ Stop deleted: {}", stopId);
+            logger.info("Stop deleted: {}", stopId);
             return ResponseEntity.ok(Map.of(
                     "message", "Stop deleted successfully",
                     "stop_id", stopId,
@@ -187,10 +187,10 @@ public class StopsController {
             ));
             
         } catch (IllegalArgumentException e) {
-            logger.warn("⚠️ Stop not found: {}", stopId);
+            logger.warn("Stop not found: {}", stopId);
             return ResponseEntity.notFound().build();
         } catch (Exception e) {
-            logger.error("❌ Error deleting stop: {}", stopId, e);
+            logger.error("Error deleting stop: {}", stopId, e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "Failed to delete stop", "message", e.getMessage()));
         }
