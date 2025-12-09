@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Trinity AI Service
+  ai-service:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    container_name: trinity-ai-service
+    environment:
+      # Service Configuration
+      SERVICE_NAME: trinity-ai-service
+      SERVICE_PORT: 8083
+      ENVIRONMENT: ${ENVIRONMENT:-production}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+
+      # Supabase Database 
+      DATABASE_URL: ${DATABASE_URL}
+      
+      # Or construct from Supabase connection details
+      # DATABASE_URL: postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+
+      # OpenAI
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+
+      # LangChain Models
+      EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
+      CHAT_MODEL: ${CHAT_MODEL:-gpt-4o-mini}
+
+      # Generation Parameters
+      MAX_TOKENS: ${MAX_TOKENS:-500}
+      TEMPERATURE: ${TEMPERATURE:-0.7}
+
+      # RAG Settings
+      SIMILARITY_THRESHOLD: ${SIMILARITY_THRESHOLD:-0.5}
+      MAX_CONTEXT_DOCUMENTS: ${MAX_CONTEXT_DOCUMENTS:-5}
+      VECTOR_DIMENSION: ${VECTOR_DIMENSION:-1536}
+
+      # External Services
+      TRACKING_SERVICE_URL: ${TRACKING_SERVICE_URL:-http://tracking-service:8082/api/tracking}
+
+      # CORS
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+
+      # Supabase
+      SUPABASE_URL: ${SUPABASE_URL}
+      SUPABASE_KEY: ${SUPABASE_KEY}
+      OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
+
+    ports:
+      - "8083:8083"
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - trinity-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  trinity-network:
+    driver: bridge
