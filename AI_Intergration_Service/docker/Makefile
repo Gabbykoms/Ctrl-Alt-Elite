@@ -125,7 +125,7 @@ restore: ## Restore PostgreSQL database (restores from latest backup)
 	echo "$(GREEN)✓ Restore complete$(NC)"
 
 init-db: ## Initialize/reset database (removes existing data!)
-	@echo "$(RED)⚠️  WARNING: This will reset the database and delete all data!$(NC)"
+	@echo "$(RED)  WARNING: This will reset the database and delete all data!$(NC)"
 	@read -p "Are you sure? (y/N): " -n 1 -r; \
 	echo; \
 	if [[ $$REPLY =~ ^[Yy]$$ ]]; then \
@@ -180,7 +180,7 @@ health: ## Check service health
 
 # Cleanup
 clean: ## Remove all containers and volumes (WARNING: deletes data!)
-	@echo "$(RED)⚠️  WARNING: This will remove all containers and delete all data!$(NC)"
+	@echo "$(RED)  WARNING: This will remove all containers and delete all data!$(NC)"
 	@read -p "Are you sure? Type 'yes' to continue: " -r; \
 	echo; \
 	if [[ $$REPLY == "yes" ]]; then \
