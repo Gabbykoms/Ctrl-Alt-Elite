@@ -1,0 +1,71 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Virtual environments
+venv/
+ENV/
+env/
+
+# IDE
+.vscode
+.idea
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment (IMPORTANT: Never include .env files in Docker image!)
+.env
+.env.local
+.env.*.local
+.env.example
+.env.production
+.env.staging
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+docs/
+README.md
+LICENSE
+
+# Data
+data/
+
+# Logs
+*.log
+logs/

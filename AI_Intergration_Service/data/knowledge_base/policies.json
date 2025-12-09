@@ -1,0 +1,65 @@
+[
+  {
+    "content": "Eligibility: All Trinity College students with a valid @trincoll.edu email address can use the shuttle service. You must verify your email in the app to activate your account. Faculty and staff are also eligible with their Trinity email addresses.",
+    "topic": "eligibility",
+    "requires_verification": true,
+    "priority": "high"
+  },
+  {
+    "content": "Safety Policy: For everyone's safety, students are required to wear masks if they feel unwell. Please maintain respectful behavior toward drivers and fellow passengers. Follow all driver instructions, especially during emergency situations. The driver has the authority to refuse service if safety guidelines are not followed.",
+    "topic": "safety",
+    "priority": "critical"
+  },
+  {
+    "content": "Capacity Limit: Each shuttle has a maximum capacity of 15 passengers to ensure comfort and safety. During peak times (class changes, meal times), you may need to wait for the next shuttle. The app will show you how full each shuttle is in real-time.",
+    "topic": "capacity",
+    "max_passengers": 15,
+    "priority": "high"
+  },
+  {
+    "content": "Weather Policy: Shuttles operate in all weather conditions unless it becomes unsafe. During severe weather (heavy snow, ice storms), service may be temporarily suspended. Check the app for real-time weather-related alerts and updates.",
+    "topic": "weather",
+    "priority": "medium"
+  },
+  {
+    "content": "Lost and Found: If you leave something on the shuttle, contact Campus Safety at 860-297-2222 as soon as possible. Items are held for 30 days. You can also report lost items through the app.",
+    "topic": "lost_and_found",
+    "contact": "860-297-2222",
+    "priority": "low"
+  },
+  {
+    "content": "Conduct Policy: The shuttle is an extension of the campus and all Trinity College policies apply. This includes the student code of conduct. Disruptive behavior, vandalism, or harassment will not be tolerated and may result in loss of shuttle privileges.",
+    "topic": "conduct",
+    "priority": "medium"
+  },
+  {
+    "content": "Accessibility Policy: All shuttles are equipped with wheelchair lifts and designated accessible seating areas. Service animals are welcome on board. Students with mobility, sensory, or other disabilities should contact the Accessibility Services Office for specific accommodations.",
+    "topic": "accessibility",
+    "priority": "high"
+  },
+  {
+    "content": "Reservation and Booking Policy: Regular shuttles operate on fixed schedules and cannot be reserved. The Late Night Safety Shuttle (9 PM - 11 PM) offers on-demand service and can be requested through the app. Group transportation requests should be made through Campus Events or the Transportation Office.",
+    "topic": "booking",
+    "priority": "medium"
+  },
+  {
+    "content": "ID and Verification Policy: All passengers must have valid Trinity College identification (student, faculty, or staff ID). The driver may request to see your ID at any time. Guests must be accompanied by a Trinity community member.",
+    "topic": "identification",
+    "priority": "high"
+  },
+  {
+    "content": "Emergency Procedures: In case of emergency, follow driver instructions immediately. For medical emergencies, the driver will contact emergency services. Students should familiarize themselves with shuttle emergency exits and procedures for safe evacuation.",
+    "topic": "emergency",
+    "priority": "critical"
+  },
+  {
+    "content": "Item Transportation Policy: Personal items, backpacks, and reasonable amounts of luggage are permitted. However, hazardous materials, weapons, or items that pose safety risks are strictly prohibited. Large items must not obstruct aisles or emergency exits.",
+    "topic": "items",
+    "priority": "medium"
+  },
+  {
+    "content": "Reporting Incidents: Report accidents, unsafe conditions, driver behavior, or safety concerns immediately to Campus Safety at 860-297-2222 or through the shuttle app. Provide details including route, time, vehicle number, and description of the incident.",
+    "topic": "reporting",
+    "priority": "high"
+  }
+]
