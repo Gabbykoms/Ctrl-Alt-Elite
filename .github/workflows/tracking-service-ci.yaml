@@ -68,11 +68,11 @@ jobs:
         run: |
           docker run -d \
             --name tracking-app \
-            -p 8081:8081 \
-            -e SPRING_DATASOURCE_URL="jdbc:postgresql://host.docker.internal:5432/tracking_db" \
+            --network host \
+            -e SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/tracking_db" \
             -e SPRING_DATASOURCE_USERNAME="tracking_user" \
             -e SPRING_DATASOURCE_PASSWORD="tracking_password" \
-            -e SPRING_DATA_REDIS_HOST="host.docker.internal" \
+            -e SPRING_DATA_REDIS_HOST="localhost" \
             -e SPRING_DATA_REDIS_PORT="6379" \
             -e SPRING_DATA_REDIS_PASSWORD="redis_password" \
             tracking-service:0.1.0
