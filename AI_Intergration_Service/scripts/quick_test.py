@@ -42,7 +42,7 @@ async def quick_test():
     try:
         from langchain_openai import ChatOpenAI
 
-        llm = ChatOpenAI(model=settings.CHAT_MODEL, api_key=settings.OPENAI_API_KEY)
+        llm = ChatOpenAI(model=settings.CHAT_MODEL, api_key=settings.AI_OPENAI_API_KEY)
         response = llm.invoke("test")
         print(f"✓ OpenAI connected")
     except Exception as e:

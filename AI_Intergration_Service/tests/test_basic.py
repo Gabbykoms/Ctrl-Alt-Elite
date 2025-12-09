@@ -6,15 +6,15 @@ def test_settings_loaded():
     """Test that settings are loaded correctly"""
     assert settings.SERVICE_NAME == "trinity-ai-service"
     assert settings.SERVICE_PORT == 8083
-    assert settings.OPENAI_API_KEY is not None
-    assert len(settings.OPENAI_API_KEY) > 0
+    assert settings.AI_OPENAI_API_KEY is not None
+    assert len(settings.AI_OPENAI_API_KEY) > 0
     print("✓ Settings loaded successfully")
 
 
 def test_database_url():
     """Test that database URL is configured"""
-    assert settings.DATABASE_URL is not None
-    assert "postgresql" in settings.DATABASE_URL
+    assert settings.AI_DATABASE_URL is not None
+    assert "postgresql" in settings.AI_DATABASE_URL
     print("✓ Database URL configured")
 
 

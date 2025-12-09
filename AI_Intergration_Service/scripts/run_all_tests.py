@@ -80,10 +80,10 @@ def test_configuration():
     try:
         from app.config import settings
 
-        assert settings.OPENAI_API_KEY, "OpenAI API key not set"
-        print_success(f"OpenAI API key loaded (starts with {settings.OPENAI_API_KEY[:8]}...)")
+        assert settings.AI_OPENAI_API_KEY, "OpenAI API key not set"
+        print_success(f"OpenAI API key loaded (starts with {settings.AI_OPENAI_API_KEY[:8]}...)")
 
-        assert settings.DATABASE_URL, "Database URL not set"
+        assert settings.AI_DATABASE_URL, "Database URL not set"
         print_success("Database URL loaded")
 
         assert settings.SERVICE_PORT == 8083, "Service port incorrect"
@@ -164,7 +164,7 @@ def test_openai():
         # Test embeddings
         embeddings = OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
         test_embedding = embeddings.embed_query("test")
         print_success(f"Embeddings working (dimension: {len(test_embedding)})")
@@ -172,7 +172,7 @@ def test_openai():
         # Test chat
         llm = ChatOpenAI(
             model=settings.CHAT_MODEL,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
         response = llm.invoke("Say 'ok' if you can read this")
         print_success(f"Chat working (response: {response.content[:30]}...)")

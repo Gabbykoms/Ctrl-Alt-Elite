@@ -52,6 +52,11 @@ spec:
             configMapKeyRef:
               name: tracking-config
               key: db-name
+        - name: DB_USER
+          valueFrom:
+            secretKeyRef:
+              name: tracking-secrets
+              key: db-username
         - name: DB_USERNAME
           valueFrom:
             secretKeyRef:

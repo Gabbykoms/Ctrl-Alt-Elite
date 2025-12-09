@@ -67,7 +67,7 @@ def test_openai():
         embeddings = OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
             dimensions=settings.VECTOR_DIMENSION,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
         embedding = embeddings.embed_query("test")
@@ -79,7 +79,7 @@ def test_openai():
         print("\nTesting chat completion...")
         llm = ChatOpenAI(
             model=settings.CHAT_MODEL,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
         response = llm.invoke("Say 'test successful' if you can read this")
@@ -90,7 +90,7 @@ def test_openai():
         return True
     except Exception as e:
         print(f"✗ OpenAI connection failed: {e}")
-        print("\nCheck your OPENAI_API_KEY in .env file")
+        print("\nCheck your AI_OPENAI_API_KEY in .env file")
         return False
 
 

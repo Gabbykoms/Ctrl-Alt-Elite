@@ -52,7 +52,7 @@ async def openai_health():
 
         embeddings = OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
         # Simple test embedding

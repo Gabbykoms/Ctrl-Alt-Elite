@@ -9,7 +9,7 @@ def test_openai_embeddings():
         embeddings = OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
             dimensions=settings.VECTOR_DIMENSION,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
         test_text = "This is a test sentence for embedding."
@@ -27,7 +27,7 @@ def test_openai_chat():
     try:
         llm = ChatOpenAI(
             model=settings.CHAT_MODEL,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
         response = llm.invoke("Say 'test passed' if you can read this.")
@@ -41,6 +41,6 @@ def test_openai_chat():
 
 def test_openai_api_key_valid():
     """Test that OpenAI API key is valid format"""
-    assert settings.OPENAI_API_KEY.startswith("sk-")
-    assert len(settings.OPENAI_API_KEY) > 20
+    assert settings.AI_OPENAI_API_KEY.startswith("sk-")
+    assert len(settings.AI_OPENAI_API_KEY) > 20
     print("✓ OpenAI API key format valid")

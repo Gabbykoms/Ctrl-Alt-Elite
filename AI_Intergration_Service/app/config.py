@@ -13,12 +13,12 @@ class Settings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     
     # Database
-    DATABASE_URL: str
-    SUPABASE_URL: str = ""
-    SUPABASE_KEY: str = ""
+    AI_DATABASE_URL: str
+    AI_SUPABASE_URL: str = ""
+    AI_SUPABASE_KEY: str = ""
     
     # OpenAI
-    OPENAI_API_KEY: str
+    AI_OPENAI_API_KEY: str
     
     # LangChain Models
     EMBEDDING_MODEL: str = "text-embedding-3-small"

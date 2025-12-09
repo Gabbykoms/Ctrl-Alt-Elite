@@ -24,13 +24,13 @@ class ShuttleRAGService:
             model=settings.CHAT_MODEL,
             temperature=settings.TEMPERATURE,
             max_tokens=settings.MAX_TOKENS,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
         self.embeddings = OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
             dimensions=settings.VECTOR_DIMENSION,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
         self.graph = self._build_graph()

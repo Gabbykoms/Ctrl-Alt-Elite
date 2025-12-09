@@ -17,7 +17,7 @@ class EmbeddingService:
         self.embeddings = OpenAIEmbeddings(
             model=settings.EMBEDDING_MODEL,
             dimensions=settings.VECTOR_DIMENSION,
-            api_key=settings.OPENAI_API_KEY
+            api_key=settings.AI_OPENAI_API_KEY
         )
 
     def create_document(

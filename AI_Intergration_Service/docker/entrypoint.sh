@@ -4,19 +4,19 @@ set -e
 echo "=== Trinity Shuttle AI Service - Docker Startup ==="
 
 # Validate required environment variables
-if [ -z "$DATABASE_URL" ]; then
-    echo "ERROR: DATABASE_URL not set"
-    echo "   Set SUPABASE DATABASE_URL in your .env file"
+if [ -z "$AI_DATABASE_URL" ]; then
+    echo "ERROR: AI_DATABASE_URL not set"
+    echo "   Set SUPABASE AI_DATABASE_URL in your .env file"
     exit 1
 fi
 
-if [ -z "$OPENAI_API_KEY" ]; then
-    echo "ERROR: OPENAI_API_KEY not set"
+if [ -z "$AI_OPENAI_API_KEY" ]; then
+    echo "ERROR: AI_OPENAI_API_KEY not set"
     exit 1
 fi
 
-echo "✓ DATABASE_URL is set (Supabase)"
-echo "✓ OPENAI_API_KEY is set"
+echo "✓ AI_DATABASE_URL is set (Supabase)"
+echo "✓ AI_OPENAI_API_KEY is set"
 echo "✓ Using OpenAI LLM"
 
 # Optional ingestion on startup
