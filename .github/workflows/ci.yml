@@ -121,6 +121,13 @@ jobs:
     runs-on: ubuntu-latest
     needs: docker-build-and-push
     if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/backend')
+    
+    # ADDED: Explicit permissions for this job
+    permissions:
+      contents: read       # To check out code
+      security-events: write # To upload SARIF results
+      actions: read        # To read workflow status (fixes your specific error)
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -129,7 +136,7 @@ jobs:
         uses: aquasecurity/trivy-action@master
         with:
           scan-type: 'fs'
-          scan-ref: './backend' # CHANGED: Scan only the backend folder
+          scan-ref: './backend'
           format: 'sarif'
           output: 'trivy-results.sarif'
 
