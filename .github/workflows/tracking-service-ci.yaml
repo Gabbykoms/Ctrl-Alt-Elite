@@ -98,26 +98,23 @@ jobs:
       - name: Test API endpoints
         run: |
           BASE_URL="http://localhost:8081"
+          TIMESTAMP=$(date +%s)
           
           # Test 1: Create a driver first
           echo "🧪 Test 1: Creating a driver..."
-          DRIVER_RESPONSE=$(curl -s -X POST $BASE_URL/v1/drivers \
+          DRIVER_JSON="{\"id\":\"ci-test-driver-${TIMESTAMP}\",\"name\":\"CI Test Driver\",\"phoneNumber\":\"5551234567\"}"
+          DRIVER_RESPONSE=$(curl -s -X POST "$BASE_URL/v1/drivers" \
             -H "Content-Type: application/json" \
-            -d '{
-              "id":"ci-test-driver-'$(date +%s)'",
-              "name":"CI Test Driver",
-              "phoneNumber":"5551234567",
-              "shuttleId":"shuttle-1"
-            }')
+            -d "$DRIVER_JSON")
           echo "Response: $DRIVER_RESPONSE"
           
           # Test 2: GET /v1/drivers with retry
           echo -e "\n🧪 Test 2: Getting drivers..."
           for i in {1..5}; do
-            DRIVERS=$(curl -s -f $BASE_URL/v1/drivers)
+            DRIVERS=$(curl -s -f "$BASE_URL/v1/drivers")
             if [ $? -eq 0 ]; then
               echo "✅ GET /v1/drivers successful"
-              echo "Response (first 150 chars): $(echo $DRIVERS | head -c 150)"
+              echo "Response (first 150 chars): $(echo "$DRIVERS" | head -c 150)"
               break
             fi
             if [ $i -lt 5 ]; then
@@ -132,10 +129,10 @@ jobs:
           # Test 3: GET /v1/stops with retry
           echo -e "\n🧪 Test 3: Getting stops (pre-seeded data)..."
           for i in {1..5}; do
-            STOPS=$(curl -s -f $BASE_URL/v1/stops)
+            STOPS=$(curl -s -f "$BASE_URL/v1/stops")
             if [ $? -eq 0 ]; then
               echo "✅ GET /v1/stops successful"
-              echo "Response (first 150 chars): $(echo $STOPS | head -c 150)"
+              echo "Response (first 150 chars): $(echo "$STOPS" | head -c 150)"
               break
             fi
             if [ $i -lt 5 ]; then
