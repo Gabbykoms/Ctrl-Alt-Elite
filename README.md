@@ -1,6 +1,50 @@
 # Bantam Shuttle - Trinity College Shuttle Tracking Application
 
-A modern, full-featured shuttle tracking application built for Trinity College with React 18, Vite, TypeScript, and Tailwind CSS.
+A modern, full-featured shuttle tracking application built for Trinity College with React 18, Vite, TypeScript, and Tailwind CSS. Built with a microservices architecture featuring React frontend, Node.js backend, Spring Boot tracking service, and Python AI service.
+
+## Quick Start
+
+### Automated Setup (Recommended)
+
+Run the complete setup script to start all services:
+
+```bash
+./start-everything.sh
+```
+
+This will:
+- Check prerequisites (Docker, Node.js, Python, Java)
+- Set up Docker databases (PostgreSQL + Redis)
+- Install all dependencies for all services
+- Configure Python virtual environment for AI service
+- Start all 4 microservices in separate terminals
+
+Access the application:
+- **Frontend**: http://localhost:5173
+- **Backend API**: http://localhost:8080/api-docs
+- **Tracking Service**: http://localhost:8081/swagger-ui.html
+- **AI Service**: http://localhost:8083/docs
+
+### Prerequisites
+
+- **Docker Desktop** (for PostgreSQL + Redis)
+- **Node.js** v24.10.0+ and npm
+- **Python** 3.12.4+
+- **Java** 21 (for tracking service)
+
+## Architecture
+
+This is a microservices application with 4 main services:
+
+1. **Frontend** (React + TypeScript + Vite) - Port 5173
+2. **Backend** (Node.js + Express + TypeScript) - Port 8080
+3. **Tracking Service** (Spring Boot + Java 21) - Port 8081
+4. **AI Service** (Python + FastAPI + LangChain) - Port 8083
+
+**Databases:**
+- Supabase PostgreSQL (Backend + AI Service)
+- Local PostgreSQL 16 (Tracking Service)
+- Redis 7 (Tracking Service cache)
 
 ## Features
 
@@ -42,71 +86,128 @@ A modern, full-featured shuttle tracking application built for Trinity College w
 - **Testing**: Vitest + React Testing Library
 - **Icons**: Lucide React
 
-## Getting Started
+## Manual Setup
 
-### Prerequisites
+### 1. Environment Variables
 
-- Node.js 20.19.0 or higher
-- npm or yarn package manager
+Create `.env` files with your credentials:
 
-### Installation
-
-1. Clone the repository:
-```bash
-git clone <repo-url>
-cd Ctrl-Alt-Elite
-```
-
-2. Install dependencies:
-```bash
-npm install
-```
-
-3. Create a `.env` file based on `.env.example`:
-```bash
-cp .env.example .env
-```
-
-4. Add your environment variables (especially Mapbox token):
+**Root `.env`:**
 ```env
-VITE_MAPBOX_TOKEN=your_mapbox_public_token
-VITE_API_BASE_URL=http://localhost:3000/api
-VITE_SOCKET_URL=http://localhost:3000
+VITE_MAPBOX_TOKEN=your_mapbox_token
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_SOCKET_URL=http://localhost:8080
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+JWT_SECRET=your_jwt_secret
+OPENAI_API_KEY=your_openai_key
 ```
 
-### Development
-
-Start the development server:
-```bash
-npm run dev
+**Frontend `.env`:**
+```env
+VITE_MAPBOX_TOKEN=your_mapbox_token
+VITE_API_BASE_URL=http://localhost:8080/api
+VITE_SOCKET_URL=http://localhost:8080
+VITE_TRACKING_SERVICE_URL=http://localhost:8081
+VITE_AI_SERVICE_URL=http://localhost:8083
 ```
 
-The application will open at `http://localhost:5173`
-
-### Build
-
-Build for production:
-```bash
-npm run build
+**Backend `.env`:**
+```env
+PORT=8080
+SUPABASE_URL=your_supabase_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+JWT_SECRET=your_jwt_secret
+TRACKING_SERVICE_URL=http://localhost:8081
+AI_SERVICE_URL=http://localhost:8083
 ```
 
-### Testing
-
-Run tests:
-```bash
-npm run test
+**AI Service `.env`:**
+```env
+DATABASE_URL=your_supabase_connection_string
+OPENAI_API_KEY=your_openai_key
+EMBEDDING_MODEL=text-embedding-3-small
+CHAT_MODEL=gpt-4o-mini
 ```
 
-Run tests with UI:
+### 2. Database Setup
+
+Start Docker databases:
 ```bash
-npm run test:ui
+./setup-databases.sh
+```
+
+Run Supabase migrations:
+```bash
+./setup-supabase.sh
+```
+
+### 3. Start Services
+
+**Backend:**
+```bash
+cd backend && npm install && npm run dev
+```
+
+**Frontend:**
+```bash
+cd frontend && npm install && npm run dev
+```
+
+**Tracking Service:**
+```bash
+cd tracking-service && ./gradlew bootRun
+```
+
+**AI Service:**
+```bash
+cd AI_Intergration_Service
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+uvicorn app.main:app --reload --port 8083
+```
+
+## Utility Scripts
+
+- **`./start-everything.sh`** - Complete automated setup and startup
+- **`./stop-everything.sh`** - Stop all services and containers
+- **`./run-tests.sh`** - Run comprehensive test suite (25 tests)
+- **`./check-env.sh`** - Validate environment variables
+- **`./setup-databases.sh`** - Set up Docker databases
+- **`./setup-supabase.sh`** - Interactive Supabase migration guide
+
+See `SCRIPTS_GUIDE.md` for detailed documentation.
+
+## Testing
+
+Run comprehensive test suite:
+```bash
+./run-tests.sh
+```
+
+Individual service tests:
+```bash
+# Frontend
+cd frontend && npm run test
+```bash
+# Backend
+cd backend && npm test
+
+# Tracking Service
+cd tracking-service && ./gradlew test
+
+# AI Service
+cd AI_Intergration_Service && source .venv/bin/activate && pytest
 ```
 
 ## Project Structure
 
 ```
-src/
-├── components/          # Reusable React components
+Ctrl-Alt-Elite/
+├── frontend/                    # React + TypeScript + Vite (Port 5173)
+│   ├── src/
+│   │   ├── components/          # Reusable React components
 │   ├── Header.tsx       # Navigation header
 │   ├── Sidebar.tsx      # Navigation sidebar
 │   ├── LiveMap.tsx      # Mapbox integration with bus & stop markers
@@ -158,13 +259,48 @@ src/
 │   │                      # - trackingAPI.startRideTracking() - initialize ride tracking
 │   │                      # - trackingAPI.getDriverLocation() - get driver location for ride
 │   │                      # - trackingAPI.endRideTracking() - end ride tracking
-│   ├── apiService.test.ts
-│   └── socketService.ts
-├── test/              # Test configuration
-│   └── setup.ts
-├── App.tsx            # Main app component with route definitions
-├── main.tsx           # Entry point
-└── index.css          # Global styles (Tailwind CSS)
+│   │   │   ├── apiService.test.ts
+│   │   │   └── socketService.ts
+│   │   ├── App.tsx            # Main app component
+│   │   ├── main.tsx           # Entry point
+│   │   └── index.css          # Global styles
+│   ├── package.json           # Frontend dependencies
+│   └── vite.config.ts         # Vite configuration
+│
+├── backend/                   # Node.js + Express + TypeScript (Port 8080)
+│   ├── src/
+│   │   ├── routes/            # API route handlers
+│   │   ├── middleware/        # Auth & error handling
+│   │   ├── services/          # Business logic
+│   │   └── server.ts          # Express server
+│   ├── package.json
+│   └── tsconfig.json
+│
+├── tracking-service/          # Spring Boot + Java 21 (Port 8081)
+│   ├── src/main/java/
+│   │   └── com/bantamshuttle/trackingservice/
+│   │       ├── controller/    # REST controllers
+│   │       ├── service/       # Business logic
+│   │       ├── model/         # Entity models
+│   │       └── repository/    # Data access
+│   ├── build.gradle.kts       # Gradle build config
+│   └── docker-compose.yaml    # PostgreSQL + Redis
+│
+├── AI_Intergration_Service/   # Python + FastAPI + LangChain (Port 8083)
+│   ├── app/
+│   │   ├── services/          # RAG & embedding services
+│   │   ├── models/            # Database models
+│   │   ├── schemas/           # Pydantic schemas
+│   │   └── main.py            # FastAPI app
+│   ├── data/knowledge_base/   # JSON knowledge base
+│   ├── requirements.txt       # Python dependencies
+│   └── scripts/               # Ingestion scripts
+│
+├── start-everything.sh        # Master setup script
+├── stop-everything.sh         # Stop all services
+├── run-tests.sh              # Test suite
+├── check-env.sh              # Environment validation
+└── SCRIPTS_GUIDE.md          # Script documentation
 
 ```
 
