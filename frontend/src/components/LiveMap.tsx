@@ -25,7 +25,7 @@ interface LiveMapProps {
 
 export default function LiveMap({ pins, routes = [], activeRouteIds = [], onMapClick }: LiveMapProps) {
   const { user } = useAuth() || {};
-  const [driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
+  const [_driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [busPin, setBusPin] = useState<MapPin | null>(null);
   const rideId = user?.activeRideId || user?.rideId || 'demo-ride'; // Replace with actual ride ID logic
     // Effect: If user is a driver, send their location to tracking service periodically

@@ -358,7 +358,7 @@ export function ProfilePage() {
 
 export function DriverManagementPage() {
   const [drivers, setDrivers] = useState(MOCK_DRIVERS)
-  const [editingId, setEditingId] = useState<number | null>(null)
+  const [_editingId, _setEditingId] = useState<number | null>(null)
   const [showForm, setShowForm] = useState(false)
 
   const handleDelete = (id: number) => {

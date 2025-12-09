@@ -72,9 +72,9 @@ export default function StudentDashboard() {
   const [rideRequests, setRideRequests] = useState<RideRequest[]>([])
   const [isProcessing, setIsProcessing] = useState(false)
   const [stops, setStops] = useState<Stop[]>([])
-  const [isLoadingStops, setIsLoadingStops] = useState(false)
-  const [shuttles, setShuttles] = useState<Shuttle[]>(MOCK_SHUTTLES)
-  const [isLoadingShuttles, setIsLoadingShuttles] = useState(false)
+  const [_isLoadingStops, setIsLoadingStops] = useState(false)
+  const [shuttles, setShuttles] = useState<Shuttle[]>([])
+  const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
 
   // Load stops on mount
   useEffect(() => {

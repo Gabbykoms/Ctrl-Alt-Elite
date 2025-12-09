@@ -58,7 +58,7 @@ export default function AdminDashboard() {
   const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [highlightedStopId, setHighlightedStopId] = useState<string | null>(null)
   const [shuttles, setShuttles] = useState<Shuttle[]>([])
-  const [isLoadingShuttles, setIsLoadingShuttles] = useState(false)
+  const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
 
   // Load stops on mount
   useEffect(() => {

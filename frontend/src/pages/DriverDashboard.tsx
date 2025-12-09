@@ -24,9 +24,9 @@ export default function DriverDashboard() {
   const [isClockedIn, setIsClockedIn] = useState(false)
   const [status, setStatus] = useState('offline')
   const [stops, setStops] = useState<Stop[]>([])
-  const [isLoadingStops, setIsLoadingStops] = useState(false)
+  const [_isLoadingStops, setIsLoadingStops] = useState(false)
   const [shuttles, setShuttles] = useState<Shuttle[]>([])
-  const [isLoadingShuttles, setIsLoadingShuttles] = useState(false)
+  const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
 
   // Load stops from API
   useEffect(() => {
