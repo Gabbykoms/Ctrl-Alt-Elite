@@ -7,7 +7,7 @@ plugins {
 
 
 group = "com.example"
-version = "0.1.0"
+version = System.getenv("VERSION") ?: "0.1.0"
 java {
     toolchain {
         languageVersion.set(JavaLanguageVersion.of(21))
