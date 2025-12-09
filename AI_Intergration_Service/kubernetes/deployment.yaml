@@ -28,7 +28,7 @@ spec:
       serviceAccountName: trinity-ai-service
       containers:
       - name: ai-service
-        image: ghcr.io/gabbykoms/trinity-ai-service:latest
+        image: gabbykoms/bantam-shuttle-ai:latest
         imagePullPolicy: Always
         
         ports:

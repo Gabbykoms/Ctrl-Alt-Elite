@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bantam-shuttle
+  labels:
+    name: bantam-shuttle
+    team: ctrl-alt-elite

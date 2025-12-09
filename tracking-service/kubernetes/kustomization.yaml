@@ -7,15 +7,15 @@ resources:
   - deployment.yaml
   - service.yaml
   - configmap.yaml
-  - hpa.yaml
+  - database.yaml
   - ingress.yaml
 
 commonLabels:
-  app.kubernetes.io/name: bantam-shuttle-backend
+  app.kubernetes.io/name: bantam-shuttle-tracking
   app.kubernetes.io/part-of: bantam-shuttle
   app.kubernetes.io/managed-by: kustomize
 
 images:
-  - name: bantam-shuttle-backend
-    newName: gabbykoms/bantam-shuttle-backend
+  - name: bantam-shuttle-tracking
+    newName: gabbykoms/bantam-shuttle-tracking
     newTag: latest

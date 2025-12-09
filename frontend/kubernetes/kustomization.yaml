@@ -4,18 +4,17 @@ kind: Kustomization
 namespace: bantam-shuttle
 
 resources:
+  - namespace.yaml
   - deployment.yaml
   - service.yaml
-  - configmap.yaml
-  - hpa.yaml
   - ingress.yaml
 
 commonLabels:
-  app.kubernetes.io/name: bantam-shuttle-backend
+  app.kubernetes.io/name: bantam-shuttle-frontend
   app.kubernetes.io/part-of: bantam-shuttle
   app.kubernetes.io/managed-by: kustomize
 
 images:
-  - name: bantam-shuttle-backend
-    newName: gabbykoms/bantam-shuttle-backend
+  - name: bantam-shuttle-frontend
+    newName: gabbykoms/bantam-shuttle-frontend
     newTag: latest

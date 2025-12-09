@@ -41,7 +41,7 @@ spring:
 
 
 server:
-  port: ${PORT:8081}
+  port: ${TRACKING_SERVICE_URL:8081}
 
 
 management:

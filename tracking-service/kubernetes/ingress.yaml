@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bantam-shuttle-tracking
+  namespace: bantam-shuttle
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - tracking.bantam-shuttle.yourdomain.com
+    secretName: bantam-shuttle-tracking-tls
+  rules:
+  - host: tracking.bantam-shuttle.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: bantam-shuttle-tracking
+            port:
+              number: 8081
