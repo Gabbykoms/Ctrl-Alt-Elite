@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 /**
  * REST API endpoints for Driver persistence and operations
@@ -27,9 +28,15 @@ public class DriverController {
      * POST /v1/drivers
      * Create a new driver (basic info only)
      * Sets status to OFFLINE, all location fields are null
+     * Auto-generates ID if not provided
      */
     @PostMapping
     public ResponseEntity<Driver> createDriver(@RequestBody Driver driver) {
+        // Auto-generate ID if not provided
+        if (driver.getId() == null || driver.getId().isEmpty()) {
+            driver.setId("driver-" + UUID.randomUUID().toString());
+        }
+        
         // Ensure status is OFFLINE for new drivers
         driver.setStatus("OFFLINE");
         // Clear location fields

@@ -16,31 +16,39 @@ This guide provides curl examples for testing all tracking service endpoints. En
 
 **Endpoint:** `POST /v1/drivers`
 
+Creates a new driver. The `id` field is optional and will be auto-generated if not provided.
+All location fields and status are automatically set during creation.
+
 ```bash
 curl -X POST http://localhost:8081/v1/drivers \
   -H "Content-Type: application/json" \
   -d '{
-    "name": "John Doe",
-    "shuttleId": "shuttle-1",
-    "routeId": "route-1",
-    "currentLat": null,
-    "currentLng": null,
-    "status": "OFFLINE"
+    "name": "John Doe"
   }'
 ```
 
 **Expected Response:** `201 Created`
 ```json
 {
-  "id": "driver-uuid-123",
+  "id": "driver-7a74a5bd-5b66-4a1f-b736-612a4a398984",
   "name": "John Doe",
-  "shuttleId": "shuttle-1",
-  "routeId": "route-1",
+  "shuttleId": null,
+  "routeId": null,
   "currentLat": null,
   "currentLng": null,
   "lastLocationUpdateAtMs": null,
   "status": "OFFLINE"
 }
+```
+
+**Note:** You can optionally provide an `id` field if you want to use a specific identifier:
+```bash
+curl -X POST http://localhost:8081/v1/drivers \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": "driver-001",
+    "name": "John Doe"
+  }'
 ```
 
 ### 2. Get All Drivers
@@ -682,7 +690,7 @@ curl -X DELETE http://localhost:8081/v1/stops/stop-001
    ```bash
    DRIVER_ID=$(curl -s -X POST http://localhost:8081/v1/drivers \
      -H "Content-Type: application/json" \
-     -d '{"name":"Alice","shuttleId":"shuttle-1","routeId":"route-1","status":"OFFLINE"}' | jq -r '.id')
+     -d '{"name":"Alice"}' | jq -r '.id')
    echo $DRIVER_ID
    ```
 
