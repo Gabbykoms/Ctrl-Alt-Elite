@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Optional, Dict, Any
 from datetime import datetime
 from uuid import UUID
@@ -13,11 +13,10 @@ class DocumentCreate(BaseModel):
 
 class DocumentResponse(BaseModel):
     """Schema for document response"""
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+    
     id: UUID
     content: str
     category: Optional[str]
-    metadata: Dict[str, Any]
+    metadata: Dict[str, Any] = Field(default_factory=dict, alias='doc_metadata')
     created_at: datetime
-
-    class Config:
-        from_attributes = True

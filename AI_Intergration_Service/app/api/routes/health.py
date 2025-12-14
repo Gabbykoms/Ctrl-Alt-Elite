@@ -15,9 +15,9 @@ async def health_check():
     """Basic health check"""
     return {
         "status": "healthy",
-        "service": settings.SERVICE_NAME,
+        "service": settings.AI_SERVICE_NAME,
         "version": "1.0.0",
-        "environment": settings.ENVIRONMENT
+        "environment": settings.AI_ENVIRONMENT
     }
 
 

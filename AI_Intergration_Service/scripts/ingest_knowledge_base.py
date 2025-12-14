@@ -80,10 +80,15 @@ def main():
     print("=" * 60)
 
     db = SessionLocal()
-    data_dir = Path(__file__).parent.parent / 'data' / 'knowledge_base'
+    # Use absolute path to handle both local and container execution
+    script_dir = Path(__file__).resolve().parent
+    data_dir = script_dir.parent / 'data' / 'knowledge_base'
 
     if not data_dir.exists():
         print(f" Data directory not found: {data_dir}")
+        print(f" Script location: {__file__}")
+        print(f" Script dir: {script_dir}")
+        print(f" Parent dir: {script_dir.parent}")
         return
 
     # Ingest each category

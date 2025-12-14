@@ -7,10 +7,10 @@ class Settings(BaseSettings):
     """Application settings loaded from environment variables"""
     
     # Service Info
-    SERVICE_NAME: str = "trinity-ai-service"
-    SERVICE_PORT: int = 8083
-    ENVIRONMENT: str = "development"
-    LOG_LEVEL: str = "INFO"
+    AI_SERVICE_NAME: str = "bantam-ai-service"
+    AI_SERVICE_PORT: int = 8083
+    AI_ENVIRONMENT: str = "production"
+    AI_LOG_LEVEL: str = "INFO"
     
     # Database
     AI_DATABASE_URL: str
@@ -40,12 +40,12 @@ class Settings(BaseSettings):
     TRACKING_SERVICE_URL: str = "http://localhost:8081/api/tracking"
     
     # CORS
-    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:8080,http://localhost:5173"
+    AI_ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:8080,http://localhost:8083"
     
     @property
     def allowed_origins_list(self) -> List[str]:
         """Convert comma-separated origins to list"""
-        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
+        return [origin.strip() for origin in self.AI_ALLOWED_ORIGINS.split(",")]
     
     class Config:
         env_file = ".env"

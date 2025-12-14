@@ -29,6 +29,7 @@ kubectl delete secret bantam-ai-secret -n elite-dev --ignore-not-found=true
 kubectl create secret generic bantam-ai-secret \
     --from-literal=AI_OPENAI_API_KEY="${OPENAI_API_KEY}" \
     --from-literal=AI_DB_PASSWORD="${AI_DB_PASSWORD}" \
+    --from-literal=AI_DATABASE_URL="${AI_DATABASE_URL}" \
     --from-literal=AI_SUPABASE_KEY="${AI_SUPABASE_KEY}" \
     --from-literal=AI_SUPABASE_URL="${AI_SUPABASE_URL}" \
     --from-literal=OPENWEATHER_API_KEY="${OPENWEATHER_API_KEY}" \

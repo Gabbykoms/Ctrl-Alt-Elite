@@ -7,7 +7,7 @@ from app.api.routes import chat, documents, health
 
 # Configure logging
 logging.basicConfig(
-    level=settings.LOG_LEVEL,
+    level=settings.AI_LOG_LEVEL,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
@@ -40,9 +40,9 @@ app.include_router(documents.router, prefix="/documents", tags=["Documents"])
 @app.on_event("startup")
 async def startup_event():
     """Run on application startup"""
-    logger.info(f" Starting {settings.SERVICE_NAME}")
-    logger.info(f" Environment: {settings.ENVIRONMENT}")
-    logger.info(f" Port: {settings.SERVICE_PORT}")
+    logger.info(f" Starting {settings.AI_SERVICE_NAME}")
+    logger.info(f" Environment: {settings.AI_ENVIRONMENT}")
+    logger.info(f" Port: {settings.AI_SERVICE_PORT}")
     logger.info(f" Chat Model: {settings.CHAT_MODEL}")
     logger.info(f" Embedding Model: {settings.EMBEDDING_MODEL}")
 
@@ -70,6 +70,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=settings.SERVICE_PORT,
-        reload=settings.ENVIRONMENT == "development"
+        port=settings.AI_SERVICE_PORT,
+        reload=settings.AI_ENVIRONMENT == "development"
     )

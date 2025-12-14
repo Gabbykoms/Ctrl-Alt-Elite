@@ -63,9 +63,6 @@ docs/
 README.md
 LICENSE
 
-# Data
-data/
-
 # Logs
 *.log
 logs/

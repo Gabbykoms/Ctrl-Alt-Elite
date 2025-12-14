@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-init
-  namespace: trinity
+  namespace: elite-dev
 data:
   init.sql: |
     CREATE EXTENSION IF NOT EXISTS vector;

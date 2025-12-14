@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: trinity-ai-service
-  namespace: trinity
+  name: bantam-ai-service
+  namespace: elite-dev
   labels:
-    app: trinity-ai-service
+    app: bantam-ai-service
     version: v1
 spec:
   replicas: 2
@@ -15,20 +15,22 @@ spec:
       maxUnavailable: 0
   selector:
     matchLabels:
-      app: trinity-ai-service
+      app: bantam-ai-service
   template:
     metadata:
       labels:
-        app: trinity-ai-service
+        app: bantam-ai-service
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8083"
         prometheus.io/path: "/metrics"
     spec:
-      serviceAccountName: trinity-ai-service
+      serviceAccountName: bantam-ai-service
+      imagePullSecrets:
+      - name: harbor-pull-secret
       containers:
       - name: ai-service
-        image: gabbykoms/bantam-shuttle-ai:latest
+        image: harbor.javajon-gke.duckdns.org/library/elite-ai-service:latest
         imagePullPolicy: Always
         
         ports:
@@ -38,9 +40,9 @@ spec:
         
         envFrom:
         - configMapRef:
-            name: trinity-ai-config
+            name: bantam-ai-config
         - secretRef:
-            name: trinity-ai-secret
+            name: bantam-ai-secret
         
         resources:
           requests:
@@ -53,7 +55,7 @@ spec:
         livenessProbe:
           httpGet:
             path: /health
-            port: http
+            port: 8083
           initialDelaySeconds: 30
           periodSeconds: 10
           timeoutSeconds: 5
@@ -62,7 +64,7 @@ spec:
         readinessProbe:
           httpGet:
             path: /health
-            port: http
+            port: 8083
           initialDelaySeconds: 10
           periodSeconds: 5
           timeoutSeconds: 3
@@ -86,7 +88,7 @@ spec:
                 - key: app
                   operator: In
                   values:
-                  - trinity-ai-service
+                  - bantam-ai-service
               topologyKey: kubernetes.io/hostname
       
       terminationGracePeriodSeconds: 30

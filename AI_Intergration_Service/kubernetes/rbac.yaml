@@ -1,14 +1,14 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: trinity-ai-service
-  namespace: trinity
+  name: bantam-ai-service
+  namespace: elite-dev
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: trinity-ai-service
-  namespace: trinity
+  name: bantam-ai-service
+  namespace: elite-dev
 rules:
 - apiGroups: [""]
   resources: ["configmaps"]
@@ -20,13 +20,13 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: trinity-ai-service
-  namespace: trinity
+  name: bantam-ai-service
+  namespace: elite-dev
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: trinity-ai-service
+  name: bantam-ai-service
 subjects:
 - kind: ServiceAccount
-  name: trinity-ai-service
-  namespace: trinity
+  name: bantam-ai-service
+  namespace: elite-dev

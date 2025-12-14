@@ -2,7 +2,7 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: trinity-ai-ingress
-  namespace: trinity
+  namespace: elite-dev
   annotations:
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
     nginx.ingress.kubernetes.io/rewrite-target: /
@@ -20,6 +20,6 @@ spec:
         pathType: Prefix
         backend:
           service:
-            name: trinity-ai-service
+            name: bantam-ai-service
             port:
               number: 8083
