@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { User, Mail, Lock, Trash2, Save, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
+import { User, Lock, Trash2, Save, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '../contexts/AuthContext'
 import { userAPI } from '../services/apiService'
 

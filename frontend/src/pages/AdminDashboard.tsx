@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
-import { Plus, Trash2, MapPin, Loader } from 'lucide-react'
+import { Plus, Trash2, Loader } from 'lucide-react'
 import LiveMap from '../components/LiveMap'
 import { trackingAPI } from '../services/apiService'
 
@@ -55,7 +55,7 @@ export default function AdminDashboard() {
   const [showAddStopModal, setShowAddStopModal] = useState(false)
   const [stopName, setStopName] = useState('')
   const [clickPosition, setClickPosition] = useState<ClickPosition | null>(null)
-  const [feedbackMessage, setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [_feedbackMessage, _setFeedbackMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [highlightedStopId, setHighlightedStopId] = useState<string | null>(null)
   const [shuttles, setShuttles] = useState<Shuttle[]>([])
   const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
@@ -123,7 +123,7 @@ export default function AdminDashboard() {
       }
     } catch (error) {
       console.error('Error loading stops:', error)
-      setFeedbackMessage({ type: 'error', text: 'Failed to load stops' })
+      _setFeedbackMessage({ type: 'error', text: 'Failed to load stops' })
     } finally {
       setIsLoading(false)
     }
@@ -132,13 +132,13 @@ export default function AdminDashboard() {
   const handleAddStop = async () => {
     // Validate coordinates first
     if (!clickPosition) {
-      setFeedbackMessage({ type: 'error', text: 'Please click on the map to select a location' })
+      _setFeedbackMessage({ type: 'error', text: 'Please click on the map to select a location' })
       return
     }
 
     // Validate name
     if (!stopName.trim()) {
-      setFeedbackMessage({ type: 'error', text: 'Stop name is required' })
+      _setFeedbackMessage({ type: 'error', text: 'Stop name is required' })
       return
     }
 
@@ -156,11 +156,11 @@ export default function AdminDashboard() {
         setShowAddStopModal(false)
         setStopName('')
         setClickPosition(null)
-        setFeedbackMessage({ type: 'success', text: `Stop "${newStop.name}" added successfully` })
+        _setFeedbackMessage({ type: 'success', text: `Stop "${newStop.name}" added successfully` })
       }
     } catch (error) {
       console.error('Error adding stop:', error)
-      setFeedbackMessage({ type: 'error', text: 'Failed to add stop' })
+      _setFeedbackMessage({ type: 'error', text: 'Failed to add stop' })
     } finally {
       setIsLoading(false)
     }
@@ -173,10 +173,10 @@ export default function AdminDashboard() {
       setIsLoading(true)
       await trackingAPI.deleteStop(stopId)
       setStops(stops.filter(s => s.id !== stopId))
-      setFeedbackMessage({ type: 'success', text: `Stop "${stopName}" deleted` })
+      _setFeedbackMessage({ type: 'success', text: `Stop "${stopName}" deleted` })
     } catch (error) {
       console.error('Error deleting stop:', error)
-      setFeedbackMessage({ type: 'error', text: 'Failed to delete stop' })
+      _setFeedbackMessage({ type: 'error', text: 'Failed to delete stop' })
     } finally {
       setIsLoading(false)
     }
