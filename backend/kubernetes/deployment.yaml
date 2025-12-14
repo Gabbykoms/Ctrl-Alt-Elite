@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bantam-shuttle-backend
+  namespace: elite-dev
   labels:
     app: bantam-shuttle-backend
     tier: backend
@@ -23,9 +24,11 @@ spec:
         tier: backend
         team: ctrl-alt-elite
     spec:
+      imagePullSecrets:
+      - name: harbor-pull-secret
       containers:
-      - name: backend
-        image: bantam-shuttle-backend:latest
+      - name: bantam-shuttle-backend
+        image: harbor.javajon-gke.duckdns.org/library/elite-backend:latest
         imagePullPolicy: IfNotPresent
         ports:
         - name: http
