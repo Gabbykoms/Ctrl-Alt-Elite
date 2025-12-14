@@ -1,4 +1,5 @@
 from pydantic_settings import BaseSettings
+from pydantic import ConfigDict
 from functools import lru_cache
 from typing import List
 
@@ -42,14 +43,16 @@ class Settings(BaseSettings):
     # CORS
     AI_ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:8080,http://localhost:8083"
     
+    model_config = ConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="ignore"
+    )
+    
     @property
     def allowed_origins_list(self) -> List[str]:
         """Convert comma-separated origins to list"""
         return [origin.strip() for origin in self.AI_ALLOWED_ORIGINS.split(",")]
-    
-    class Config:
-        env_file = ".env"
-        case_sensitive = True
 
 
 @lru_cache()

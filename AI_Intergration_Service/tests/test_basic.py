@@ -4,8 +4,8 @@ from app.config import settings
 
 def test_settings_loaded():
     """Test that settings are loaded correctly"""
-    assert settings.SERVICE_NAME == "trinity-ai-service"
-    assert settings.SERVICE_PORT == 8083
+    assert settings.AI_SERVICE_NAME == "bantam-ai-service"
+    assert settings.AI_SERVICE_PORT == 8083
     assert settings.AI_OPENAI_API_KEY is not None
     assert len(settings.AI_OPENAI_API_KEY) > 0
     print("✓ Settings loaded successfully")
