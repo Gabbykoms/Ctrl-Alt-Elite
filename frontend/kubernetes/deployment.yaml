@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bantam-shuttle-frontend
-  namespace: bantam-shuttle
+  namespace: elite-dev
   labels:
     app: bantam-shuttle-frontend
     tier: frontend
@@ -24,9 +24,11 @@ spec:
         tier: frontend
         team: ctrl-alt-elite
     spec:
+      imagePullSecrets:
+      - name: harbor-pull-secret
       containers:
-      - name: frontend
-        image: gabbykoms/bantam-shuttle-frontend:latest
+      - name: bantam-shuttle-frontend
+        image: harbor.javajon-gke.duckdns.org/library/elite-frontend:latest
         imagePullPolicy: Always
         ports:
         - name: http

@@ -2,19 +2,15 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: bantam-shuttle-frontend
-  namespace: bantam-shuttle
+  namespace: elite-dev
   annotations:
     nginx.ingress.kubernetes.io/rewrite-target: /
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
     cert-manager.io/cluster-issuer: "letsencrypt-prod"
 spec:
   ingressClassName: nginx
-  tls:
-  - hosts:
-    - bantam-shuttle.yourdomain.com
-    secretName: bantam-shuttle-frontend-tls
   rules:
-  - host: bantam-shuttle.yourdomain.com
+  - host: localhost
     http:
       paths:
       - path: /

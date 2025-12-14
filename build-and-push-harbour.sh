@@ -221,7 +221,7 @@ if docker build --platform="$PLATFORM" \
     --build-arg VITE_AI_SERVICE_URL="${VITE_AI_SERVICE_URL:-http://localhost:8083}" \
     --build-arg VITE_MAPBOX_TOKEN="${VITE_MAPBOX_TOKEN}" \
     -t "$FRONTEND_IMAGE" \
-    -f Dockerfile .; then
+    -f Dockerfile . 2>&1 | tail -20; then
     echo "Success: Frontend built successfully"
     
     echo "Info: Pushing Frontend to Harbor: $FRONTEND_IMAGE"
@@ -285,6 +285,8 @@ else
         ((FAIL_COUNT++))
     fi
 fi
+
+echo ""
 
 # Summary
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
