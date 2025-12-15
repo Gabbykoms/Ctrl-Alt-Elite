@@ -159,7 +159,7 @@ router.post('/register', async (req: Request, res: Response) => {
 
     // Create user profile in database
     console.log('Attempting to create user profile with admin client...')
-    const { error: profileError } = await supabaseAdmin.from('profiles').insert({
+    const { error: profileError } = await supabaseAdmin.from('profiles').upsert({
       id: authData.user.id,
       email: data.email,
       name: data.name,
@@ -171,7 +171,7 @@ router.post('/register', async (req: Request, res: Response) => {
       console.error('Profile Error Details:', profileError)
       
       // This is critical - if profile creation fails, we should clean up the auth user
-      await supabase.auth.admin.deleteUser(authData.user.id)
+      await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
       
       return res.status(500).json({
         error: 'Profile creation failed',

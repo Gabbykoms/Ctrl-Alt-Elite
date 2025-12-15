@@ -5,7 +5,7 @@ metadata:
   labels:
     app: bantam-shuttle
 data:
-  FRONTEND_URL: "http://localhost:5173"
-  frontend-url: "http://localhost:5173"
-  tracking-service-url: "http://tracking-service:8080"
-  ai-service-url: "http://ai-service:8083"
+  FRONTEND_URL: "http://shuttle.javajon-gke.duckdns.org"
+  frontend-url: "http://shuttle.javajon-gke.duckdns.org"
+  tracking-service-url: "http://shuttle.javajon-gke.duckdns.org/api/tracking"
+  ai-service-url: "http://shuttle.javajon-gke.duckdns.org/api/ai"

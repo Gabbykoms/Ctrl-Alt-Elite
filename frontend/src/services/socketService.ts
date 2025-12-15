@@ -8,8 +8,13 @@ let socket: Socket | null = null
 export const initSocket = (): Socket => {
   if (!socket) {
     socket = io(SOCKET_URL, {
-      transports: ['websocket'],
+      path: '/socket.io/',
+      transports: ['websocket', 'polling'],
       autoConnect: true,
+      reconnection: true,
+      reconnectionDelay: 1000,
+      reconnectionDelayMax: 5000,
+      reconnectionAttempts: 5,
     })
 
     socket.on('connect', () => {

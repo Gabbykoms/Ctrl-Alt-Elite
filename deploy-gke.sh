@@ -2,8 +2,39 @@
 
 set -e
 
+echo "╔════════════════════════════════════════════════════════════╗"
+echo "║         Ctrl Alt Elite - GKE Deployment Script             ║"
+echo "║                    Updated December 2025                   ║"
+echo "╚════════════════════════════════════════════════════════════╝"
+echo ""
+
+echo "Prerequisites:"
+echo "  ✓ KUBECONFIG exported and pointing to GKE cluster"
+echo "  ✓ elite-db namespace with PostgreSQL and Redis deployed"
+echo "  ✓ Images pushed to Harbor registry"
+echo ""
+
+# Check if databases exist
+echo "Checking for required databases in elite-db namespace..."
+if ! kubectl get secret my-postgresql -n elite-db > /dev/null 2>&1; then
+    echo "Error: PostgreSQL not found in elite-db namespace"
+    echo "Please deploy PostgreSQL first using:"
+    echo "  helm install my-postgresql bitnami/postgresql --version 18.1.13 -n elite-db"
+    exit 1
+fi
+echo "✓ PostgreSQL found"
+
+if ! kubectl get secret my-redis -n elite-db > /dev/null 2>&1; then
+    echo "Error: Redis not found in elite-db namespace"
+    echo "Please deploy Redis first using:"
+    echo "  helm install my-redis bitnami/redis --version 24.0.8 -n elite-db"
+    exit 1
+fi
+echo "✓ Redis found"
+echo ""
+
 # Check required environment variables
-REQUIRED_VARS=("SUPABASE_URL" "SUPABASE_ANON_KEY" "SUPABASE_SERVICE_ROLE_KEY" "JWT_SECRET" "HARBOR_PASSWORD" "HARBOR_DOMAIN" "HARBOR_USERNAME" "OPENAI_API_KEY" "AI_DB_PASSWORD" "AI_SUPABASE_KEY" "AI_SUPABASE_URL" "OPENWEATHER_API_KEY" "TRACKING_DB_USER" "TRACKING_DB_PASSWORD")
+REQUIRED_VARS=("SUPABASE_URL" "SUPABASE_ANON_KEY" "SUPABASE_SERVICE_ROLE_KEY" "JWT_SECRET" "HARBOR_PASSWORD" "HARBOR_DOMAIN" "HARBOR_USERNAME" "OPENAI_API_KEY" "AI_DB_PASSWORD" "AI_SUPABASE_KEY" "AI_SUPABASE_URL" "OPENWEATHER_API_KEY")
 
 for var in "${REQUIRED_VARS[@]}"; do
     if [ -z "${!var}" ]; then
@@ -12,8 +43,12 @@ for var in "${REQUIRED_VARS[@]}"; do
     fi
 done
 
-# Create namespace
+# Create namespaces
 kubectl create namespace elite-dev --dry-run=client -o yaml | kubectl apply -f -
+kubectl create namespace elite-db --dry-run=client -o yaml | kubectl apply -f -
+
+echo "✓ Namespaces created/verified"
+echo ""
 
 # Create secrets
 kubectl delete secret bantam-secrets -n elite-dev --ignore-not-found=true
@@ -35,12 +70,22 @@ kubectl create secret generic bantam-ai-secret \
     --from-literal=OPENWEATHER_API_KEY="${OPENWEATHER_API_KEY}" \
     -n elite-dev
 
-# Create tracking service secret
+# Create tracking service secret using PostgreSQL credentials from elite-db
+echo "Creating tracking service secrets..."
+POSTGRES_PASSWORD=$(kubectl get secret --namespace elite-db my-postgresql -o jsonpath="{.data.postgres-password}" | base64 -d)
+REDIS_PASSWORD=$(kubectl get secret --namespace elite-db my-redis -o jsonpath="{.data.redis-password}" | base64 -d)
+
 kubectl delete secret tracking-secrets -n elite-dev --ignore-not-found=true
 kubectl create secret generic tracking-secrets \
-    --from-literal=db-username="${TRACKING_DB_USER}" \
-    --from-literal=db-password="${TRACKING_DB_PASSWORD}" \
+    --from-literal=db-username="postgres" \
+    --from-literal=db-password="$POSTGRES_PASSWORD" \
     -n elite-dev
+
+# Copy Redis secret from elite-db to elite-dev so tracking service can authenticate
+kubectl get secret my-redis -n elite-db -o yaml | sed 's/namespace: elite-db/namespace: elite-dev/' | kubectl apply -f -
+
+echo "✓ Tracking service secrets created"
+echo ""
 
 # Create Harbor image pull secret
 kubectl create secret docker-registry harbor-pull-secret \

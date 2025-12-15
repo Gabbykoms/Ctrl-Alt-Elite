@@ -26,9 +26,13 @@ spring:
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
+      username: ${REDIS_USERNAME:default}
       password: ${REDIS_PASSWORD:redis_password}
       timeout: 2000ms
       database: 0
+
+#   kubectl get secret my-redis -n elite-db -o jsonpath='{.data.redis-password}' | base64 -d
+# tDpKCOWAIE
   
   # rabbitmq:
   #   host: ${RABBITMQ_HOST:localhost}

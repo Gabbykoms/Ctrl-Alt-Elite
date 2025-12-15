@@ -144,23 +144,31 @@ export default function AdminDashboard() {
 
     try {
       setIsLoading(true)
+      console.log('[AdminDashboard] Adding stop with data:', { name: stopName, lat: clickPosition.lat, lng: clickPosition.lng })
       const newStop = await trackingAPI.createStop({
         name: stopName,
         latitude: clickPosition.lat,
         longitude: clickPosition.lng,
       })
 
-      if (newStop.id) {
+      console.log('[AdminDashboard] API response:', newStop)
+      
+      if (newStop && newStop.id) {
+        console.log('[AdminDashboard] Stop created successfully:', newStop)
         setStops([...stops, newStop])
         setShowNameModal(false)
         setShowAddStopModal(false)
         setStopName('')
         setClickPosition(null)
         _setFeedbackMessage({ type: 'success', text: `Stop "${newStop.name}" added successfully` })
+      } else {
+        console.error('[AdminDashboard] Invalid response - no ID:', newStop)
+        _setFeedbackMessage({ type: 'error', text: 'Stop created but invalid response received' })
       }
     } catch (error) {
-      console.error('Error adding stop:', error)
-      _setFeedbackMessage({ type: 'error', text: 'Failed to add stop' })
+      console.error('[AdminDashboard] Error adding stop:', error)
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
+      _setFeedbackMessage({ type: 'error', text: `Failed to add stop: ${errorMsg}` })
     } finally {
       setIsLoading(false)
     }
@@ -183,14 +191,14 @@ export default function AdminDashboard() {
   }
 
   const handleMapClick = (lat: number, lng: number) => {
-    console.log('handleMapClick called:', { lat, lng, currentClickPosition: clickPosition })
+    console.log('[AdminDashboard] Map clicked at:', { lat, lng, currentClickPosition: clickPosition, showAddStopModal })
     if (clickPosition && clickPosition.lat === lat && clickPosition.lng === lng) {
       // Same location clicked again - remove the pin
-      console.log('Removing pin (same location clicked twice)')
+      console.log('[AdminDashboard] Removing pin (same location clicked twice)')
       setClickPosition(null)
     } else {
       // New location - set the pin
-      console.log('Setting pin to:', { lat, lng })
+      console.log('[AdminDashboard] Setting pin to:', { lat, lng })
       setClickPosition({ lat, lng })
     }
   }

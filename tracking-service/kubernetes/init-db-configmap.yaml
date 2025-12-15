@@ -1,0 +1,91 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tracking-init-db-script
+  namespace: elite-db
+data:
+  init_db.sql: |
+    -- Initialize tracking database with stops, drivers, and rides tables
+    -- This script creates the schema for persistent tracking storage
+
+    -- Create stops table
+    CREATE TABLE IF NOT EXISTS stops (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        latitude DECIMAL(10, 6) NOT NULL,
+        longitude DECIMAL(10, 6) NOT NULL,
+        description TEXT,
+        is_active BOOLEAN DEFAULT true,
+        created_at_ms BIGINT NOT NULL,
+        updated_at_ms BIGINT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_stops_name ON stops(name);
+    CREATE INDEX IF NOT EXISTS idx_stops_is_active ON stops(is_active);
+    CREATE INDEX IF NOT EXISTS idx_stops_created_at ON stops(created_at_ms);
+    CREATE INDEX IF NOT EXISTS idx_stops_coordinates ON stops(latitude, longitude);
+
+    CREATE OR REPLACE FUNCTION update_updated_at_column()
+    RETURNS TRIGGER AS $$
+    BEGIN
+        NEW.updated_at = CURRENT_TIMESTAMP;
+        RETURN NEW;
+    END;
+    $$ LANGUAGE plpgsql;
+
+    CREATE TRIGGER IF NOT EXISTS update_stops_updated_at BEFORE UPDATE ON stops
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Insert default Trinity College stops
+    INSERT INTO stops (id, name, latitude, longitude, description, is_active, created_at_ms, updated_at_ms)
+    VALUES
+        ('stop-mather', 'Mather', 41.746210, -72.692788, 'Mather Hall', true, EXTRACT(EPOCH FROM NOW())::BIGINT * 1000, EXTRACT(EPOCH FROM NOW())::BIGINT * 1000),
+        ('stop-library', 'Library', 41.746589, -72.691453, 'Trinity College Library', true, EXTRACT(EPOCH FROM NOW())::BIGINT * 1000, EXTRACT(EPOCH FROM NOW())::BIGINT * 1000)
+    ON CONFLICT (id) DO NOTHING;
+
+    -- Create drivers table
+    CREATE TABLE IF NOT EXISTS drivers (
+        id VARCHAR(255) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        shuttle_id VARCHAR(255),
+        route_id VARCHAR(255),
+        current_lat DECIMAL(10, 6),
+        current_lng DECIMAL(10, 6),
+        last_location_update_at_ms BIGINT,
+        status VARCHAR(50) NOT NULL DEFAULT 'OFFLINE',
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_drivers_status ON drivers(status);
+    CREATE INDEX IF NOT EXISTS idx_drivers_shuttle_id ON drivers(shuttle_id);
+
+    CREATE TRIGGER IF NOT EXISTS update_drivers_updated_at BEFORE UPDATE ON drivers
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+    -- Create rides table
+    CREATE TABLE IF NOT EXISTS rides (
+        ride_id VARCHAR(255) PRIMARY KEY,
+        student_id VARCHAR(255) NOT NULL,
+        driver_id VARCHAR(255),
+        shuttle_id VARCHAR(255) NOT NULL,
+        status VARCHAR(50) NOT NULL DEFAULT 'REQUESTED',
+        pickup_lat DECIMAL(10, 6) NOT NULL,
+        pickup_lng DECIMAL(10, 6) NOT NULL,
+        dropoff_lat DECIMAL(10, 6) NOT NULL,
+        dropoff_lng DECIMAL(10, 6) NOT NULL,
+        created_at_ms BIGINT NOT NULL,
+        completed_at_ms BIGINT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_rides_student_id ON rides(student_id);
+    CREATE INDEX IF NOT EXISTS idx_rides_driver_id ON rides(driver_id);
+    CREATE INDEX IF NOT EXISTS idx_rides_status ON rides(status);
+    CREATE INDEX IF NOT EXISTS idx_rides_shuttle_id ON rides(shuttle_id);
+
+    CREATE TRIGGER IF NOT EXISTS update_rides_updated_at BEFORE UPDATE ON rides
+        FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();

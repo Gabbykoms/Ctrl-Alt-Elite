@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: bantam-shuttle-tracking
-  namespace: bantam-shuttle
+  namespace: elite-dev
   labels:
     app: bantam-shuttle-tracking
     tier: backend
@@ -26,7 +26,7 @@ spec:
     spec:
       containers:
       - name: tracking
-        image: gabbykoms/bantam-shuttle-tracking:latest
+        image: harbor.javajon-gke.duckdns.org/library/elite-tracking-service:latest
         imagePullPolicy: Always
         ports:
         - name: http
@@ -77,6 +77,13 @@ spec:
             configMapKeyRef:
               name: tracking-config
               key: redis-port
+        - name: REDIS_USERNAME
+          value: "default"
+        - name: REDIS_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: my-redis
+              key: redis-password
         resources:
           requests:
             cpu: "500m"

@@ -15,12 +15,16 @@ const options = {
     },
     servers: [
       {
+        url: 'http://shuttle.javajon-gke.duckdns.org',
+        description: 'Production server (GKE)',
+      },
+      {
         url: 'http://localhost:8080',
         description: 'Development server',
       },
       {
         url: 'https://api.bantamshuttle.local',
-        description: 'Production server',
+        description: 'Production server (backup)',
       },
     ],
     components: {

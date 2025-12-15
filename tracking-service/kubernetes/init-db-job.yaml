@@ -1,0 +1,57 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: tracking-db-init
+  namespace: elite-db
+spec:
+  backoffLimit: 3
+  template:
+    metadata:
+      name: tracking-db-init
+    spec:
+      serviceAccountName: default
+      containers:
+      - name: init-db
+        image: postgres:16-alpine
+        env:
+        - name: PGPASSWORD
+          value: "Vr8Ba5zUku"
+        - name: PGHOST
+          value: "my-postgresql"
+        - name: PGPORT
+          value: "5432"
+        - name: PGUSER
+          value: "postgres"
+        - name: PGDATABASE
+          value: "tracking_db"
+        command:
+        - sh
+        - -c
+        - |
+          echo "Waiting for PostgreSQL to be ready..."
+          for i in {1..30}; do
+            if pg_isready -h $PGHOST -p $PGPORT; then
+              echo "PostgreSQL is ready!"
+              break
+            fi
+            echo "Attempt $i/30: PostgreSQL not ready yet, waiting..."
+            sleep 2
+          done
+          
+          echo "Running database initialization..."
+          psql -h $PGHOST -p $PGPORT -U $PGUSER -d $PGDATABASE -f /scripts/init_db.sql
+          
+          if [ $? -eq 0 ]; then
+            echo "✅ Database initialization completed successfully"
+          else
+            echo "❌ Database initialization failed"
+            exit 1
+          fi
+        volumeMounts:
+        - name: init-script
+          mountPath: /scripts
+      volumes:
+      - name: init-script
+        configMap:
+          name: tracking-init-db-script
+      restartPolicy: Never

@@ -6,7 +6,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080
 // Create axios instance
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  timeout: 30000, // Increased from 10s to 30s for slower networks/Supabase operations
   headers: {
     'Content-Type': 'application/json',
   },
@@ -158,7 +158,7 @@ export const rideAPI = {
 // ============================================
 // TRACKING-SERVICE API (direct integration)
 // ============================================
-const TRACKING_SERVICE_BASE = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8080';
+const TRACKING_SERVICE_BASE = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8081';
 
 export const trackingAPI = {
   // ============ RIDE TRACKING ============
