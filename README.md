@@ -46,6 +46,107 @@ This is a microservices application with 4 main services:
 - Local PostgreSQL 16 (Tracking Service)
 - Redis 7 (Tracking Service cache)
 
+## Architecture Diagram
+```mermaid
+graph TB
+    subgraph "Client Layer"
+        WEB[Web Browser]
+        MOBILE[Mobile Browser]
+    end
+
+    subgraph "Frontend Service - Port 5173"
+        REACT[React 18 + TypeScript + Vite]
+        COMPONENTS[Components Layer]
+        PAGES[Pages Layer]
+        CONTEXTS[Context Providers]
+        SERVICES[Service Clients]
+        
+        REACT --> COMPONENTS
+        REACT --> PAGES
+        REACT --> CONTEXTS
+        REACT --> SERVICES
+    end
+
+    subgraph "Backend Service - Port 8080"
+        EXPRESS[Express + TypeScript]
+        ROUTES[API Routes]
+        MIDDLEWARE[Auth Middleware]
+        BL[Business Logic]
+        SOCKETIO[Socket.IO Server]
+        
+        EXPRESS --> ROUTES
+        EXPRESS --> MIDDLEWARE
+        EXPRESS --> BL
+        EXPRESS --> SOCKETIO
+    end
+
+    subgraph "Tracking Service - Port 8081"
+        SPRING[Spring Boot + Java 21]
+        CONTROLLERS[REST Controllers]
+        TRACKBL[Tracking Business Logic]
+        REPO[JPA Repositories]
+        
+        SPRING --> CONTROLLERS
+        SPRING --> TRACKBL
+        SPRING --> REPO
+    end
+
+    subgraph "AI Service - Port 8083"
+        FASTAPI[FastAPI + Python]
+        RAG[RAG Service]
+        EMBED[Embedding Service]
+        LANGCHAIN[LangChain]
+        
+        FASTAPI --> RAG
+        FASTAPI --> EMBED
+        FASTAPI --> LANGCHAIN
+    end
+
+    subgraph "Data Layer"
+        SUPABASE[(Supabase PostgreSQL)]
+        LOCALDB[(PostgreSQL 16)]
+        REDIS[(Redis 7)]
+        KB[Knowledge Base JSON]
+    end
+
+    subgraph "External Services"
+        MAPBOX[Mapbox API]
+        OPENAI[OpenAI API]
+    end
+
+    WEB --> REACT
+    MOBILE --> REACT
+    
+    SERVICES -->|HTTP REST| EXPRESS
+    SERVICES -->|Socket.IO| SOCKETIO
+    SERVICES -->|HTTP Polling 5s| CONTROLLERS
+    SERVICES -->|HTTP REST| FASTAPI
+    
+    EXPRESS -->|Auth/Users| SUPABASE
+    FASTAPI -->|Embeddings| SUPABASE
+    
+    REPO -->|JPA| LOCALDB
+    TRACKBL -->|Cache| REDIS
+    
+    RAG -->|Vector Search| SUPABASE
+    EMBED -->|Embeddings| OPENAI
+    LANGCHAIN -->|Chat| OPENAI
+    
+    COMPONENTS -->|Map Rendering| MAPBOX
+    
+    KB -.->|Ingestion| EMBED
+
+    classDef frontend fill:#6CACE4,stroke:#004179,color:#000
+    classDef backend fill:#F3C404,stroke:#004179,color:#000
+    classDef database fill:#004179,stroke:#F3C404,color:#fff
+    classDef external fill:#F5F5F5,stroke:#1a1a1a,color:#000
+    
+    class REACT,COMPONENTS,PAGES,CONTEXTS,SERVICES frontend
+    class EXPRESS,ROUTES,MIDDLEWARE,BL,SOCKETIO,SPRING,CONTROLLERS,TRACKBL,REPO,FASTAPI,RAG,EMBED,LANGCHAIN backend
+    class SUPABASE,LOCALDB,REDIS,KB database
+    class MAPBOX,OPENAI external
+```
+
 ## Features
 
 - **Student Portal**: Real-time shuttle tracking with interactive maps, route information, and stop details
