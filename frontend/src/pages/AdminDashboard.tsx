@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Plus, Trash2, Loader } from 'lucide-react'
 import LiveMap from '../components/LiveMap'
-import { trackingAPI } from '../services/apiService'
+import { trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
 
 const PEAK_USAGE_DATA = [
   { time: '6 AM', count: 45 },
@@ -70,7 +70,6 @@ export default function AdminDashboard() {
     const loadShuttles = async () => {
       try {
         setIsLoadingShuttles(true)
-        const TRACKING_SERVICE_URL = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8081'
         const response = await fetch(`${TRACKING_SERVICE_URL}/v1/locations/latest/org/trinity`)
         
         if (!response.ok) {
@@ -144,31 +143,23 @@ export default function AdminDashboard() {
 
     try {
       setIsLoading(true)
-      console.log('[AdminDashboard] Adding stop with data:', { name: stopName, lat: clickPosition.lat, lng: clickPosition.lng })
       const newStop = await trackingAPI.createStop({
         name: stopName,
         latitude: clickPosition.lat,
         longitude: clickPosition.lng,
       })
 
-      console.log('[AdminDashboard] API response:', newStop)
-      
-      if (newStop && newStop.id) {
-        console.log('[AdminDashboard] Stop created successfully:', newStop)
+      if (newStop.id) {
         setStops([...stops, newStop])
         setShowNameModal(false)
         setShowAddStopModal(false)
         setStopName('')
         setClickPosition(null)
         _setFeedbackMessage({ type: 'success', text: `Stop "${newStop.name}" added successfully` })
-      } else {
-        console.error('[AdminDashboard] Invalid response - no ID:', newStop)
-        _setFeedbackMessage({ type: 'error', text: 'Stop created but invalid response received' })
       }
     } catch (error) {
-      console.error('[AdminDashboard] Error adding stop:', error)
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error'
-      _setFeedbackMessage({ type: 'error', text: `Failed to add stop: ${errorMsg}` })
+      console.error('Error adding stop:', error)
+      _setFeedbackMessage({ type: 'error', text: 'Failed to add stop' })
     } finally {
       setIsLoading(false)
     }
@@ -191,14 +182,14 @@ export default function AdminDashboard() {
   }
 
   const handleMapClick = (lat: number, lng: number) => {
-    console.log('[AdminDashboard] Map clicked at:', { lat, lng, currentClickPosition: clickPosition, showAddStopModal })
+    console.log('handleMapClick called:', { lat, lng, currentClickPosition: clickPosition })
     if (clickPosition && clickPosition.lat === lat && clickPosition.lng === lng) {
       // Same location clicked again - remove the pin
-      console.log('[AdminDashboard] Removing pin (same location clicked twice)')
+      console.log('Removing pin (same location clicked twice)')
       setClickPosition(null)
     } else {
       // New location - set the pin
-      console.log('[AdminDashboard] Setting pin to:', { lat, lng })
+      console.log('Setting pin to:', { lat, lng })
       setClickPosition({ lat, lng })
     }
   }

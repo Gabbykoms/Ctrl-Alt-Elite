@@ -9,6 +9,9 @@ spec:
   type: ClusterIP
   selector:
     app: bantam-ai-service
+    app.kubernetes.io/name: bantam-ai-service
+    app.kubernetes.io/version: v1
+    app.kubernetes.io/managed-by: kustomize
   ports:
   - name: http
     port: 8083

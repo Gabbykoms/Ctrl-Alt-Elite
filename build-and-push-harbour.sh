@@ -215,10 +215,10 @@ echo "Platform: $PLATFORM"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 
 if docker build --platform="$PLATFORM" \
-    --build-arg VITE_API_BASE_URL="${VITE_API_BASE_URL:-http://localhost:8080/api}" \
-    --build-arg VITE_SOCKET_URL="${VITE_SOCKET_URL:-http://localhost:8080}" \
-    --build-arg VITE_TRACKING_SERVICE_URL="${VITE_TRACKING_SERVICE_URL:-http://localhost:8081}" \
-    --build-arg VITE_AI_SERVICE_URL="${VITE_AI_SERVICE_URL:-http://localhost:8083}" \
+    --build-arg VITE_API_BASE_URL="${VITE_API_BASE_URL:-https://shuttle.javajon-gke.duckdns.org/api}" \
+    --build-arg VITE_SOCKET_URL="${VITE_SOCKET_URL:-https://shuttle.javajon-gke.duckdns.org}" \
+    --build-arg VITE_TRACKING_SERVICE_URL="${VITE_TRACKING_SERVICE_URL:-https://shuttle.javajon-gke.duckdns.org/api/tracking}" \
+    --build-arg VITE_AI_SERVICE_URL="${VITE_AI_SERVICE_URL:-https://shuttle.javajon-gke.duckdns.org}" \
     --build-arg VITE_MAPBOX_TOKEN="${VITE_MAPBOX_TOKEN}" \
     -t "$FRONTEND_IMAGE" \
     -f Dockerfile . 2>&1 | tail -20; then

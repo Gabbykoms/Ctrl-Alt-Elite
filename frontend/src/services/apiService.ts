@@ -160,6 +160,9 @@ export const rideAPI = {
 // ============================================
 const TRACKING_SERVICE_BASE = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8081';
 
+// Export for use in other components
+export const TRACKING_SERVICE_URL = TRACKING_SERVICE_BASE;
+
 export const trackingAPI = {
   // ============ RIDE TRACKING ============
   // Start tracking a ride

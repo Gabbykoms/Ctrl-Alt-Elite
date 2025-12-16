@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { Clock, MapPin, AlertCircle, Plus, X, CheckCircle, Loader } from 'lucide-react'
 import LiveMap from '../components/LiveMap'
 import RouteSidebar from '../components/RouteSidebar'
-import { trackingAPI } from '../services/apiService'
+import { trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
 
 // Mock data
 const MOCK_ROUTES = [
@@ -101,7 +101,6 @@ export default function StudentDashboard() {
     const loadShuttles = async () => {
       try {
         setIsLoadingShuttles(true)
-        const TRACKING_SERVICE_URL = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8081'
         const response = await fetch(`${TRACKING_SERVICE_URL}/v1/locations/latest/org/trinity`)
         
         if (!response.ok) {

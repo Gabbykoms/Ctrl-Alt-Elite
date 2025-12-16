@@ -20,6 +20,9 @@ spec:
     metadata:
       labels:
         app: bantam-ai-service
+        app.kubernetes.io/name: bantam-ai-service
+        app.kubernetes.io/version: v1
+        app.kubernetes.io/managed-by: kustomize
       annotations:
         prometheus.io/scrape: "true"
         prometheus.io/port: "8083"

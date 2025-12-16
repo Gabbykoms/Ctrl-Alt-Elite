@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import LiveMap from '../components/LiveMap'
-import { trackingAPI } from '../services/apiService'
+import { trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
 
 interface Stop {
   id: string
@@ -57,7 +57,6 @@ export default function DriverDashboard() {
     const loadShuttles = async () => {
       try {
         setIsLoadingShuttles(true)
-        const TRACKING_SERVICE_URL = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http://localhost:8081'
         const response = await fetch(`${TRACKING_SERVICE_URL}/v1/locations/latest/org/trinity`)
         
         if (!response.ok) {
