@@ -2,9 +2,34 @@
 
 A modern, full-featured shuttle tracking application built for Trinity College with React 18, Vite, TypeScript, and Tailwind CSS. Built with a microservices architecture featuring React frontend, Node.js backend, Spring Boot tracking service, and Python AI service.
 
+## Live Demo
+Production Application: 
+```bash
+http://shuttle.javajon-gke.duckdns.org/
+```
+The application is deployed on Google Kubernetes Engine (GKE) and accessible via DuckDNS.
+
 ## Quick Start
 
-### Automated Setup (Recommended)
+## Option 1: Access the Deployed Application (Recommended)
+
+Simply visit the live application:
+```bash
+http://shuttle.javajon-gke.duckdns.org/
+```
+All services are running on the Kubernetes cluster:
+
+Frontend UI: Available at root path
+Backend API: Internal service communication
+Tracking Service: Internal service communication
+AI Service: Internal service communication
+
+Login Requirements:
+
+Register with a @trincoll.edu email address
+Verify your email to access the application
+
+## Option 2: Local Development Setup 
 
 Run the complete setup script to start all services:
 
@@ -763,6 +788,10 @@ After starting both the frontend and tracking service, check the browser console
 **Map not loading?**
 - Verify `VITE_MAPBOX_TOKEN` is set in `.env`
 - Check Mapbox token validity in browser console
+
+### Harbor
+- If you want to build container images and push them to harbor and deploy them on kubernetes, detailed guide found in
+   `[`README_HARBOUR.md`](README_HARBOUR.md)]`
 
 ---
 
