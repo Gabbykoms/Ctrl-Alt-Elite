@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react'
 import { Clock, MapPin, AlertCircle, Plus, X, CheckCircle, Loader } from 'lucide-react'
 import LiveMap from '../components/LiveMap'
 import RouteSidebar from '../components/RouteSidebar'
-import { trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
+import { trackingAPI, TRACKING_SERVICE_URL, rideAPI } from '../services/apiService'
 
 // Mock data
 const MOCK_ROUTES = [
@@ -94,6 +94,37 @@ export default function StudentDashboard() {
       }
     }
     loadStops()
+  }, [])
+
+  // Load active rides on mount
+  useEffect(() => {
+    const loadActiveRides = async () => {
+      try {
+        const response = await rideAPI.getRides()
+        if (response.data && response.data.rides) {
+          // Filter for active rides only (not completed or cancelled)
+          const activeRides = response.data.rides.filter(
+            (r: any) => !['completed', 'cancelled'].includes(r.status)
+          )
+          
+          // Convert to RideRequest format
+          const formattedRides: RideRequest[] = activeRides.map((r: any) => ({
+            id: r.id,
+            startLocation: r.start_stop?.name || r.pickup_address || 'Unknown',
+            endLocation: r.end_stop?.name || r.dropoff_address || 'Unknown',
+            status: r.status,
+            pickupTime: `${r.estimated_pickup_time || 5} min`,
+            shuttleAssigned: r.shuttle?.name || r.shuttle_id || 'Pending',
+            estimatedArrival: `${r.estimated_arrival_time || 15} min`,
+          }))
+          
+          setRideRequests(formattedRides)
+        }
+      } catch (error) {
+        console.error('Error loading active rides:', error)
+      }
+    }
+    loadActiveRides()
   }, [])
 
   // Load shuttles from tracking service (real bus locations)
@@ -189,33 +220,72 @@ export default function StudentDashboard() {
 
     setIsProcessing(true)
 
-    // Simulate API call
-    setTimeout(() => {
-      const startStop = stops.find((s) => s.id === startLocation) || MOCK_STOPS.find((s) => s.id === startLocation)
-      const endStop = stops.find((s) => s.id === endLocation) || MOCK_STOPS.find((s) => s.id === endLocation)
-      const randomShuttle = MOCK_SHUTTLES[Math.floor(Math.random() * MOCK_SHUTTLES.length)]
-      const pickupMinutes = Math.floor(Math.random() * 8) + 3
+    try {
+      // Find stop details from loaded stops
+      const startStop = stops.find((s) => s.id === startLocation)
+      const endStop = stops.find((s) => s.id === endLocation)
 
+      if (!startStop || !endStop) {
+        alert('Invalid stop selection. Please try again.')
+        setIsProcessing(false)
+        return
+      }
+
+      // Get coordinates (handle both latitude/lat and longitude/lng fields)
+      const pickupLat = startStop.latitude ?? startStop.lat ?? 0
+      const pickupLng = startStop.longitude ?? startStop.lng ?? 0
+      const dropoffLat = endStop.latitude ?? endStop.lat ?? 0
+      const dropoffLng = endStop.longitude ?? endStop.lng ?? 0
+
+      // Call real backend API (skip stop IDs since they're not UUIDs)
+      const response = await rideAPI.requestRide({
+        pickupLatitude: pickupLat,
+        pickupLongitude: pickupLng,
+        dropoffLatitude: dropoffLat,
+        dropoffLongitude: dropoffLng,
+        pickupAddress: startStop.name,
+        dropoffAddress: endStop.name,
+        passengerCount: 1,
+      })
+
+      // Add to local state for display
       const newRide: RideRequest = {
-        id: `ride-${Date.now()}`,
-        startLocation: startStop?.name || 'Unknown',
-        endLocation: endStop?.name || 'Unknown',
-        status: 'confirmed',
-        pickupTime: `${pickupMinutes} min`,
-        shuttleAssigned: randomShuttle.name,
-        estimatedArrival: `${pickupMinutes + Math.floor(Math.random() * 5) + 3} min`,
+        id: response.data.ride.id,
+        startLocation: startStop.name,
+        endLocation: endStop.name,
+        status: response.data.ride.status,
+        pickupTime: `${response.data.ride.estimatedPickupTime || 5} min`,
+        shuttleAssigned: response.data.ride.shuttleId ? `Shuttle ${response.data.ride.shuttleId}` : 'Pending',
+        estimatedArrival: `${response.data.ride.estimatedArrivalTime || 15} min`,
       }
 
       setRideRequests((prev) => [newRide, ...prev])
       setShowRideModal(false)
       setStartLocation('')
       setEndLocation('')
+      
+      alert(`✅ Ride confirmed! ${newRide.shuttleAssigned} will arrive in ${newRide.pickupTime}`)
+    } catch (error: any) {
+      console.error('Error requesting ride:', error)
+      alert(`Failed to request ride: ${error.response?.data?.message || error.message || 'Unknown error'}`)
+    } finally {
       setIsProcessing(false)
-    }, 1500)
+    }
   }
 
-  const cancelRide = (rideId: string) => {
-    setRideRequests((prev) => prev.filter((r) => r.id !== rideId))
+  const cancelRide = async (rideId: string) => {
+    if (!window.confirm('Are you sure you want to cancel this ride?')) {
+      return
+    }
+
+    try {
+      await rideAPI.cancelRide(rideId, 'Cancelled by student')
+      setRideRequests((prev) => prev.filter((r) => r.id !== rideId))
+      alert('✅ Ride cancelled successfully')
+    } catch (error: any) {
+      console.error('Error cancelling ride:', error)
+      alert(`Failed to cancel ride: ${error.response?.data?.message || error.message || 'Unknown error'}`)
+    }
   }
 
   return (

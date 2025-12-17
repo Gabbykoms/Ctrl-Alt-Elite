@@ -70,21 +70,28 @@ router.post('/request', authenticateToken, async (req: AuthRequest, res: Respons
 
     const ride = await db.createRide(rideData)
 
-    const shuttles = await db.getAllShuttles()
+    // Skip auto-assignment for now (can be assigned manually by admin)
+    // TODO: Fix shuttle query to avoid join issues
+    let availableShuttle = null
     
-    // FIX: Typed 's' as Shuttle instead of 'any'
-    const availableShuttle = shuttles.find((s: Shuttle) => 
-      s.status === 'active' && s.current_passengers < s.capacity
-    )
-
-    if (availableShuttle) {
-      await db.updateRide(ride.id, {
-        shuttle_id: availableShuttle.id,
-        status: 'confirmed',
-      })
+    try {
+      const shuttles = await db.getAllShuttles()
+      availableShuttle = shuttles.find((s: Shuttle) => 
+        s.status === 'active' && s.current_passengers < s.capacity
+      )
+      
+      if (availableShuttle) {
+        await db.updateRide(ride.id, {
+          shuttle_id: availableShuttle.id,
+          status: 'confirmed',
+        })
+      }
+    } catch (error) {
+      console.warn('⚠️ Could not auto-assign shuttle:', error)
+      // Continue anyway - ride is still created
     }
 
-    console.log(` Ride requested by student: ${req.userId}`)
+    console.log(`🚕 Ride requested by student: ${req.userId}`)
 
     const io = req.app.get('io')
     if (io) {

@@ -261,11 +261,11 @@ export default function AdminDashboard() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-auto flex flex-col">
+      <div className="flex-1 overflow-hidden flex flex-col">
         {activeTab === 'live' ? (
-          <div className="flex-1 relative flex flex-col">
+          <div className="flex-1 flex flex-col overflow-hidden">
             {/* Map takes up most of the space */}
-            <div className="flex-1 relative">
+            <div className="flex-1 relative overflow-hidden">
               <LiveMap pins={mapPins} onMapClick={showAddStopModal ? handleMapClick : undefined} />
               
               {/* Top Info Banner - Only when in add mode */}
@@ -328,7 +328,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Bottom Control Panel - Always visible */}
-            <div className="bg-white border-t border-gray-300 shadow-2xl p-4 z-40">
+            <div className="bg-white border-t border-gray-300 shadow-2xl p-4 z-40 flex-shrink-0">
               <div className="w-full">
                 {/* Top row: Title and Add Button */}
                 <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">

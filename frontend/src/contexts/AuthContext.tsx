@@ -46,24 +46,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             name: 'Demo Driver',
             email: 'driver@trincoll.edu',
             role: 'driver',
-            activeRideId: 'demo-ride',
-            rideId: 'demo-ride',
           },
           student: {
             id: 'demo-student-1',
             name: 'Demo Student',
             email: 'student@trincoll.edu',
             role: 'student',
-            activeRideId: 'demo-ride',
-            rideId: 'demo-ride',
           },
           admin: {
             id: 'demo-admin-1',
             name: 'Demo Admin',
             email: 'admin@trincoll.edu',
             role: 'admin',
-            activeRideId: 'demo-ride',
-            rideId: 'demo-ride',
           },
         }
         const demoUser = demoUsers[testRole]

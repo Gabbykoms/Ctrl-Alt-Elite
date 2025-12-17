@@ -351,10 +351,7 @@ export const db = {
   async getAllShuttles() {
     const { data, error } = await supabase
       .from('shuttles')
-      .select(`
-        *,
-        assigned_driver:users!shuttles_assigned_driver_id_fkey(id, name, email)
-      `)
+      .select('*')
       .order('name')
     
     if (error) throw error
@@ -427,12 +424,7 @@ export const db = {
   async getRidesByStudent(studentId: string) {
     const { data, error } = await supabase
       .from('rides')
-      .select(`
-        *,
-        shuttle:shuttles(id, name, vehicle_number),
-        start_stop:stops!rides_start_stop_id_fkey(id, name),
-        end_stop:stops!rides_end_stop_id_fkey(id, name)
-      `)
+      .select('*')
       .eq('student_id', studentId)
       .order('created_at', { ascending: false })
     
@@ -443,13 +435,7 @@ export const db = {
   async getRide(rideId: string) {
     const { data, error } = await supabase
       .from('rides')
-      .select(`
-        *,
-        student:users!rides_student_id_fkey(id, name, email),
-        shuttle:shuttles(id, name, vehicle_number),
-        start_stop:stops!rides_start_stop_id_fkey(id, name),
-        end_stop:stops!rides_end_stop_id_fkey(id, name)
-      `)
+      .select('*')
       .eq('id', rideId)
       .single()
     

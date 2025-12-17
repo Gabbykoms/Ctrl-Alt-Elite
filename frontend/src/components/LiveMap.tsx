@@ -27,66 +27,70 @@ export default function LiveMap({ pins, routes = [], activeRouteIds = [], onMapC
   const { user } = useAuth() || {};
   const [_driverLocation, setDriverLocation] = useState<{ lat: number; lng: number } | null>(null);
   const [busPin, setBusPin] = useState<MapPin | null>(null);
-  const rideId = user?.activeRideId || user?.rideId || 'demo-ride'; // Replace with actual ride ID logic
-    // Effect: If user is a driver, send their location to tracking service periodically
-    useEffect(() => {
-      if (!user || user.role !== 'driver') return;
-      let watchId: number;
-      let intervalId: number;
+  const rideId = user?.activeRideId || user?.rideId; // Only use real ride IDs
+  
+  // Effect: If user is a driver with active ride, send their location to tracking service periodically
+  useEffect(() => {
+    if (!user || user.role !== 'driver' || !rideId) return;
+    let watchId: number;
+    let intervalId: number;
 
-      // Get and send location every 5 seconds
-      const sendLocation = (position: GeolocationPosition) => {
-        const { latitude, longitude } = position.coords;
-        trackingAPI.startRideTracking(rideId, {
-          driverId: user.id,
-          latitude,
-          longitude,
-          timestamp: Date.now(),
-        });
-      };
+    // Get and send location every 5 seconds
+    const sendLocation = (position: GeolocationPosition) => {
+      const { latitude, longitude } = position.coords;
+      trackingAPI.startRideTracking(rideId, {
+        driverId: user.id,
+        latitude,
+        longitude,
+        timestamp: Date.now(),
+      });
+    };
 
-      if (navigator.geolocation) {
-        watchId = navigator.geolocation.watchPosition(sendLocation);
-        // Also send every 5 seconds in case watchPosition is slow
-        intervalId = setInterval(() => {
-          navigator.geolocation.getCurrentPosition(sendLocation);
-        }, 5000);
-      }
-      return () => {
-        if (watchId) navigator.geolocation.clearWatch(watchId);
-        if (intervalId) clearInterval(intervalId);
-      };
-    }, [user, rideId]);
-    // Effect: For all users, fetch latest driver location and update bus pin
-    useEffect(() => {
-      let intervalId: number;
-      const fetchDriverLocation = async () => {
-        try {
-          console.log(`[LiveMap] Fetching driver location for rideId: ${rideId}`);
-          const data = await trackingAPI.getDriverLocation(rideId);
-          console.log(`[LiveMap] Driver location response:`, data);
-          if (data && data.latitude && data.longitude) {
-            console.log(`[LiveMap] Setting bus pin at ${data.latitude}, ${data.longitude}`);
-            setDriverLocation({ lat: data.latitude, lng: data.longitude });
-            setBusPin({
-              id: 'bus',
-              lat: data.latitude,
-              lng: data.longitude,
-              type: 'shuttle',
-              name: 'Bus',
-              info: `Last updated: ${new Date(data.timestamp || Date.now()).toLocaleTimeString()}`,
-            });
-          } else {
-            console.warn(`[LiveMap] Invalid driver location data:`, data);
-          }
-        } catch (e) {
-          console.error(`[LiveMap] Error fetching driver location:`, e);
+    if (navigator.geolocation) {
+      watchId = navigator.geolocation.watchPosition(sendLocation);
+      // Also send every 5 seconds in case watchPosition is slow
+      intervalId = setInterval(() => {
+        navigator.geolocation.getCurrentPosition(sendLocation);
+      }, 5000);
+    }
+    return () => {
+      if (watchId) navigator.geolocation.clearWatch(watchId);
+      if (intervalId) clearInterval(intervalId);
+    };
+  }, [user, rideId]);
+  
+  // Effect: For all users with active ride, fetch latest driver location and update bus pin
+  useEffect(() => {
+    if (!rideId) return; // Don't fetch if no active ride
+    
+    let intervalId: number;
+    const fetchDriverLocation = async () => {
+      try {
+        console.log(`[LiveMap] Fetching driver location for rideId: ${rideId}`);
+        const data = await trackingAPI.getDriverLocation(rideId);
+        console.log(`[LiveMap] Driver location response:`, data);
+        if (data && data.latitude && data.longitude) {
+          console.log(`[LiveMap] Setting bus pin at ${data.latitude}, ${data.longitude}`);
+          setDriverLocation({ lat: data.latitude, lng: data.longitude });
+          setBusPin({
+            id: 'bus',
+            lat: data.latitude,
+            lng: data.longitude,
+            type: 'shuttle',
+            name: 'Bus',
+            info: `Last updated: ${new Date(data.timestamp || Date.now()).toLocaleTimeString()}`,
+          });
+        } else {
+          console.warn(`[LiveMap] Invalid driver location data:`, data);
         }
-      };
-      fetchDriverLocation();
-      intervalId = setInterval(fetchDriverLocation, 5000);
-      return () => clearInterval(intervalId);
-    }, [rideId]);
+      } catch (e) {
+        console.error(`[LiveMap] Error fetching driver location:`, e);
+      }
+    };
+    fetchDriverLocation();
+    intervalId = setInterval(fetchDriverLocation, 5000);
+    return () => clearInterval(intervalId);
+  }, [rideId]);
   const mapContainer = useRef<HTMLDivElement>(null)
   const map = useRef<mapboxgl.Map | null>(null)
   const markersRef = useRef<Map<string, mapboxgl.Marker>>(new Map())
