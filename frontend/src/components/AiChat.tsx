@@ -31,6 +31,75 @@ const AiChat: React.FC = () => {
     inputRef.current?.focus()
   }, [])
 
+  const pollForResponse = async (requestId: string, messageId: string) => {
+    const maxAttempts = 60 // 2 minutes max (60 * 2 seconds)
+    let attempts = 0
+
+    const poll = async () => {
+      try {
+        attempts++
+        const response = await fetch(`${AI_URL}/chat/response/${requestId}`)
+        
+        if (!response.ok) {
+          throw new Error(`Polling error: ${response.status}`)
+        }
+
+        const data = await response.json()
+
+        if (data.status === 'completed') {
+          // Update the placeholder message with the actual response
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? { ...msg, text: data.response || 'Response received but empty.' }
+                : msg
+            )
+          )
+          setLoading(false)
+          inputRef.current?.focus()
+        } else if (data.status === 'failed') {
+          // Handle failed status
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? { ...msg, text: `Error: ${data.error_message || 'Request failed'}` }
+                : msg
+            )
+          )
+          setLoading(false)
+          inputRef.current?.focus()
+        } else if (attempts >= maxAttempts) {
+          // Timeout
+          setMessages((prev) =>
+            prev.map((msg) =>
+              msg.id === messageId
+                ? { ...msg, text: 'Request timed out. Please try again.' }
+                : msg
+            )
+          )
+          setLoading(false)
+          inputRef.current?.focus()
+        } else {
+          // Still processing, poll again in 2 seconds
+          setTimeout(poll, 2000)
+        }
+      } catch (error: any) {
+        console.error('Polling Error:', error)
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === messageId
+              ? { ...msg, text: 'Sorry, I encountered an error while processing your request.' }
+              : msg
+          )
+        )
+        setLoading(false)
+        inputRef.current?.focus()
+      }
+    }
+
+    poll()
+  }
+
   const sendMessage = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!input.trim()) return
@@ -47,6 +116,7 @@ const AiChat: React.FC = () => {
     setLoading(true)
 
     try {
+      // Submit request to queue
       const response = await fetch(`${AI_URL}/chat/`, {
         method: 'POST',
         headers: {
@@ -60,26 +130,29 @@ const AiChat: React.FC = () => {
       }
 
       const data = await response.json()
-      const aiText = data.response || data.answer || data.message || 'I understood your message but couldn\'t generate a response.'
-
-      // Add AI response
+      
+      // Add placeholder message while processing
+      const aiMessageId = (Date.now() + 1).toString()
       const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: aiText,
+        id: aiMessageId,
+        text: 'Your request is being processed...',
         sender: 'ai',
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, aiMessage])
+
+      // Start polling for the response
+      pollForResponse(data.request_id, aiMessageId)
+
     } catch (error: any) {
       console.error('AI Error:', error)
       const errorMessage: Message = {
         id: (Date.now() + 2).toString(),
-        text: ' Sorry, I encountered an error. Please try again.',
+        text: 'Sorry, I encountered an error. Please try again.',
         sender: 'ai',
         timestamp: new Date(),
       }
       setMessages((prev) => [...prev, errorMessage])
-    } finally {
       setLoading(false)
       inputRef.current?.focus()
     }
