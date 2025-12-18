@@ -826,7 +826,41 @@ After starting both the frontend and tracking service, check the browser console
 **Map not loading?**
 - Verify `VITE_MAPBOX_TOKEN` is set in `.env`
 - Check Mapbox token validity in browser console
+---
+## AI Service Message Queue (RabbitMQ)
 
+The AI Service uses **RabbitMQ** for asynchronous chat request processing, enabling better scalability and rate limiting.
+
+### Architecture Flow
+
+```
+Frontend → AI Service (HTTP) → RabbitMQ Queue → Background Worker → Database
+              ↓                                         ↓
+        Returns request_id                    Processes with OpenAI
+              ↓                                         ↓
+     Frontend polls for result ← Stores response in DB
+```
+
+### Queue Configuration
+
+- **Queue**: `chat.requests` - Incoming chat messages
+- **Queue**: `chat.responses` - Processed AI responses (future use)
+- **Ports**: 5672 (AMQP), 15672 (Management UI)
+
+### Local Development
+
+```bash
+# Start AI service with RabbitMQ
+cd AI_Intergration_Service/docker
+docker-compose up -d
+```
+
+### Benefits
+
+- **Rate limiting**: Control OpenAI API calls to avoid rate limits
+- **Fault tolerance**: Messages persist if service crashes
+- **Scalability**: Multiple workers can process queue in parallel
+- **Monitoring**: Track queue depth and processing times via Management UI at http://localhost:15672
 ---
 
 ## Deployments
