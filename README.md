@@ -829,6 +829,8 @@ After starting both the frontend and tracking service, check the browser console
 ---
 ## AI Service Message Queue (RabbitMQ)
 
+`Note:` Currently, this feature is not integrated to the main branch and thus, not deployed.
+
 The AI Service uses **RabbitMQ** for asynchronous chat request processing, enabling better scalability and rate limiting.
 
 ### Architecture Flow
