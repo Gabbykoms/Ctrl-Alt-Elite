@@ -91,26 +91,26 @@ npm install
 
 2. You should see output like:
    ```
-   🔧 Testing database connection...
+    Testing database connection...
 
-   1️⃣ Testing Supabase connection...
-   ✅ Supabase connection successful
+    Testing Supabase connection...
+    Supabase connection successful
 
-   2️⃣ Querying stops...
-   ✅ Found 6 active stops
+    Querying stops...
+    Found 6 active stops
       Sample: Main Gate (41.7454, -72.6892)
 
-   3️⃣ Querying routes...
-   ✅ Found 3 active routes
+    Querying routes...
+    Found 3 active routes
       Sample: Campus Loop
 
-   4️⃣ Querying shuttles...
-   ✅ Found 0 shuttles
+    Querying shuttles...
+    Found 0 shuttles
 
-   5️⃣ Querying rides...
-   ✅ Found 0 rides
+    Querying rides...
+    Found 0 rides
 
-   🎉 All database tests passed!
+    All database tests passed!
    ```
 
 ## Troubleshooting
@@ -151,11 +151,11 @@ npm install
 
 ### Key Features
 
-✅ **Foreign Keys** - Referential integrity maintained
-✅ **Indexes** - Optimized for common queries
-✅ **Timestamps** - `created_at` and `updated_at` on all tables
-✅ **Row Level Security** - Ready for production RLS policies
-✅ **Sample Data** - 6 stops, 3 routes for testing
+ **Foreign Keys** - Referential integrity maintained
+ **Indexes** - Optimized for common queries
+ **Timestamps** - `created_at` and `updated_at` on all tables
+ **Row Level Security** - Ready for production RLS policies
+ **Sample Data** - 6 stops, 3 routes for testing
 
 ## Next Steps
 

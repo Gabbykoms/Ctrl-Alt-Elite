@@ -34,7 +34,7 @@ Verify your email to access the application
 Run the complete setup script to start all services:
 
 ```bash
-./start-everything.sh
+./scripts/start-everything.sh
 ```
 
 This will:
@@ -56,6 +56,32 @@ Access the application:
 - **Node.js** v24.10.0+ and npm
 - **Python** 3.12.4+
 - **Java** 21 (for tracking service)
+
+## Table of Contents
+
+- [Architecture](#architecture)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Manual Setup (Local Development)](#manual-setup-local-development)
+- [Utility Scripts](#utility-scripts)
+- [Testing](#testing)
+- [Project Structure](#project-structure)
+- [Color Palette](#color-palette-trinity-college-brand)
+- [Map Features (LiveMap Component)](#map-features-livemap-component)
+- [Tracking Service Integration](#tracking-service-integration)
+- [Routes](#routes)
+- [Authentication](#authentication)
+- [API Integration](#api-integration)
+- [Real-time Updates](#real-time-updates)
+- [Environment Variables](#environment-variables)
+- [Development Notes](#development-notes)
+- [RabbitMQ Implementation](#rabbitmq-implementation)
+- [Deployment](#deployment)
+- [Getting Started with Tracking Service Integration](#getting-started-with-tracking-service-integration)
+- [Deployments](#deployments)
+- [AI Statement](#ai-statement)
+- [Support](#support)
+- [License](#license)
 
 ## Architecture
 
@@ -179,10 +205,13 @@ graph TB
   - Bus stops (red S markers) fetched from tracking-service
   - Active bus markers (green B) showing real-time GPS from tracking-service
   - Request ride with start/end location selection
+  - Currently, the UI is not rendering the stop and bus markers in the frontend due to some bug, however, they can be accessed in the database (in namespace elite-db).
+
 - **Driver Dashboard**: Clock in/out functionality, status management, and live location tracking
   - View all campus stops on map
   - See all active buses with real-time positions
   - GPS location polling (5-second intervals)
+
 - **Admin Dashboard**: Live view of all shuttles, routes, and analytics with charts
   - **Live Tab**: Real-time view of all buses and stops on interactive map
   - **Analytics Tab**: Peak usage charts, route popularity metrics
@@ -190,13 +219,16 @@ graph TB
   - Add stops by clicking on map and entering stop name
   - Delete stops with one-click removal
   - All stops persisted in tracking-service
+
 - **AI Chatbot**: Floating action button chatbot for shuttle inquiries
+
 - **Authentication**: Secure login/register with @trincoll.edu email validation
-- **Responsive Design**: Mobile-first, fully responsive interface
+
+- **Responsive Design**: fully responsive web interface
 - **Real-time Updates**: 
   - Socket.IO integration for live shuttle location updates
   - 5-second polling from tracking-service for bus locations (`/v1/locations/latest/org/trinity`)
-  - Auto-loading of all campus stops from tracking-service (`/v1/stops`)
+  - Auto-loading of all campus stops from tracking-service (`/v1/stops`) {Not rendered as of now due to a frontend bug}
 
 ## Tech Stack
 
@@ -212,7 +244,7 @@ graph TB
 - **Testing**: Vitest + React Testing Library
 - **Icons**: Lucide React
 
-## Manual Setup
+## Manual Setup (Local Development)
 
 ### 1. Environment Variables
 
@@ -260,12 +292,12 @@ CHAT_MODEL=gpt-4o-mini
 
 Start Docker databases:
 ```bash
-./setup-databases.sh
+./scripts/setup-databases.sh
 ```
 
 Run Supabase migrations:
 ```bash
-./setup-supabase.sh
+./scripts/setup-supabase.sh
 ```
 
 ### 3. Start Services
@@ -309,7 +341,7 @@ See `SCRIPTS_GUIDE.md` for detailed documentation.
 
 Run comprehensive test suite:
 ```bash
-./run-tests.sh
+./scripts/run-tests.sh
 ```
 
 Individual service tests:
@@ -332,6 +364,7 @@ cd AI_Intergration_Service && source .venv/bin/activate && pytest
 ```
 Ctrl-Alt-Elite/
 ├── frontend/                    # React + TypeScript + Vite (Port 5173)
+|   |__ kubernetes/
 │   ├── src/
 │   │   ├── components/          # Reusable React components
 │   ├── Header.tsx       # Navigation header
@@ -394,6 +427,7 @@ Ctrl-Alt-Elite/
 │   └── vite.config.ts         # Vite configuration
 │
 ├── backend/                   # Node.js + Express + TypeScript (Port 8080)
+|   |-- kubernetes/
 │   ├── src/
 │   │   ├── routes/            # API route handlers
 │   │   ├── middleware/        # Auth & error handling
@@ -403,6 +437,7 @@ Ctrl-Alt-Elite/
 │   └── tsconfig.json
 │
 ├── tracking-service/          # Spring Boot + Java 21 (Port 8081)
+|   |-- kubernetes
 │   ├── src/main/java/
 │   │   └── com/bantamshuttle/trackingservice/
 │   │       ├── controller/    # REST controllers
@@ -413,6 +448,7 @@ Ctrl-Alt-Elite/
 │   └── docker-compose.yaml    # PostgreSQL + Redis
 │
 ├── AI_Intergration_Service/   # Python + FastAPI + LangChain (Port 8083)
+|   |-- kubernetes
 │   ├── app/
 │   │   ├── services/          # RAG & embedding services
 │   │   ├── models/            # Database models
@@ -448,6 +484,7 @@ The interactive Mapbox map displays real-time shuttle tracking and campus stops:
 - **Data**: Stop name, description, coordinates
 - **Interaction**: Click to view stop details in popup
 - **Pre-loaded**: 8 default Trinity College stops on first load
+- `Note`: Currently not rendered in the map due to frontend bug. 
 
 ### Bus/Shuttle Markers
 - **Appearance**: Green circle with white "B" text
@@ -456,15 +493,10 @@ The interactive Mapbox map displays real-time shuttle tracking and campus stops:
 - **Update Rate**: 5-second polling intervals
 - **Visibility**: Updates as buses move across campus
 - **Interaction**: Click to view bus details (passengers, ETA, status)
-
-### Route Visualization (Admin/Student)
-- **Appearance**: Blue (#004179) line on map
-- **Toggleable**: Routes can be selected/deselected from sidebar
-- **Layers**: Mapbox GeoJSON layers for efficient rendering
+- `Note`: Currently not rendered in the map due to frontend bug. 
 
 ### Admin Stop Placement
 - **Click to Place**: Admins can click map to create new stops
-- **Draggable Pin**: Yellow draggable marker appears at click location
 - **Name Entry**: Modal appears to enter stop name
 - **Save**: Stop is created in tracking-service and appears on all dashboards
 
@@ -533,15 +565,12 @@ The app uses JWT tokens for authentication. Tokens are stored in localStorage an
 
 The app connects to two backend services:
 
-### 1. Main Backend API
+### 1. Backend (Authentication) API
 Update the `VITE_API_BASE_URL` environment variable to point to your backend (default: `http://localhost:8080/api`).
 
 **Example endpoints:**
 - `POST /auth/login` - User login
 - `POST /auth/register` - User registration
-- `GET /shuttles` - Get all shuttles
-- `GET /routes` - Get all routes
-- `GET /stops` - Get all stops
 
 ### 2. Tracking Service API (Real-time Bus & Stop Management)
 Update the `VITE_TRACKING_SERVICE_URL` environment variable (default: `http://localhost:8081`).
@@ -557,9 +586,12 @@ Update the `VITE_TRACKING_SERVICE_URL` environment variable (default: `http://lo
 - `PUT /v1/stops/{stopId}` - Update stop (admin only)
 - `DELETE /v1/stops/{stopId}` - Delete stop (admin only)
 - Ride tracking endpoints (for driver location in active rides):
-  - `POST /v1/rides/{rideId}/start` - Initialize ride tracking
-  - `GET /v1/rides/{rideId}/driver-location` - Get driver's current position
-  - `POST /v1/rides/{rideId}/end` - End ride tracking
+  - `GET /v1/rides/{rideId}/driver-location-details` - Get driver's current position and details for active ride
+  - `GET /v1/rides/driver/{driverId}/assigned` - Get all rides assigned to a driver
+- Driver management endpoints:
+  - `POST /v1/drivers/{id}/clock-in?latitude=<lat>&longitude=<lng>&shuttleId=<id>` - Clock in driver (start shift)
+  - `POST /v1/drivers/{id}/clock-out` - Clock out driver (end shift)
+  - `POST /v1/drivers/{id}/update-location?latitude=<lat>&longitude=<lng>` - Update driver's current location
 
 ## Real-time Updates
 
@@ -632,7 +664,7 @@ npm run test -- apiService
 The application requires both the main backend AND the tracking service to run:
 
 1. **Main Backend** (Node.js)
-   - Runs on `http://localhost:3000` (configurable via `VITE_API_BASE_URL`)
+   - Runs on `http://localhost:8080` (configurable via `VITE_API_BASE_URL`)
    - Handles authentication, user profiles, ride requests
    - Emits Socket.IO events for real-time updates
 
@@ -726,6 +758,12 @@ function MyComponent() {
 />
 ```
 
+## RabbitMQ Implementation
+
+RabbitMQ documentation goes here.
+
+---
+
 ## Deployment
 
 Build the project for production:
@@ -760,10 +798,10 @@ VITE_TRACKING_SERVICE_URL=http://localhost:8081
 ### 3. Verify Connection
 
 After starting both the frontend and tracking service, check the browser console for:
-- ✅ Buses loading successfully: `✅ Loaded shuttles from tracking service`
-- ✅ Stops loading successfully: Shows list of campus stops
-- ✅ Green bus markers (B) appearing on map
-- ✅ Red stop markers (S) appearing on map
+- Buses loading successfully: `Loaded shuttles from tracking service`
+- Stops loading successfully: Shows list of campus stops
+- Green bus markers (B) appearing on map
+- Red stop markers (S) appearing on map
 
 ### 4. Live Bus Tracking Features
 
@@ -789,15 +827,36 @@ After starting both the frontend and tracking service, check the browser console
 - Verify `VITE_MAPBOX_TOKEN` is set in `.env`
 - Check Mapbox token validity in browser console
 
-### Harbor
-- If you want to build container images and push them to harbor and deploy them on kubernetes, detailed guide found in
-   `[`README_HARBOUR.md`](README_HARBOUR.md)]`
+---
+
+## Deployments
+
+### Building Container Images
+
+A detailed guide on building container images for each microservice is given in [`README_BUILD_IMAGES.md`](README_BUILD_IMAGES.md).
+
+### Harbor Container Registry Push
+
+If you wish to build container images and push them to harbor and deploy them on kubernetes, detailed guide found in
+   [`README_HARBOUR.md`](README_HARBOUR.md)
+
+### GKE Deployment
+
+Once images are pushed to harbour, deployment to kuberentes cluster in GKE is detailed in the [`README_K8s.md`](README_K8s.md.md).
 
 ---
 
+## AI Statement
+
+We used AI (Copilot Agent, Gemini, Claude and ChatGPT) to fast track the development process of this project.
+
 ## Support
 
-For issues or questions, please contact the development team.
+For issues or questions, please contact the development team (in their trinity email):
+- Noella Uwayisenga
+- Gabriel Koomson
+- Shamsher Ghising Tamang
+
 
 ## License
 

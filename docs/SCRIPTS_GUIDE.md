@@ -1,10 +1,12 @@
-# 🚀 Bantam Shuttle - Quick Start Scripts
+# Bantam Shuttle - Quick Start Scripts
 
 Complete automation scripts to set up and run the entire Bantam Shuttle system.
 
-## 📋 Available Scripts
+`Note:` Scripts are available in the scripts folder in the root directory.
 
-### 🎯 Main Scripts
+## Available Scripts
+
+### Main Scripts
 
 | Script | Purpose | Usage |
 |--------|---------|-------|
@@ -17,7 +19,7 @@ Complete automation scripts to set up and run the entire Bantam Shuttle system.
 
 ---
 
-## 🚀 Quick Start (Recommended)
+## Quick Start (Recommended)
 
 ### **Option 1: Complete Automated Setup (Easiest)**
 
@@ -29,15 +31,15 @@ chmod +x *.sh  # Make all scripts executable
 ```
 
 **What it does:**
-1. ✅ Checks prerequisites (Docker, Node, Python, Java)
-2. ✅ Starts PostgreSQL + Redis in Docker
-3. ✅ Installs backend dependencies (npm)
-4. ✅ Installs frontend dependencies (npm)
-5. ✅ Creates Python virtual environment for AI service
-6. ✅ Installs AI service dependencies (pip)
-7. ✅ Guides you through Supabase setup
-8. ✅ Starts all 4 services in separate terminals
-9. ✅ Verifies everything is running
+1. Checks prerequisites (Docker, Node, Python, Java)
+2. Starts PostgreSQL + Redis in Docker
+3. Installs backend dependencies (npm)
+4. Installs frontend dependencies (npm)
+5. Creates Python virtual environment for AI service
+6. Installs AI service dependencies (pip)
+7. Guides you through Supabase setup
+8. Starts all 4 services in separate terminals
+9. Verifies everything is running
 
 **Time:** ~5-10 minutes (depending on download speeds)
 
@@ -99,7 +101,7 @@ npm run dev
 
 ---
 
-## 🧪 Testing
+## Testing
 
 After starting services, verify everything works:
 
@@ -108,17 +110,17 @@ After starting services, verify everything works:
 ```
 
 **Test Results:**
-- ✅ Environment configuration
-- ✅ Docker containers (PostgreSQL, Redis)
-- ✅ Backend API endpoints
-- ✅ Tracking service APIs
-- ✅ AI service endpoints
-- ✅ Frontend accessibility
-- ✅ Dependencies installed
+- Environment configuration
+- Docker containers (PostgreSQL, Redis)
+- Backend API endpoints
+- Tracking service APIs
+- AI service endpoints
+- Frontend accessibility
+- Dependencies installed
 
 ---
 
-## 🛑 Stopping Services
+## Stopping Services
 
 Stop all running services cleanly:
 
@@ -136,7 +138,7 @@ Stop all running services cleanly:
 
 ---
 
-## 📊 Accessing Services
+## Accessing Services
 
 Once everything is running:
 
@@ -158,7 +160,7 @@ Once everything is running:
 
 ---
 
-## 🔧 Troubleshooting
+## Troubleshooting
 
 ### **Services won't start?**
 ```bash
@@ -208,7 +210,7 @@ cat logs/frontend.log
 
 ---
 
-## 📝 Environment Variables
+## Environment Variables
 
 All environment variables are configured in:
 - **Root**: `.env` (master configuration)
@@ -223,7 +225,7 @@ Verify with:
 
 ---
 
-## 🔄 Development Workflow
+## Development Workflow
 
 ### **Daily Development:**
 ```bash
@@ -251,7 +253,7 @@ cd frontend && npm run dev
 
 ---
 
-## 📚 What Each Service Does
+## What Each Service Does
 
 ### **Backend (Node.js/Express)**
 - User authentication (JWT)
@@ -279,7 +281,7 @@ cd frontend && npm run dev
 
 ---
 
-## 🎯 Next Steps
+## Next Steps
 
 1. **Run the setup:** `./start-everything.sh`
 2. **Verify it works:** `./run-tests.sh`
@@ -290,7 +292,7 @@ cd frontend && npm run dev
 
 ---
 
-## 🆘 Need Help?
+## Need Help?
 
 - Check test results: `./run-tests.sh`
 - Check environment: `./check-env.sh`
@@ -301,4 +303,4 @@ cd frontend && npm run dev
 
 ---
 
-**Happy Coding! 🚀**
+**Happy Coding! **

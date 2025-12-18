@@ -150,16 +150,16 @@ Configured in `deployment.yaml`:
 
 ## Best Practices Implemented
 
-✅ Multi-stage Docker build for smaller images
-✅ Non-root user in container for security
-✅ Health checks for container orchestration
-✅ Environment-based configuration
-✅ Secrets management via environment variables
-✅ Build caching for faster CI/CD
-✅ Security scanning with Trivy
-✅ TypeScript strict mode enabled
-✅ Linting and type checking in CI
-✅ Horizontal pod autoscaling for Kubernetes
+- Multi-stage Docker build for smaller images
+- Non-root user in container for security
+- Health checks for container orchestration
+- Environment-based configuration
+- Secrets management via environment variables
+- Build caching for faster CI/CD
+- Security scanning with Trivy
+- TypeScript strict mode enabled
+- Linting and type checking in CI
+- Horizontal pod autoscaling for Kubernetes
 
 ## Local Development Workflow
 

@@ -1,10 +1,10 @@
-# Authentication System Setup Guide
+# Authentication System Status Guide
 
-## 🔐 Authentication Implementation - Status
+## Authentication Implementation - Status
 
-✅ **COMPLETE** - Ready to use with Supabase
+**COMPLETE** - Ready to use with Supabase
 
-## 📋 What's Implemented
+## What's Implemented
 
 ### Routes (`src/routes/auth.ts`)
 
@@ -61,7 +61,7 @@
    - Optional authentication
    - Works with or without token
 
-## 🚀 Setup Instructions
+## Setup Instructions
 
 ### 1. Install Dependencies
 
@@ -148,7 +148,7 @@ npm run dev
 
 Server will run on `http://localhost:3000`
 
-## 📝 Usage Examples
+## Usage Examples
 
 ### Register a User
 
@@ -222,7 +222,7 @@ curl http://localhost:3000/api/auth/me \
 }
 ```
 
-## 🔐 Using Protected Routes
+## Using Protected Routes
 
 ### Example: Admin-Only Endpoint
 
@@ -264,7 +264,7 @@ router.get('/api/stops', optionalAuth, async (req, res) => {
 })
 ```
 
-## 🔄 Token Refresh Flow
+## Token Refresh Flow
 
 1. Access token expires after 1 hour
 2. Client uses refresh token to get new access token
@@ -283,19 +283,19 @@ const { token } = await response.json()
 localStorage.setItem('token', token)
 ```
 
-## ✅ Features
+## Features
 
-✅ Email validation (Trinity only)
-✅ Password hashing (Supabase handles)
-✅ JWT tokens with refresh
-✅ Email verification
-✅ Role-based access control
-✅ Error handling
-✅ Logging
-✅ Type safety with TypeScript
-✅ Input validation with Zod
+-  Email validation (Trinity only)
+-  Password hashing (Supabase handles)
+-  JWT tokens with refresh
+-  Email verification
+-  Role-based access control
+-  Error handling
+-  Logging
+-  Type safety with TypeScript
+-  Input validation with Zod
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### "Cannot find module '@supabase/supabase-js'"
 
@@ -319,7 +319,7 @@ Token may have expired. Use refresh endpoint to get new token.
 
 Registration only accepts Trinity College email addresses.
 
-## 🔗 Connect to Frontend
+## Connect to Frontend
 
 Update frontend API service to use real endpoints:
 
@@ -335,15 +335,15 @@ export const authAPI = {
 }
 ```
 
-## 📊 Next Steps
+## Next Steps
 
-1. ✅ Auth system complete
-2. 🔄 Update rides/shuttles/drivers to use authenticated endpoints
-3. 🔄 Add role-based access control
-4. 🔄 Implement database persistence
-5. 🔄 Add email notifications
+1. Auth system complete
+2. Update rides/shuttles/drivers to use authenticated endpoints
+3. Add role-based access control
+4. Implement database persistence
+5. Add email notifications
 
 ---
 
-**Status**: ✅ Ready to use!
+**Status**: Ready to use!
 

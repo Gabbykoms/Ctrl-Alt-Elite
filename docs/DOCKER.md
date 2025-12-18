@@ -250,13 +250,13 @@ kubectl get secret bantam-secrets -n bantam-shuttle -o yaml
 
 ## Security Best Practices
 
-1. ✅ Non-root user (UID 1001)
-2. ✅ Read-only filesystem where possible
-3. ✅ No privilege escalation
-4. ✅ Secrets via Kubernetes Secrets
-5. ✅ Resource limits defined
-6. ✅ Health checks configured
-7. ✅ Multi-stage Docker build
+1. Non-root user (UID 1001)
+2. Read-only filesystem where possible
+3. No privilege escalation
+4. Secrets via Kubernetes Secrets
+5. Resource limits defined
+6. Health checks configured
+7. Multi-stage Docker build
 
 ## Updating
 
