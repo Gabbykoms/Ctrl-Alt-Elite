@@ -9,19 +9,19 @@ services:
     container_name: trinity-ai-service
     environment:
       # Service Configuration
-      SERVICE_NAME: trinity-ai-service
-      SERVICE_PORT: 8083
-      ENVIRONMENT: ${ENVIRONMENT:-production}
-      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+      AI_SERVICE_NAME: trinity-ai-service
+      AI_SERVICE_PORT: 8083
+      AI_ENVIRONMENT: ${AI_ENVIRONMENT:-production}
+      AI_LOG_LEVEL: ${AI_LOG_LEVEL:-INFO}
 
       # Supabase Database 
-      DATABASE_URL: ${DATABASE_URL}
+      AI_DATABASE_URL: ${AI_DATABASE_URL}
       
       # Or construct from Supabase connection details
-      # DATABASE_URL: postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
+      # AI_DATABASE_URL: postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres
 
       # OpenAI
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      AI_OPENAI_API_KEY: ${AI_OPENAI_API_KEY}
 
       # LangChain Models
       EMBEDDING_MODEL: ${EMBEDDING_MODEL:-text-embedding-3-small}
@@ -39,12 +39,21 @@ services:
       # External Services
       TRACKING_SERVICE_URL: ${TRACKING_SERVICE_URL:-http://tracking-service:8082/api/tracking}
 
+      # RabbitMQ Configuration
+      RABBITMQ_HOST: ${RABBITMQ_HOST:-rabbitmq}
+      RABBITMQ_PORT: ${RABBITMQ_PORT:-5672}
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      RABBITMQ_CHAT_REQUESTS_QUEUE: ${RABBITMQ_CHAT_REQUESTS_QUEUE:-chat.requests}
+      RABBITMQ_CHAT_RESPONSES_QUEUE: ${RABBITMQ_CHAT_RESPONSES_QUEUE:-chat.responses}
+
       # CORS
-      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
+      AI_ALLOWED_ORIGINS: ${AI_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
 
       # Supabase
-      SUPABASE_URL: ${SUPABASE_URL}
-      SUPABASE_KEY: ${SUPABASE_KEY}
+      AI_SUPABASE_URL: ${AI_SUPABASE_URL}
+      AI_SUPABASE_KEY: ${AI_SUPABASE_KEY}
       OPENWEATHER_API_KEY: ${OPENWEATHER_API_KEY:-}
 
     ports:
@@ -55,6 +64,9 @@ services:
     networks:
       - trinity-network
     restart: unless-stopped
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8083/health"]
       interval: 30s
@@ -62,6 +74,34 @@ services:
       retries: 3
       start_period: 40s
 
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: trinity-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+      RABBITMQ_DEFAULT_VHOST: ${RABBITMQ_VHOST:-/}
+    ports:
+      - "5672:5672"   # AMQP protocol
+      - "15672:15672" # Management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+      - rabbitmq_logs:/var/log/rabbitmq
+    networks:
+      - trinity-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
 networks:
   trinity-network:
     driver: bridge
+
+volumes:
+  rabbitmq_data:
+  rabbitmq_logs:

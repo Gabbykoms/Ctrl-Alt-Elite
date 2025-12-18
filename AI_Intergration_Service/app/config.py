@@ -40,6 +40,15 @@ class Settings(BaseSettings):
     # External Services
     TRACKING_SERVICE_URL: str = "http://localhost:8081/api/tracking"
     
+    # RabbitMQ Settings
+    RABBITMQ_HOST: str = "localhost"
+    RABBITMQ_PORT: int = 5672
+    RABBITMQ_USER: str = "guest"
+    RABBITMQ_PASSWORD: str = "guest"
+    RABBITMQ_VHOST: str = "/"
+    RABBITMQ_CHAT_REQUESTS_QUEUE: str = "chat.requests"
+    RABBITMQ_CHAT_RESPONSES_QUEUE: str = "chat.responses"
+    
     # CORS
     AI_ALLOWED_ORIGINS: str = "http://localhost:5173,http://localhost:8080,http://localhost:8083"
     
