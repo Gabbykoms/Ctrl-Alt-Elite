@@ -29,10 +29,11 @@ app = FastAPI(
     root_path="/api/ai"
 )
 
-# CORS middleware
+# CORS middleware — use explicit origins from settings (AI_ALLOWED_ORIGINS env var)
+# Never combine allow_origins=["*"] with allow_credentials=True
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=settings.allowed_origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
