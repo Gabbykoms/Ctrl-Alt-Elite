@@ -39,3 +39,7 @@ out/
 .vscode/
 
 copilot_files/
+
+# Environment variables
+.env
+.env.local

@@ -105,6 +105,7 @@ jobs:
             VITE_SOCKET_URL=https://shuttle.javajon-gke.duckdns.org
             VITE_TRACKING_SERVICE_URL=https://shuttle.javajon-gke.duckdns.org
             VITE_AI_SERVICE_URL=https://shuttle.javajon-gke.duckdns.org
+            # we need to remove the hardcode but for now we will keep it as it because the github secret needs to be updated as well.
             VITE_MAPBOX_TOKEN=pk.eyJ1IjoiZ2FiYnlrb21zIiwiYSI6ImNtaGgzdGpwbjBmb2UybXB3ZXc0ZHU0NGYifQ.Ls2t9Ctp5eIdt6PZCoA2rQ
           labels: |
             org.opencontainers.image.source=${{ github.repositoryUrl }}
