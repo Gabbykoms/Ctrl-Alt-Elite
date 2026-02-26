@@ -17,3 +17,8 @@ images:
   - name: bantam-shuttle-tracking
     newName: harbor.javajon-gke.duckdns.org/library/elite-tracking-service
     newTag: latest
+
+secretGenerator:
+  - name: tracking-secrets
+    envs:
+      - ./../.env
