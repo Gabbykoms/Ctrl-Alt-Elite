@@ -18,6 +18,11 @@ dist-ssr
 .env.secrets
 gke-secrets.env
 
+# K8s secrets - generated via kustomization secretGenerator
+**/kubernetes/secrets.yaml
+**/kubernetes/.env
+**/kubernetes/.env.secrets
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
