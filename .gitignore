@@ -20,6 +20,7 @@ gke-secrets.env
 
 # K8s secrets - generated via kustomization secretGenerator
 **/kubernetes/secrets.yaml
+**/kubernetes/secret.yaml
 **/kubernetes/.env
 **/kubernetes/.env.secrets
 
