@@ -15,15 +15,30 @@ spec:
         image: postgres:16-alpine
         env:
         - name: PGPASSWORD
-          value: "Vr8Ba5zUku"
+          valueFrom:
+            secretKeyRef:
+              name: tracking-secrets # name of secret containing the password
+              key: postgres-password # key in the secret that holds the password
         - name: PGHOST
-          value: "my-postgresql"
+          valueFrom:
+            secretKeyRef:
+              name: tracking-secrets # name of secret containing the host
+              key: postgres-host # key in the secret that holds the host
         - name: PGPORT
-          value: "5432"
+          valueFrom:
+            secretKeyRef:
+              name: tracking-secrets # name of secret containing the port
+              key: postgres-port # key in the secret that holds the port
         - name: PGUSER
-          value: "postgres"
+          valueFrom:
+            secretKeyRef:
+              name: tracking-secrets # name of secret containing the username
+              key: postgres-user # key in the secret that holds the username
         - name: PGDATABASE
-          value: "tracking_db"
+          valueFrom:
+            secretKeyRef:
+              name: tracking-secrets # name of secret containing the database name
+              key: postgres-database # key in the secret that holds the database name
         command:
         - sh
         - -c

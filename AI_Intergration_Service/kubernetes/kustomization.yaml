@@ -28,4 +28,4 @@ commonAnnotations:
 secretGenerator:
 - name: ai-service-secrets
   envs:
-  - .env.secret
+  - ./.env.secrets

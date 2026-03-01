@@ -15,6 +15,7 @@ build
 .env.local
 .env.development.local
 .env.test.local
+.env.cluster
 .env.production.local
 
 # Logs

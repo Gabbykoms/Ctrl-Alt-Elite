@@ -12,7 +12,7 @@ pydantic>=2.7.4
 pydantic-settings>=2.4.0
 
 # --- Database ---
-psycopg2-binary==2.9.9
+psycopg2-binary==2.9.10
 sqlalchemy==2.0.25
 pgvector==0.2.4
 

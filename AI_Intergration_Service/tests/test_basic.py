@@ -1,4 +1,9 @@
 import pytest
+import os
+
+os.environ.setdefault("AI_DATABASE_URL", "postgresql://test:test@localhost:5432/testdb")                                                                                                                   
+os.environ.setdefault("AI_OPENAI_API_KEY", "test-key")
+
 from app.config import settings
 
 
