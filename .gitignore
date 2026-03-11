@@ -48,3 +48,6 @@ frontend/dist/
 .vscode/
 # Vite
 .vite-dev.pid
+
+# Claude Code
+.claude/
