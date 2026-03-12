@@ -2,13 +2,13 @@
 [
   {
     "question": "What are the shuttle operating hours?",
-    "answer": "The Trinity College shuttle operates from 7:00 AM to 11:00 PM on weekdays. Weekend hours are 9:00 AM to 9:00 PM.",
+    "answer": "The Trinity College shuttle operates from 7:00 PM to 1:00 AM on weekdays. Weekend hours are 9:00 AM to 9:00 PM.",
     "category": "hours",
     "priority": "high"
   },
   {
     "question": "How often does the shuttle run?",
-    "answer": "The shuttle runs every 15 minutes during peak hours (8 AM - 6 PM) and every 20 minutes during off-peak hours.",
+    "answer": "The shuttle runs every 15 minutes during peak hours (8PM - 12 AM) and every 20 minutes during off-peak hours.",
     "category": "schedule",
     "priority": "high"
   },

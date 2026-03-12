@@ -28,3 +28,41 @@ class ChatResponse(BaseModel):
                 "timestamp": "2025-10-31T10:30:00"
             }
         }
+
+
+class ChatQueueResponse(BaseModel):
+    """Response schema for queued chat request"""
+    request_id: str = Field(..., description="Unique request tracking ID")
+    status: str = Field(..., description="Request status: queued, processing, completed, failed")
+    message: Optional[str] = Field(None, description="Status message")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "request_id": "abc-123-def-456",
+                "status": "queued",
+                "message": "Your request is being processed"
+            }
+        }
+
+
+class ChatStatusResponse(BaseModel):
+    """Response schema for polling chat status"""
+    request_id: str = Field(..., description="Request tracking ID")
+    status: str = Field(..., description="Request status")
+    response: Optional[str] = Field(None, description="AI response (when completed)")
+    sources: Optional[List[Dict[str, Any]]] = Field(None, description="Source documents")
+    error_message: Optional[str] = Field(None, description="Error message (if failed)")
+    created_at: datetime = Field(..., description="Request creation time")
+    completed_at: Optional[datetime] = Field(None, description="Completion time")
+    
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "request_id": "abc-123-def-456",
+                "status": "completed",
+                "response": "The shuttle operates from 7 AM to 11 PM.",
+                "created_at": "2025-12-16T10:30:00Z",
+                "completed_at": "2025-12-16T10:30:05Z"
+            }
+        }

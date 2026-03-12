@@ -10,7 +10,7 @@ metadata:
     nginx.ingress.kubernetes.io/websocket-services: "bantam-shuttle-backend"
     nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
     nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://shuttle.javajon-gke.duckdns.org, http://localhost:5173"
     nginx.ingress.kubernetes.io/enable-cors: "true"
 spec:
   tls:
