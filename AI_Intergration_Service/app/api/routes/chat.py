@@ -4,6 +4,7 @@ import logging
 from uuid import uuid4
 
 from app.database import get_db
+from app.utils.auth import get_authenticated_db
 from app.schemas.chat import ChatRequest, ChatResponse, ChatQueueResponse, ChatStatusResponse
 from app.services.rag_service import ShuttleRAGService
 from app.models.chat import ChatRequest as ChatRequestModel
@@ -15,7 +16,7 @@ logger = logging.getLogger(__name__)
 @router.post("/", response_model=ChatQueueResponse)
 async def chat(
         request: ChatRequest,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_authenticated_db)
 ):
     """
     Submit chat request to processing queue
@@ -78,7 +79,7 @@ async def chat(
 @router.get("/response/{request_id}", response_model=ChatStatusResponse)
 async def get_chat_response(
         request_id: str,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_authenticated_db)
 ):
     """
     Poll for chat response by request ID
@@ -114,7 +115,7 @@ async def get_chat_response(
 async def get_chat_history(
         session_id: str,
         limit: int = 50,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_authenticated_db)
 ):
     """Get chat history for a session"""
     try:

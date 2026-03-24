@@ -4,6 +4,7 @@ from typing import List
 import logging
 
 from app.database import get_db
+from app.utils.auth import get_authenticated_db
 from app.schemas.document import DocumentCreate, DocumentResponse
 from app.services.embedding_service import EmbeddingService
 
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 @router.post("/", response_model=DocumentResponse)
 async def create_document(
         document: DocumentCreate,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_authenticated_db)
 ):
     """
     Create a new document with embedding
@@ -37,7 +38,7 @@ async def create_document(
 async def list_documents(
         category: str = None,
         limit: int = 10,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_authenticated_db)
 ):
     """List documents with optional category filter"""
     try:
@@ -57,7 +58,7 @@ async def list_documents(
 @router.delete("/{document_id}")
 async def delete_document(
         document_id: str,
-        db: Session = Depends(get_db)
+        db: Session = Depends(get_authenticated_db)
 ):
     """Delete a document"""
     try:
