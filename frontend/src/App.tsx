@@ -75,13 +75,14 @@ function AppRoutes() {
       />
 
       {/* Driver Routes */}
+      {/* TODO: Re-enable ProtectedRoute once Supabase auth is restored */}
       <Route
         element={
-          <ProtectedRoute>
+          // <ProtectedRoute>
             <AppLayout onLogout={logout} userRole="driver">
               <DriverDashboard />
             </AppLayout>
-          </ProtectedRoute>
+          // </ProtectedRoute>
         }
         path="/driver"
       />
