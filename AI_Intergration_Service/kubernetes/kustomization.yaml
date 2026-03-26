@@ -24,3 +24,8 @@ images:
 commonAnnotations:
   company: trinity
   project: shuttle
+
+secretGenerator:
+- name: ai-service-secrets
+  envs:
+  - ./.env.secrets

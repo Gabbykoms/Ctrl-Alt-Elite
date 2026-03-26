@@ -56,7 +56,8 @@ jobs:
           VITE_SOCKET_URL: https://shuttle.javajon-gke.duckdns.org
           VITE_TRACKING_SERVICE_URL: https://shuttle.javajon-gke.duckdns.org
           VITE_AI_SERVICE_URL: https://shuttle.javajon-gke.duckdns.org
-          VITE_MAPBOX_TOKEN: pk.eyJ1IjoiZ2FiYnlrb21zIiwiYSI6ImNtaGgzdGpwbjBmb2UybXB3ZXc0ZHU0NGYifQ.Ls2t9Ctp5eIdt6PZCoA2rQ
+          VITE_MAPBOX_TOKEN: pk.eyJ1IjoiZ2FiYnlrb21zIiwiYSI6ImNtaGgzdGpwbjBmb2UybXB3ZXc0ZHU0NGYifQ.Ls2t9Ctp5eIdt6PZCoA2rQ # this needs to be changed to use github secret as well but for now we will keep it as it because the github secret needs to be updated as well.
+          # VITE_MAPBOX_TOKEN: ${{ secrets.VITE_MAPBOX_TOKEN }} # this is the fix
 
   # Job 2: Build and Push Docker Image
   build-and-push:
@@ -105,7 +106,8 @@ jobs:
             VITE_SOCKET_URL=https://shuttle.javajon-gke.duckdns.org
             VITE_TRACKING_SERVICE_URL=https://shuttle.javajon-gke.duckdns.org
             VITE_AI_SERVICE_URL=https://shuttle.javajon-gke.duckdns.org
-            VITE_MAPBOX_TOKEN=pk.eyJ1IjoiZ2FiYnlrb21zIiwiYSI6ImNtaGgzdGpwbjBmb2UybXB3ZXc0ZHU0NGYifQ.Ls2t9Ctp5eIdt6PZCoA2rQ
+            VITE_MAPBOX_TOKEN=pk.eyJ1IjoiZ2FiYnlrb21zIiwiYSI6ImNtaGgzdGpwbjBmb2UybXB3ZXc0ZHU0NGYifQ.Ls2t9Ctp5eIdt6PZCoA2rQ             # we need to remove the hardcode but for now we will keep it as it because the github secret needs to be updated as well.
+            # VITE_MAPBOX_TOKEN=${{ secrets.VITE_MAPBOX_TOKEN }} # this is the fix
           labels: |
             org.opencontainers.image.source=${{ github.repositoryUrl }}
             org.opencontainers.image.revision=${{ github.sha }}
