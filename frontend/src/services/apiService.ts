@@ -163,6 +163,44 @@ const TRACKING_SERVICE_BASE = import.meta.env.VITE_TRACKING_SERVICE_URL || 'http
 // Export for use in other components
 export const TRACKING_SERVICE_URL = TRACKING_SERVICE_BASE;
 
+export interface DriverShiftReport {
+  id: string
+  reportDate: string
+  radioNumber?: string | null
+  driverId: string
+  driverName: string
+  vehicleLicense?: string | null
+  startingMileage: number
+  endingMileage?: number | null
+  conditionNotes?: string | null
+  createdAtMs: number
+  updatedAtMs: number
+}
+
+export interface StartDriverShiftReportPayload {
+  report_date: string
+  radio_number?: string
+  driver_id: string
+  driver_name?: string
+  vehicle_license?: string
+  starting_mileage: number
+  condition_notes?: string
+}
+
+export interface EndDriverShiftReportPayload {
+  ending_mileage: number
+  condition_notes?: string
+}
+
+const parseTrackingJson = async (res: Response) => {
+  if (!res.ok) {
+    const errorText = await res.text()
+    throw new Error(errorText || `Tracking service request failed: HTTP ${res.status}`)
+  }
+  if (res.status === 204) return null
+  return res.json()
+}
+
 export const trackingAPI = {
   // ============ RIDE TRACKING ============
   // Start tracking a ride
@@ -236,6 +274,33 @@ export const trackingAPI = {
       method: 'DELETE',
       credentials: 'include',
     }).then(res => res.json()),
+
+  // ============ DRIVER SHIFT REPORTS ============
+  startDriverShiftReport: (data: StartDriverShiftReportPayload): Promise<DriverShiftReport> =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/start`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    }).then(parseTrackingJson),
+
+  endDriverShiftReport: (id: string, data: EndDriverShiftReportPayload): Promise<DriverShiftReport> =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/${id}/end`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      credentials: 'include',
+    }).then(parseTrackingJson),
+
+  getDriverShiftReportsByDriver: (driverId: string): Promise<DriverShiftReport[]> =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/driver/${driverId}`, {
+      credentials: 'include',
+    }).then(parseTrackingJson),
+
+  getDriverShiftReportById: (id: string): Promise<DriverShiftReport> =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/${id}`, {
+      credentials: 'include',
+    }).then(parseTrackingJson),
 };
 
 // ============================================

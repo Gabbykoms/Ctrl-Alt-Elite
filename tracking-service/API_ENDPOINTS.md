@@ -107,6 +107,77 @@ DELETE /v1/drivers/{id}
 
 ---
 
+## Driver Shift Reports - `/v1/driver-shift-reports`
+
+Stores shift-level dashboard data (date, radio number, driver info, vehicle license, mileage, condition notes).
+
+### Start Shift Report
+```http
+POST /v1/driver-shift-reports/start
+Content-Type: application/json
+
+{
+  "report_date": "2026-03-25",
+  "radio_number": "12",
+  "driver_id": "driver-001",
+  "driver_name": "John Doe",
+  "vehicle_license": "ABC-1234",
+  "starting_mileage": 145230,
+  "condition_notes": "Exterior clean, no visible damage"
+}
+```
+**Response (201):** Shift report created (ending mileage initially `null`)
+
+---
+
+### End Shift Report
+```http
+PATCH /v1/driver-shift-reports/{id}/end
+Content-Type: application/json
+
+{
+  "ending_mileage": 145318,
+  "condition_notes": "Small scratch on rear bumper"
+}
+```
+**Response (200):** Updates ending mileage and notes
+
+---
+
+### Get Shift Report by ID
+```http
+GET /v1/driver-shift-reports/{id}
+```
+**Response (200):** Single shift report | (404) Not found
+
+---
+
+### List All Shift Reports
+```http
+GET /v1/driver-shift-reports
+```
+**Response (200):** Array of shift reports
+
+---
+
+### List Shift Reports by Driver
+```http
+GET /v1/driver-shift-reports/driver/{driverId}
+```
+**Response (200):** Driver's shift history (newest date first)
+
+---
+
+### List Shift Reports by Date
+```http
+GET /v1/driver-shift-reports/date/{reportDate}
+```
+**Example:** `GET /v1/driver-shift-reports/date/2026-03-25`
+
+**Response (200):** Shift reports for that date
+
+---
+
 ## Ride Management - `/v1/rides`
 
 ### Create Ride (Auto-Assign Driver)

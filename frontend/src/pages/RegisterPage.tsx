@@ -3,6 +3,30 @@ import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { authAPI } from '../services/apiService'
 
+const extractRegistrationErrorMessage = (error: any): string => {
+  const responseData = error?.response?.data
+
+  if (responseData?.details && Array.isArray(responseData.details) && responseData.details.length > 0) {
+    const detailMessages = responseData.details
+      .map((detail: { field?: string; message?: string }) => {
+        if (!detail?.message) return null
+        return detail.field ? `${detail.field}: ${detail.message}` : detail.message
+      })
+      .filter(Boolean)
+
+    if (detailMessages.length > 0) {
+      return detailMessages.join(' | ')
+    }
+  }
+
+  return (
+    responseData?.message ||
+    responseData?.error ||
+    error?.message ||
+    'Registration failed. Please try again.'
+  )
+}
+
 export default function RegisterPage() {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -74,13 +98,15 @@ export default function RegisterPage() {
       }, 1000)
     } catch (error: any) {
       console.error('Registration error:', error)
+
+      const backendMessage = extractRegistrationErrorMessage(error)
       
-      if (error.message?.includes('already exists') || error.message?.includes('duplicate')) {
+      if (backendMessage.includes('already exists') || backendMessage.includes('duplicate')) {
         setError('This email is already registered. Please login instead.')
-      } else if (error.message?.includes('email')) {
+      } else if (backendMessage.toLowerCase().includes('email')) {
         setError('Invalid email address')
       } else {
-        setError(error.response?.data?.message || error.message || 'Registration failed. Please try again.')
+        setError(backendMessage)
       }
       setIsLoading(false)
     }

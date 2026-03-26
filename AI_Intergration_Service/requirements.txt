@@ -1,7 +1,7 @@
 # --- Top Level AI Packages ---
 # We only list the PARENTS. They will auto-install compatible children.
 langchain>=0.3.0
-langgraph>=1.0.0
+langgraph>=0.2.0
 langchain-openai>=0.2.0
 
 # --- Web Framework ---
