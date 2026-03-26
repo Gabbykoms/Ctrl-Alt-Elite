@@ -10,7 +10,7 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const { login, user } = useAuth()
+  const { login, user, token } = useAuth()
   const navigate = useNavigate()
 
   const validateEmail = (value: string) => {
@@ -65,7 +65,7 @@ export default function LoginPage() {
 
   // Redirect based on user role after successful login
   useEffect(() => {
-    if (user && !isLoading) {
+    if (user && token && !isLoading) {
       const redirectPath = 
         user.role === 'admin' ? '/admin' :
         user.role === 'driver' ? '/driver' :
@@ -73,7 +73,7 @@ export default function LoginPage() {
       
       navigate(redirectPath, { replace: true })
     }
-  }, [user, navigate, isLoading])
+  }, [user, token, navigate, isLoading])
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-8">

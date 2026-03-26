@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import LiveMap from '../components/LiveMap'
-import { trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
+import { DriverShiftReport, trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
+import { useAuth } from '../contexts/AuthContext'
 
 interface Stop {
   id: string
@@ -21,12 +22,137 @@ interface Shuttle {
 }
 
 export default function DriverDashboard() {
+  const { user } = useAuth()
   const [isClockedIn, setIsClockedIn] = useState(false)
   const [status, setStatus] = useState('offline')
   const [stops, setStops] = useState<Stop[]>([])
   const [_isLoadingStops, setIsLoadingStops] = useState(false)
   const [shuttles, setShuttles] = useState<Shuttle[]>([])
   const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
+  const [reportDate, setReportDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [radioNumber, setRadioNumber] = useState('')
+  const [driverName, setDriverName] = useState('')
+  const [vehicleLicense, setVehicleLicense] = useState('')
+  const [startingMileage, setStartingMileage] = useState('')
+  const [endingMileage, setEndingMileage] = useState('')
+  const [conditionNotes, setConditionNotes] = useState('')
+  const [activeReportId, setActiveReportId] = useState<string | null>(null)
+  const [isSubmittingReport, setIsSubmittingReport] = useState(false)
+  const [reportMessage, setReportMessage] = useState('')
+
+  useEffect(() => {
+    if (user?.name) {
+      setDriverName(user.name)
+    }
+  }, [user])
+
+  useEffect(() => {
+    const loadOpenShiftReport = async () => {
+      if (!user?.id) return
+
+      try {
+        const reports = await trackingAPI.getDriverShiftReportsByDriver(user.id)
+        const openReport = reports.find((report: DriverShiftReport) =>
+          report.reportDate === reportDate && (report.endingMileage === null || report.endingMileage === undefined)
+        )
+
+        if (openReport) {
+          setActiveReportId(openReport.id)
+          setRadioNumber(openReport.radioNumber || '')
+          setDriverName(openReport.driverName || user.name)
+          setVehicleLicense(openReport.vehicleLicense || '')
+          setStartingMileage(String(openReport.startingMileage ?? ''))
+          setConditionNotes(openReport.conditionNotes || '')
+          setReportMessage(`Loaded existing open report: ${openReport.id}`)
+        } else {
+          setActiveReportId(null)
+        }
+      } catch (error) {
+        console.error('Error loading shift reports:', error)
+      }
+    }
+
+    loadOpenShiftReport()
+  }, [user?.id, user?.name, reportDate])
+
+  const handleStartShiftReport = async () => {
+    if (!user?.id) {
+      setReportMessage('Driver identity is missing. Please log in again.')
+      return
+    }
+
+    if (!startingMileage) {
+      setReportMessage('Starting mileage is required.')
+      return
+    }
+
+    const parsedStartingMileage = Number(startingMileage)
+    if (Number.isNaN(parsedStartingMileage) || parsedStartingMileage < 0) {
+      setReportMessage('Starting mileage must be a valid non-negative number.')
+      return
+    }
+
+    setIsSubmittingReport(true)
+    setReportMessage('')
+    try {
+      const created = await trackingAPI.startDriverShiftReport({
+        report_date: reportDate,
+        radio_number: radioNumber || undefined,
+        driver_id: user.id,
+        driver_name: driverName || user.name,
+        vehicle_license: vehicleLicense || undefined,
+        starting_mileage: parsedStartingMileage,
+        condition_notes: conditionNotes || undefined,
+      })
+      setActiveReportId(created.id)
+      setReportMessage(`Shift report started successfully (${created.id}).`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to start shift report.'
+      setReportMessage(message)
+    } finally {
+      setIsSubmittingReport(false)
+    }
+  }
+
+  const handleEndShiftReport = async () => {
+    if (!activeReportId) {
+      setReportMessage('No active report found for this date. Start a report first.')
+      return
+    }
+
+    if (!endingMileage) {
+      setReportMessage('Ending mileage is required to close the report.')
+      return
+    }
+
+    const parsedEndingMileage = Number(endingMileage)
+    const parsedStartingMileage = Number(startingMileage)
+    if (Number.isNaN(parsedEndingMileage) || parsedEndingMileage < 0) {
+      setReportMessage('Ending mileage must be a valid non-negative number.')
+      return
+    }
+
+    if (!Number.isNaN(parsedStartingMileage) && parsedEndingMileage < parsedStartingMileage) {
+      setReportMessage('Ending mileage must be greater than or equal to starting mileage.')
+      return
+    }
+
+    setIsSubmittingReport(true)
+    setReportMessage('')
+    try {
+      await trackingAPI.endDriverShiftReport(activeReportId, {
+        ending_mileage: parsedEndingMileage,
+        condition_notes: conditionNotes || undefined,
+      })
+      setReportMessage('Shift report ended successfully.')
+      setActiveReportId(null)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to end shift report.'
+      setReportMessage(message)
+    } finally {
+      setIsSubmittingReport(false)
+    }
+  }
 
   // Load stops from API
   useEffect(() => {
@@ -167,6 +293,108 @@ export default function DriverDashboard() {
               <option value="on-route">On Route</option>
               <option value="on-break">On Break</option>
             </select>
+          </div>
+
+          {/* Shift Report Form */}
+          <div className="border border-gray-200 rounded-lg p-4 space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-dark">Shift Report</h3>
+              <span className="text-sm text-gray-600">
+                {activeReportId ? `Active Report: ${activeReportId}` : 'No active report'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Date</label>
+                <input
+                  type="date"
+                  value={reportDate}
+                  onChange={(e) => setReportDate(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Radio #</label>
+                <input
+                  type="text"
+                  value={radioNumber}
+                  onChange={(e) => setRadioNumber(e.target.value)}
+                  placeholder="e.g., 12"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Driver Name</label>
+                <input
+                  type="text"
+                  value={driverName}
+                  onChange={(e) => setDriverName(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Vehicle License</label>
+                <input
+                  type="text"
+                  value={vehicleLicense}
+                  onChange={(e) => setVehicleLicense(e.target.value)}
+                  placeholder="e.g., ABC-1234"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Starting Mileage</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={startingMileage}
+                  onChange={(e) => setStartingMileage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-dark mb-1">Ending Mileage</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={endingMileage}
+                  onChange={(e) => setEndingMileage(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+              <div className="md:col-span-2">
+                <label className="block text-sm font-medium text-dark mb-1">Exterior Condition / Damage Notes</label>
+                <textarea
+                  value={conditionNotes}
+                  onChange={(e) => setConditionNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Describe exterior condition and any damage"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+                />
+              </div>
+            </div>
+
+            {reportMessage && (
+              <p className="text-sm text-gray-700">{reportMessage}</p>
+            )}
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleStartShiftReport}
+                disabled={isSubmittingReport || !user?.id || !!activeReportId}
+                className="px-4 py-2 rounded-lg font-semibold text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Start Shift Report
+              </button>
+              <button
+                onClick={handleEndShiftReport}
+                disabled={isSubmittingReport || !activeReportId}
+                className="px-4 py-2 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                End Shift Report
+              </button>
+            </div>
           </div>
         </div>
       </div>

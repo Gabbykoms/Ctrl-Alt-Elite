@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
-import { ShuttleProvider } from './contexts/ShuttleContext'
 import ProtectedRoute from './components/ProtectedRoute'
 import AuthLayout from './layouts/AuthLayout'
 import AppLayout from './layouts/AppLayout'
@@ -148,9 +147,7 @@ function AppRoutes() {
 function App() {
   return (
     <AuthProvider>
-      <ShuttleProvider>
-        <AppRoutes />
-      </ShuttleProvider>
+      <AppRoutes />
     </AuthProvider>
   )
 }

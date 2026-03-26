@@ -94,3 +94,26 @@ CREATE INDEX idx_rides_active ON rides(status) WHERE status IN ('REQUESTED', 'IN
 -- Create trigger to update updated_at_ms timestamp for rides
 -- Note: rides table uses separate completed_at_ms for explicit control
 -- We'll rely on application logic for timestamp management
+
+-- ============================================================================
+-- DRIVER SHIFT REPORTS TABLE
+-- ============================================================================
+CREATE TABLE IF NOT EXISTS driver_shift_reports (
+    id VARCHAR(255) PRIMARY KEY,
+    report_date DATE NOT NULL,
+    radio_number VARCHAR(255),
+    driver_id VARCHAR(255) NOT NULL,
+    driver_name VARCHAR(255) NOT NULL,
+    vehicle_license VARCHAR(255),
+    starting_mileage BIGINT NOT NULL,
+    ending_mileage BIGINT,
+    condition_notes TEXT,
+    created_at_ms BIGINT NOT NULL,
+    updated_at_ms BIGINT NOT NULL,
+    CONSTRAINT chk_driver_shift_starting_mileage_non_negative CHECK (starting_mileage >= 0),
+    CONSTRAINT chk_driver_shift_ending_mileage_valid CHECK (ending_mileage IS NULL OR (ending_mileage >= 0 AND ending_mileage >= starting_mileage)),
+    CONSTRAINT uq_driver_shift_driver_date UNIQUE (driver_id, report_date)
+);
+
+CREATE INDEX idx_driver_shift_reports_driver_id ON driver_shift_reports(driver_id);
+CREATE INDEX idx_driver_shift_reports_report_date ON driver_shift_reports(report_date);
