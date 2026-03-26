@@ -58,3 +58,4 @@ frontend/dist/
 
 # Claude Code
 .claude/
+./docs/
