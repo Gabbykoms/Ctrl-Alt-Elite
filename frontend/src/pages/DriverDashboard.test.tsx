@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen } from '@testing-library/react'
 import { describe, it, expect, vi } from 'vitest'
 import DriverDashboard from './DriverDashboard'
 
@@ -30,7 +30,7 @@ vi.mock('../contexts/AuthContext', () => ({
 }))
 
 // Mock fetch for shuttle loading
-global.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) })
+globalThis.fetch = vi.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve([]) }) as unknown as typeof fetch
 
 describe('DriverDashboard', () => {
   // Rendering
