@@ -13,7 +13,7 @@ spring:
   # JPA/Hibernate Configuration
   jpa:
     hibernate:
-      ddl-auto: none  # Don't validate schema on startup
+      ddl-auto: update  # Auto-create/update tables from JPA entities
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect

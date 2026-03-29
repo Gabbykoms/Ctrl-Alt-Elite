@@ -1,6 +1,5 @@
 package com.javashams.tracking.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.javashams.tracking.model.dto.StopDto;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,10 +31,5 @@ public class RedisConfig {
         template.setConnectionFactory(connectionFactory);
         template.afterPropertiesSet();
         return template;
-    }
-
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
     }
 }
