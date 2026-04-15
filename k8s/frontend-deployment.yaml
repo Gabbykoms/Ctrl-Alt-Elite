@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bantam-shuttle-frontend
+  namespace: elite-dev
+  labels:
+    app: bantam-shuttle-frontend
+    tier: frontend
+    team: ctrl-alt-elite
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: bantam-shuttle-frontend
+  template:
+    metadata:
+      labels:
+        app: bantam-shuttle-frontend
+        tier: frontend
+        team: ctrl-alt-elite
+    spec:
+      imagePullSecrets:
+      - name: bantam-shuttle-registry
+      containers:
+      - name: bantam-shuttle-frontend
+        image: registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.0
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 80
+          protocol: TCP
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 80
+          initialDelaySeconds: 10
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
