@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: bantam-config
+  namespace: elite-dev
+  labels:
+    app: bantam-shuttle
+data:
+  # Update these once you have your actual domain/IP
+  frontend-url: "http://localhost:3000"
+  tracking-service-url: "http://bantam-shuttle-tracking.elite-dev.svc.cluster.local:8081/api/tracking"
+  ai-service-url: "http://bantam-ai-service.elite-dev.svc.cluster.local:8083/api/ai"
