@@ -104,8 +104,6 @@ static_sites:
     dockerfile_path: Dockerfile
     routes:
       - path: /
-    build_command: npm run build
-    output_dir: /usr/share/nginx/html
     envs:
       - key: VITE_API_BASE_URL
         value: ${APP_URL}/api
