@@ -2,6 +2,10 @@ name: bantam-shuttle
 region: nyc
 services:
   - name: backend
+    github:
+      repo: Trinity-Shuttle-Service/Ctrl-Alt-Elite
+      branch: version2
+      deploy_on_push: true
     source_dir: backend
     dockerfile_path: Dockerfile
     http_port: 8080
@@ -42,6 +46,10 @@ services:
         value: ${ai-service.PRIVATE_URL}/api/ai
 
   - name: tracking-service
+    github:
+      repo: Trinity-Shuttle-Service/Ctrl-Alt-Elite
+      branch: version2
+      deploy_on_push: true
     source_dir: tracking-service
     dockerfile_path: Dockerfile
     http_port: 8081
@@ -64,6 +72,10 @@ services:
         type: SECRET
 
   - name: ai-service
+    github:
+      repo: Trinity-Shuttle-Service/Ctrl-Alt-Elite
+      branch: version2
+      deploy_on_push: true
     source_dir: AI_Intergration_Service
     dockerfile_path: docker/Dockerfile
     http_port: 8083
@@ -84,6 +96,10 @@ services:
 
 static_sites:
   - name: frontend
+    github:
+      repo: Trinity-Shuttle-Service/Ctrl-Alt-Elite
+      branch: version2
+      deploy_on_push: true
     source_dir: frontend
     dockerfile_path: Dockerfile
     routes:
