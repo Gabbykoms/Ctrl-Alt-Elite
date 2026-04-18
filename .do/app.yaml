@@ -1,0 +1,104 @@
+name: bantam-shuttle
+region: nyc
+services:
+  - name: backend
+    source_dir: backend
+    dockerfile_path: Dockerfile
+    http_port: 8080
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /api
+      - path: /health
+      - path: /socket.io
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 40
+      period_seconds: 30
+      timeout_seconds: 10
+      failure_threshold: 3
+    envs:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8080"
+      - key: FRONTEND_URL
+        value: ${APP_URL}
+      - key: SUPABASE_URL
+        value: ${SUPABASE_URL}
+        type: SECRET
+      - key: SUPABASE_ANON_KEY
+        value: ${SUPABASE_ANON_KEY}
+        type: SECRET
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        value: ${SUPABASE_SERVICE_ROLE_KEY}
+        type: SECRET
+      - key: JWT_SECRET
+        value: ${JWT_SECRET}
+        type: SECRET
+      - key: TRACKING_SERVICE_URL
+        value: ${tracking-service.PRIVATE_URL}/api/tracking
+      - key: AI_SERVICE_URL
+        value: ${ai-service.PRIVATE_URL}/api/ai
+
+  - name: tracking-service
+    source_dir: tracking-service
+    dockerfile_path: Dockerfile
+    http_port: 8081
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /tracking
+    health_check:
+      http_path: /actuator/health
+      initial_delay_seconds: 40
+      period_seconds: 30
+      timeout_seconds: 10
+      failure_threshold: 3
+    envs:
+      - key: SUPABASE_URL
+        value: ${SUPABASE_URL}
+        type: SECRET
+      - key: SUPABASE_ANON_KEY
+        value: ${SUPABASE_ANON_KEY}
+        type: SECRET
+
+  - name: ai-service
+    source_dir: AI_Intergration_Service
+    dockerfile_path: docker/Dockerfile
+    http_port: 8083
+    instance_count: 1
+    instance_size_slug: basic-xxs
+    routes:
+      - path: /ai
+    health_check:
+      http_path: /health
+      initial_delay_seconds: 40
+      period_seconds: 30
+      timeout_seconds: 10
+      failure_threshold: 3
+    envs:
+      - key: OPENAI_API_KEY
+        value: ${OPENAI_API_KEY}
+        type: SECRET
+
+static_sites:
+  - name: frontend
+    source_dir: frontend
+    dockerfile_path: Dockerfile
+    routes:
+      - path: /
+    build_command: npm run build
+    output_dir: /usr/share/nginx/html
+    envs:
+      - key: VITE_API_BASE_URL
+        value: ${APP_URL}/api
+      - key: VITE_SOCKET_URL
+        value: ${APP_URL}
+      - key: VITE_AI_SERVICE_URL
+        value: ${APP_URL}/ai
+      - key: VITE_TRACKING_SERVICE_URL
+        value: ${APP_URL}/tracking
+      - key: VITE_MAPBOX_TOKEN
+        value: ${VITE_MAPBOX_TOKEN}
+        type: SECRET
