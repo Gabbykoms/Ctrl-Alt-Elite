@@ -40,6 +40,9 @@ services:
       - key: JWT_SECRET
         value: ${JWT_SECRET}
         type: SECRET
+      - key: SENDGRID_API_KEY
+        value: ${SENDGRID_API_KEY}
+        type: SECRET
       - key: TRACKING_SERVICE_URL
         value: ${tracking-service.PRIVATE_URL}/api/tracking
       - key: AI_SERVICE_URL
@@ -64,12 +67,32 @@ services:
       timeout_seconds: 10
       failure_threshold: 3
     envs:
-      - key: SUPABASE_URL
-        value: ${SUPABASE_URL}
+      - key: DB_HOST
+        value: ${DB_HOST}
         type: SECRET
-      - key: SUPABASE_ANON_KEY
-        value: ${SUPABASE_ANON_KEY}
+      - key: DB_PORT
+        value: "5432"
+      - key: DB_NAME
+        value: ${DB_NAME}
         type: SECRET
+      - key: DB_USER
+        value: ${DB_USER}
+        type: SECRET
+      - key: DB_PASSWORD
+        value: ${DB_PASSWORD}
+        type: SECRET
+      - key: REDIS_HOST
+        value: ${REDIS_HOST}
+        type: SECRET
+      - key: REDIS_PORT
+        value: "6379"
+      - key: REDIS_USERNAME
+        value: default
+      - key: REDIS_PASSWORD
+        value: ${REDIS_PASSWORD}
+        type: SECRET
+      - key: SPRING_PROFILES_ACTIVE
+        value: production
 
   - name: ai-service
     github:
@@ -90,9 +113,27 @@ services:
       timeout_seconds: 10
       failure_threshold: 3
     envs:
-      - key: OPENAI_API_KEY
-        value: ${OPENAI_API_KEY}
+      - key: AI_OPENAI_API_KEY
+        value: ${AI_OPENAI_API_KEY}
         type: SECRET
+      - key: AI_DATABASE_URL
+        value: ${AI_DATABASE_URL}
+        type: SECRET
+      - key: AI_SUPABASE_URL
+        value: ${AI_SUPABASE_URL}
+        type: SECRET
+      - key: AI_SUPABASE_KEY
+        value: ${AI_SUPABASE_KEY}
+        type: SECRET
+      - key: OPENWEATHER_API_KEY
+        value: ${OPENWEATHER_API_KEY}
+        type: SECRET
+      - key: TRACKING_SERVICE_URL
+        value: ${tracking-service.PRIVATE_URL}/api/tracking
+      - key: AI_ALLOWED_ORIGINS
+        value: ${APP_URL}
+      - key: AI_ENVIRONMENT
+        value: production
 
 static_sites:
   - name: frontend
@@ -102,6 +143,9 @@ static_sites:
       deploy_on_push: true
     source_dir: frontend
     dockerfile_path: Dockerfile
+    http_port: 80
+    instance_count: 1
+    instance_size_slug: basic-xxs
     routes:
       - path: /
     envs:
