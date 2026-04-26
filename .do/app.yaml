@@ -120,7 +120,7 @@ services:
       - key: AI_ENVIRONMENT
         value: production
 
-static_sites:
+services:
   - name: frontend
     github:
       repo: Trinity-Shuttle-Service/Ctrl-Alt-Elite
@@ -133,6 +133,12 @@ static_sites:
     instance_size_slug: basic-xxs
     routes:
       - path: /
+    health_check:
+      http_path: /
+      initial_delay_seconds: 30
+      period_seconds: 30
+      timeout_seconds: 10
+      failure_threshold: 3
     envs:
       - key: VITE_API_BASE_URL
         value: ${APP_URL}/api
