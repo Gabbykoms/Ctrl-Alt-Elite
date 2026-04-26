@@ -67,29 +67,14 @@ services:
       timeout_seconds: 10
       failure_threshold: 3
     envs:
-      - key: DB_HOST
-        value: ${DB_HOST}
-        type: SECRET
-      - key: DB_PORT
-        value: "5432"
-      - key: DB_NAME
-        value: ${DB_NAME}
+      - key: TRACKING_DB_URL
+        value: ${TRACKING_DB_URL}
         type: SECRET
       - key: DB_USER
-        value: ${DB_USER}
+        value: ${TRACKING_DB_USER}
         type: SECRET
       - key: DB_PASSWORD
-        value: ${DB_PASSWORD}
-        type: SECRET
-      - key: REDIS_HOST
-        value: ${REDIS_HOST}
-        type: SECRET
-      - key: REDIS_PORT
-        value: "6379"
-      - key: REDIS_USERNAME
-        value: default
-      - key: REDIS_PASSWORD
-        value: ${REDIS_PASSWORD}
+        value: ${TRACKING_DB_PASSWORD}
         type: SECRET
       - key: SPRING_PROFILES_ACTIVE
         value: production

@@ -28,9 +28,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.postgresql:postgresql:42.7.1")
 
-    // Redis for caching and pub/sub
-    implementation("org.springframework.boot:spring-boot-starter-data-redis")
-    implementation("io.lettuce:lettuce-core:6.5.3.RELEASE")
+    // Redis for caching and pub/sub (disabled - using Supabase PostgreSQL only)
+    // implementation("org.springframework.boot:spring-boot-starter-data-redis")
+    // implementation("io.lettuce:lettuce-core:6.5.3.RELEASE")
 
     // Swagger/OpenAPI documentation
     implementation("org.springdoc:springdoc-openapi-starter-webflux-ui:2.6.0")
