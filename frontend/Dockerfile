@@ -24,8 +24,8 @@
 # # Copy source code
 # COPY . .
 
-# # Build the application (skip TypeScript type checking for Docker build)
-# RUN npx vite build
+# # Build the application
+# RUN npm run build
 
 # # Production stage
 # FROM nginx:alpine
@@ -70,8 +70,8 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Build the application (skip TypeScript type checking for Docker build)
-RUN npx vite build
+# Build the application
+RUN npm run build
 
 # Production stage
 FROM nginx:alpine
