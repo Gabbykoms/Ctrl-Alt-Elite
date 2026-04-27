@@ -120,7 +120,6 @@ services:
       - key: AI_ENVIRONMENT
         value: production
 
-services:
   - name: frontend
     github:
       repo: Trinity-Shuttle-Service/Ctrl-Alt-Elite
