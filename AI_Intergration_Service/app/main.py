@@ -49,26 +49,36 @@ app.include_router(documents.router, prefix="/documents", tags=["Documents"])
 async def startup_event():
     """Run on application startup"""
     global rabbitmq_chat_service
-    
+
+    # Ensure rabbitmq_chat_service starts as None so the app is always
+    # in a known state even if the block below raises unexpectedly.
+    rabbitmq_chat_service = None
+
     logger.info(f" Starting {settings.AI_SERVICE_NAME}")
     logger.info(f" Environment: {settings.AI_ENVIRONMENT}")
     logger.info(f" Port: {settings.AI_SERVICE_PORT}")
     logger.info(f" Chat Model: {settings.CHAT_MODEL}")
     logger.info(f" Embedding Model: {settings.EMBEDDING_MODEL}")
-    
-    # Initialize RabbitMQ chat service
+
+    # Initialize RabbitMQ chat service.
+    # A failure here must never prevent the app from starting — chat
+    # endpoints will return 503 until RabbitMQ becomes available.
     try:
         logger.info("📡 Initializing RabbitMQ chat service...")
-        rabbitmq_chat_service = RabbitMQChatService()
-        await rabbitmq_chat_service.connect()
-        
-        # Start consumers in background
-        asyncio.create_task(rabbitmq_chat_service.start_consumers())
+        service = RabbitMQChatService()
+        await service.connect()
+
+        # Start consumers in background only after a successful connect.
+        asyncio.create_task(service.start_consumers())
+        rabbitmq_chat_service = service
         logger.info("✅ RabbitMQ chat service initialized and consumers started")
-        
+
     except Exception as e:
         logger.error(f"❌ Failed to initialize RabbitMQ chat service: {e}")
-        logger.warning("⚠️  Service will continue without RabbitMQ integration")
+        logger.warning(
+            "⚠️  Service starting without RabbitMQ — chat endpoints will "
+            "return 503 until RabbitMQ is available"
+        )
         rabbitmq_chat_service = None
 
 
