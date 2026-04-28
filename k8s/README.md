@@ -15,7 +15,13 @@ Images must be built for `linux/amd64` since DO cluster nodes run on AMD64 archi
 
 ```bash
 cd frontend
-docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.0 .
+# docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.0 .
+docker build --platform linux/amd64 \
+  --build-arg VITE_MAPBOX_TOKEN="pk.eyJ1IjoiZ2FiYnlrb21zIiwiYSI6ImNtaGgzdGpwbjBmb2UybXB3ZXc0ZHU0NGYifQ.Ls2t9Ctp5eIdt6PZCoA2rQ" \
+  --build-arg VITE_API_BASE_URL="http://localhost:8080/api" \
+  --build-arg VITE_SOCKET_URL="ws://localhost:8080" \
+  -f Dockerfile \
+  -t registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.0 .
 
 cd ../backend
 docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/backend:2.0.0 .
