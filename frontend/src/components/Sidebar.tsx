@@ -18,6 +18,7 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
     if (userRole === 'driver') {
       return [
         { label: 'Dashboard', path: '/driver', icon: BarChart3 },
+        { label: 'My Shifts', path: '/driver/shifts', icon: Calendar },
         { label: 'Settings', path: '/driver/settings', icon: Settings },
       ]
     }
@@ -25,6 +26,7 @@ export default function Sidebar({ isOpen = true, onClose, userRole = 'student', 
     if (userRole === 'admin') {
       return [
         { label: 'Dashboard', path: '/admin', icon: BarChart3 },
+        { label: 'Shifts', path: '/admin/shifts', icon: Calendar },
         { label: 'Drivers', path: '/admin/drivers', icon: User },
         { label: 'Routes', path: '/admin/routes', icon: MapPin },
         { label: 'Settings', path: '/admin/settings', icon: Settings },

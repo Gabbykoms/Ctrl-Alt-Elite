@@ -16,7 +16,9 @@ import {
   RouteManagementPage,
 } from './pages/Placeholders'
 import DriverDashboard from './pages/DriverDashboard'
+import DriverShifts from './pages/DriverShifts'
 import AdminDashboard from './pages/AdminDashboard'
+import AdminShifts from './pages/AdminShifts'
 
 function AppRoutes() {
   const { logout } = useAuth()
@@ -88,6 +90,16 @@ function AppRoutes() {
       />
       <Route
         element={
+          // <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="driver">
+              <DriverShifts />
+            </AppLayout>
+          // </ProtectedRoute>
+        }
+        path="/driver/shifts"
+      />
+      <Route
+        element={
           <ProtectedRoute>
             <AppLayout onLogout={logout} userRole="driver">
               <AccountSettings />
@@ -107,6 +119,16 @@ function AppRoutes() {
           </ProtectedRoute>
         }
         path="/admin"
+      />
+      <Route
+        element={
+          <ProtectedRoute>
+            <AppLayout onLogout={logout} userRole="admin">
+              <AdminShifts />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+        path="/admin/shifts"
       />
       <Route
         element={

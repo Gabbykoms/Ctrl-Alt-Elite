@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts'
 import { Plus, Trash2, Loader } from 'lucide-react'
 import LiveMap from '../components/LiveMap'
+import AdminShiftsView from '../components/AdminShiftsView'
 import { trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
+import { mockShifts } from '../data/mockShifts'
 
 const PEAK_USAGE_DATA = [
   { time: '6 AM', count: 45 },
@@ -48,7 +51,14 @@ interface Shuttle {
 }
 
 export default function AdminDashboard() {
-  const [activeTab, setActiveTab] = useState<'live' | 'analytics' | 'stops'>('live')
+  const [activeTab, setActiveTab] = useState<'live' | 'analytics' | 'stops' | 'shifts'>('live')
+  const location = useLocation()
+
+  useEffect(() => {
+    if (location.pathname && location.pathname.includes('/admin/shifts')) {
+      setActiveTab('shifts')
+    }
+  }, [location.pathname])
   const [stops, setStops] = useState<Stop[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showNameModal, setShowNameModal] = useState(false)
@@ -258,6 +268,16 @@ export default function AdminDashboard() {
         >
           Analytics
         </button>
+        <button
+          onClick={() => setActiveTab('shifts')}
+          className={`flex-1 py-4 font-semibold transition-colors ${
+            activeTab === 'shifts'
+              ? 'border-b-2 border-primary text-primary'
+              : 'text-gray-600 hover:text-gray-900'
+          }`}
+        >
+          Shifts
+        </button>
       </div>
 
       {/* Content */}
@@ -428,7 +448,7 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-        ) : (
+        ) : activeTab === 'analytics' ? (
           <div className="p-6 space-y-8">
             {/* Peak Usage Chart */}
             <div className="bg-white rounded-lg shadow-md p-6">
@@ -475,6 +495,10 @@ export default function AdminDashboard() {
                 <p className="text-3xl font-bold text-secondary">2,145</p>
               </div>
             </div>
+          </div>
+        ) : (
+          <div className="p-6 overflow-y-auto">
+            <AdminShiftsView shifts={mockShifts} />
           </div>
         )}
       </div>

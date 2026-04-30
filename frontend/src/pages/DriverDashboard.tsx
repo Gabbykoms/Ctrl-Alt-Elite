@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
 import LiveMap from '../components/LiveMap'
+import ShiftsList from '../components/ShiftsList'
 import { DriverShiftReport, trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
 import { useAuth } from '../contexts/AuthContext'
+import { getDriverShifts } from '../data/mockShifts'
+import type { Shift } from '../data/mockShifts'
 
 interface Stop {
   id: string
@@ -29,6 +32,9 @@ export default function DriverDashboard() {
   const [_isLoadingStops, setIsLoadingStops] = useState(false)
   const [shuttles, setShuttles] = useState<Shuttle[]>([])
   const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
+  const [activeTab, setActiveTab] = useState<'map' | 'shifts'>('map')
+  const [driverShifts, setDriverShifts] = useState<Shift[]>([])
+  // Keep tabs internal to the dashboard page only
   const [reportDate, setReportDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [radioNumber, setRadioNumber] = useState('')
   const [driverName, setDriverName] = useState('')
@@ -74,6 +80,14 @@ export default function DriverDashboard() {
 
     loadOpenShiftReport()
   }, [user?.id, user?.name, reportDate])
+
+  // Load driver's shifts from mock data
+  useEffect(() => {
+    if (user?.id) {
+      const shifts = getDriverShifts(user.id)
+      setDriverShifts(shifts)
+    }
+  }, [user?.id])
 
   const handleStartShiftReport = async () => {
     if (!user?.id) {
@@ -396,12 +410,45 @@ export default function DriverDashboard() {
               </button>
             </div>
           </div>
+
+          {/* Tabs */}
+          <div className="flex gap-4 border-b border-gray-200">
+            <button
+              onClick={() => setActiveTab('map')}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === 'map'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              Live Map
+            </button>
+            <button
+              onClick={() => setActiveTab('shifts')}
+              className={`px-4 py-2 font-semibold transition-colors ${
+                activeTab === 'shifts'
+                  ? 'text-primary border-b-2 border-primary'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              My Shifts ({driverShifts.length})
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Map using LiveMap component */}
+      {/* Tab Content */}
       <div className="flex-1 relative">
-        <LiveMap pins={mapPins} />
+        {activeTab === 'map' ? (
+          <LiveMap pins={mapPins} />
+        ) : (
+          <div className="h-full overflow-y-auto p-6">
+            <div className="max-w-6xl mx-auto">
+              <h3 className="text-2xl font-bold text-dark mb-4">My Shifts</h3>
+              <ShiftsList shifts={driverShifts} />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
