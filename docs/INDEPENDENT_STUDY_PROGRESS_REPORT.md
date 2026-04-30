@@ -2,10 +2,10 @@
 ## Bantam Shuttle — Trinity College
 ### Spring Semester 2026 | January – April
 
-**Student:** Noella Uwayisenga
+**Students:** Noella Uwayisenga & Shamsher Ghising Tamang
 **Project:** Bantam Shuttle — Real-Time Campus Shuttle Tracking & Ride Management System
 **Supervisor:** Professor Ken Kousen
-**Submission Date:** April 27, 2026
+**Submission Date:** April 28, 2026
 
 ---
 
@@ -233,13 +233,11 @@ Additionally, a 1,900-line **iOS App Roadmap** (`IOS_APP_ROADMAP.md`) was create
 
 ## 6. Next Steps (Future Work)
 
-- Complete AI service deployment on Railway once RabbitMQ dependency is resolved
-- Connect all live service URLs so the full end-to-end user flow works in production
-- Expand frontend test coverage beyond the driver dashboard
+
+- Complete the deployment 
 - Implement the iOS companion app outlined in `IOS_APP_ROADMAP.md`
 - Add monitoring and alerting (uptime checks, error rate dashboards)
+- Improve the communication between the driver and the students(text message)
 - Implement the admin dashboard improvements planned in Figma
 
 ---
-
-*Report compiled from git history, commit diffs, and project documentation. All referenced commits are on the `version2` branch of the Trinity-Shuttle-Service/Ctrl-Alt-Elite repository.*
