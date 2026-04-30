@@ -1,5 +1,8 @@
 package com.javashams.tracking.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 import java.time.Instant;
 
@@ -7,6 +10,7 @@ import java.time.Instant;
  * JPA Entity for Stop persistence in PostgreSQL
  * Represents a campus shuttle stop with location coordinates
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @Entity
 @Table(name = "stops", indexes = {
     @Index(name = "idx_stops_name", columnList = "name"),
@@ -31,18 +35,21 @@ public class Stop {
     @Column(columnDefinition = "TEXT")
     private String description;
     
+    @JsonProperty("is_active")
     @Column(nullable = false, name = "is_active")
     private Boolean isActive = true;
-    
+
     @Column(nullable = false, name = "created_at_ms")
     private Long createdAtMs;
-    
+
     @Column(nullable = false, name = "updated_at_ms")
     private Long updatedAtMs;
-    
+
+    @JsonProperty("created_at")
     @Column(nullable = false, updatable = false)
     private Instant createdAt = Instant.now();
-    
+
+    @JsonProperty("updated_at")
     @Column(nullable = false)
     private Instant updatedAt = Instant.now();
     
@@ -113,18 +120,22 @@ public class Stop {
         this.isActive = isActive;
     }
     
+    @JsonIgnore
     public Long getCreatedAtMs() {
         return createdAtMs;
     }
-    
+
+    @JsonProperty("created_at_ms")
     public void setCreatedAtMs(Long createdAtMs) {
         this.createdAtMs = createdAtMs;
     }
-    
+
+    @JsonIgnore
     public Long getUpdatedAtMs() {
         return updatedAtMs;
     }
-    
+
+    @JsonProperty("updated_at_ms")
     public void setUpdatedAtMs(Long updatedAtMs) {
         this.updatedAtMs = updatedAtMs;
     }

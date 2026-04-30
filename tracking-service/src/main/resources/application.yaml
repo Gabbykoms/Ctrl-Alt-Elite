@@ -2,25 +2,33 @@
 spring:
   application:
     name: tracking-service
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
   
   # PostgreSQL Database Configuration (Supabase)
-  datasource:
-    url: ${TRACKING_DB_URL:jdbc:postgresql://localhost:5432/tracking_db}
-    username: ${DB_USER:tracking_user}
-    password: ${DB_PASSWORD:tracking_password}
-    driver-class-name: org.postgresql.Driver
+  # datasource:
+  #   url: ${TRACKING_DB_URL:jdbc:postgresql://localhost:5432/tracking_db}
+  #   username: ${DB_USER:tracking_user}
+  #   password: ${DB_PASSWORD:tracking_password}
+  #   driver-class-name: org.postgresql.Driver
 
   # JPA/Hibernate Configuration
-  jpa:
-    hibernate:
-      ddl-auto: none  # Schema managed by Supabase
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
-        use_sql_comments: true
-    show-sql: false
+  # jpa:
+  #   hibernate:
+  #     ddl-auto: none  # Schema managed by Supabase
+  #   properties:
+  #     hibernate:
+  #       dialect: org.hibernate.dialect.PostgreSQLDialect
+  #       format_sql: true
+  #       use_sql_comments: true
+  #   show-sql: false
   
+supabase:
+  url: ${SUPABASE_URL:https://iarrtqyfimoukixvcizb.supabase.co}
+  anon-key: ${SUPABASE_ANON_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhcnJ0cXlmaW1vdWtpeHZjaXpiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIwMzU3ODUsImV4cCI6MjA3NzYxMTc4NX0.W_bt1IRRnBp5RzSi3sc6AyJg1KGJX_yANUGj8GCR4RQ}
+  service-role-key: ${SUPABASE_SERVICE_ROLE_KEY:eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlhcnJ0cXlmaW1vdWtpeHZjaXpiIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2MjAzNTc4NSwiZXhwIjoyMDc3NjExNzg1fQ.-jR5rnMuazhg1v7RmyR8jIkENH-zAMZsrWFt9vfDoxo}
+
   # Redis configuration disabled - not needed with Supabase
   # data:
   #   redis:

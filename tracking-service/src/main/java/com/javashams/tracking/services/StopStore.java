@@ -4,10 +4,11 @@ import com.javashams.tracking.model.Stop;
 import com.javashams.tracking.model.dto.StopDto;
 import com.javashams.tracking.repositories.StopRepository;
 import org.springframework.stereotype.Service;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 @Service
 public class StopStore {
@@ -19,76 +20,75 @@ public class StopStore {
         this.stopRepository = stopRepository;
     }
 
-    public List<StopDto> getAllStops() {
-        List<Stop> entities = stopRepository.findByIsActiveTrueOrderByName();
-        List<StopDto> dtos = convertEntitiesToDtos(entities);
-        logger.info("Retrieved {} stops from database", dtos.size());
-        return dtos;
+    public Flux<StopDto> getAllStops() {
+        return stopRepository.findByIsActiveTrueOrderByName()
+                .map(this::convertEntityToDto)
+                .doOnComplete(() -> logger.info("Streamed all active stops"));
     }
 
-    public StopDto getStop(String stopId) {
-        Optional<Stop> entity = stopRepository.findById(stopId);
-        if (entity.isEmpty()) {
-            logger.warn("Stop not found: {}", stopId);
-            return null;
+    public Mono<StopDto> getStop(String stopId) {
+        return stopRepository.findById(stopId)
+                .map(this::convertEntityToDto)
+                .doOnSuccess(stop -> {
+                    if (stop == null) logger.warn("Stop not found: {}", stopId);
+                });
+    }
+
+    public Mono<StopDto> createStop(String stopId, String name, Double latitude, Double longitude, String description) {
+        if (stopId == null || stopId.isBlank()) {
+            return Mono.error(new IllegalArgumentException("Stop ID is required"));
         }
-        return convertEntityToDto(entity.get());
-    }
-
-    public StopDto createStop(String name, Double latitude, Double longitude, String description) {
         if (name == null || name.isBlank() || latitude == null || longitude == null) {
-            throw new IllegalArgumentException("Stop name, latitude, and longitude are required");
+            return Mono.error(new IllegalArgumentException("Stop name, latitude, and longitude are required"));
         }
 
-        String stopId = "stop-" + name.toLowerCase().replaceAll("\\s+", "-") + "-" + System.currentTimeMillis();
         long now = System.currentTimeMillis();
-
         Stop entity = new Stop(stopId, name, latitude, longitude, description, true, now, now);
-        Stop savedEntity = stopRepository.save(entity);
 
-        logger.info("Stop created: {} at ({}, {})", name, latitude, longitude);
-        return convertEntityToDto(savedEntity);
+        return stopRepository.save(entity)
+                .doOnSuccess(s -> logger.info("Stop created: {} at ({}, {})", name, latitude, longitude))
+                .map(this::convertEntityToDto);
     }
 
-    public StopDto updateStop(String stopId, String name, Double latitude, Double longitude, String description) {
-        Optional<Stop> existing = stopRepository.findById(stopId);
-        if (existing.isEmpty()) {
-            throw new IllegalArgumentException("Stop not found: " + stopId);
-        }
+    public Mono<StopDto> updateStop(String stopId, String name, Double latitude, Double longitude, String description) {
+        return stopRepository.findById(stopId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Stop not found: " + stopId)))
+                .flatMap(entity -> {
+                    if (name != null) entity.setName(name);
+                    if (latitude != null) entity.setLatitude(latitude);
+                    if (longitude != null) entity.setLongitude(longitude);
+                    if (description != null) entity.setDescription(description);
+                    long now = System.currentTimeMillis();
+                    entity.setUpdatedAtMs(now);
+                    entity.setUpdatedAt(java.time.Instant.ofEpochMilli(now));
 
-        Stop entity = existing.get();
-        if (name != null) entity.setName(name);
-        if (latitude != null) entity.setLatitude(latitude);
-        if (longitude != null) entity.setLongitude(longitude);
-        if (description != null) entity.setDescription(description);
-        entity.setUpdatedAtMs(System.currentTimeMillis());
-
-        Stop updated = stopRepository.save(entity);
-        logger.info("Stop updated: {}", stopId);
-        return convertEntityToDto(updated);
+                    return stopRepository.save(entity);
+                })
+                .doOnSuccess(s -> logger.info("Stop updated: {}", stopId))
+                .map(this::convertEntityToDto);
     }
 
-    public void deleteStop(String stopId) {
-        Optional<Stop> existing = stopRepository.findById(stopId);
-        if (existing.isEmpty()) {
-            throw new IllegalArgumentException("Stop not found: " + stopId);
-        }
-
-        Stop entity = existing.get();
-        entity.setIsActive(false);
-        entity.setUpdatedAtMs(System.currentTimeMillis());
-        stopRepository.save(entity);
-
-        logger.info("Stop deleted: {}", stopId);
+    public Mono<Void> deleteStop(String stopId) {
+        return stopRepository.findById(stopId)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("Stop not found: " + stopId)))
+                .flatMap(entity -> {
+                    long now = System.currentTimeMillis();
+                    entity.setIsActive(false);
+                    entity.setUpdatedAtMs(now);
+                    entity.setUpdatedAt(java.time.Instant.ofEpochMilli(now));
+                    return stopRepository.save(entity);
+                })
+                .doOnSuccess(s -> logger.info("Stop deleted (soft): {}", stopId))
+                .then();
     }
 
-    public boolean stopExists(String stopId) {
+    public Mono<Boolean> stopExists(String stopId) {
         return stopRepository.existsById(stopId);
     }
 
-    public void clearAll() {
-        stopRepository.deleteAll();
-        logger.warn("All stops cleared from database");
+    public Mono<Void> clearAll() {
+        return stopRepository.deleteAll()
+                .doOnSuccess(v -> logger.warn("All stops cleared from database"));
     }
 
     private StopDto convertEntityToDto(Stop entity) {
@@ -102,11 +102,5 @@ public class StopStore {
                 entity.getCreatedAtMs(),
                 entity.getUpdatedAtMs()
         );
-    }
-
-    private List<StopDto> convertEntitiesToDtos(List<Stop> entities) {
-        return entities.stream()
-                .map(this::convertEntityToDto)
-                .toList();
     }
 }
