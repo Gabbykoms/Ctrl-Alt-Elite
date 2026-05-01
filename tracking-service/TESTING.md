@@ -7,6 +7,7 @@ This guide provides curl examples for testing all tracking service endpoints. En
 1. [Driver Endpoints](#driver-endpoints)
 2. [Ride Endpoints](#ride-endpoints)
 3. [Stops Endpoints](#stops-endpoints)
+4. [Driver Shift Report Endpoints](#driver-shift-report-endpoints)
 
 ---
 
@@ -679,6 +680,134 @@ curl -X DELETE http://localhost:8081/v1/stops/stop-001
 ```
 
 **Expected Response:** `204 No Content`
+
+---
+
+## Driver Shift Report Endpoints
+
+Base URL: `http://localhost:8081/v1/shifts`
+
+`driver_id` references a row in the `drivers` table. For the demo, use the `drivers.id` linked to your profile. `driver_name` must always be provided explicitly for now.
+
+---
+
+### 1. Clock In
+
+**Endpoint:** `POST /v1/shifts/clock-in`
+
+```bash
+curl -X POST http://localhost:8081/v1/shifts/clock-in \
+  -H "Content-Type: application/json" \
+  -d '{
+    "driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4",
+    "driver_name": "Shamsher Ghising Tamang",
+    "radio_number": "R-01",
+    "vehicle_license": "CT-BANTAM-1",
+    "starting_mileage": 12000,
+    "condition_notes": "Vehicle in good condition"
+  }'
+```
+
+**Expected Response:** `201 Created`
+```json
+{
+  "id": "shift-<uuid>",
+  "report_date": "2026-05-01",
+  "driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4",
+  "driver_name": "Shamsher Ghising Tamang",
+  "radio_number": "R-01",
+  "vehicle_license": "CT-BANTAM-1",
+  "starting_mileage": 12000,
+  "ending_mileage": null,
+  "condition_notes": "Vehicle in good condition",
+  "status": "IN_PROGRESS",
+  "clock_in_time": "2026-05-01T04:03:19.170989Z",
+  "clock_out_time": null,
+  "created_at_ms": 1777608199170,
+  "updated_at_ms": 1777608199170
+}
+```
+
+**Error cases:**
+```bash
+# Missing driver_name → 400
+curl -X POST http://localhost:8081/v1/shifts/clock-in \
+  -H "Content-Type: application/json" \
+  -d '{"driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4", "starting_mileage": 12000}'
+
+# Clock in again while shift open → 409
+curl -X POST http://localhost:8081/v1/shifts/clock-in \
+  -H "Content-Type: application/json" \
+  -d '{"driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4", "driver_name": "Shamsher Ghising Tamang", "starting_mileage": 13000}'
+```
+
+---
+
+### 2. Clock Out
+
+**Endpoint:** `POST /v1/shifts/clock-out`
+
+```bash
+curl -X POST http://localhost:8081/v1/shifts/clock-out \
+  -H "Content-Type: application/json" \
+  -d '{
+    "driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4",
+    "ending_mileage": 12450,
+    "condition_notes": "Minor wear on front left tyre"
+  }'
+```
+
+**Expected Response:** `200 OK`
+```json
+{
+  "id": "shift-<uuid>",
+  "status": "COMPLETED",
+  "ending_mileage": 12450,
+  "clock_out_time": "2026-05-01T04:03:19.602388Z",
+  "updated_at_ms": 1777608199602
+}
+```
+
+**Error cases:**
+```bash
+# ending_mileage less than starting_mileage → 400
+curl -X POST http://localhost:8081/v1/shifts/clock-out \
+  -H "Content-Type: application/json" \
+  -d '{"driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4", "ending_mileage": 5000}'
+
+# No open shift → 400
+curl -X POST http://localhost:8081/v1/shifts/clock-out \
+  -H "Content-Type: application/json" \
+  -d '{"driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4", "ending_mileage": 12500}'
+```
+
+---
+
+### 3. Get Shift History for Driver
+
+**Endpoint:** `GET /v1/shifts/driver/{driverId}`
+
+```bash
+curl http://localhost:8081/v1/shifts/driver/d22fcfa1-ffdd-4422-af5b-3408467136a4
+```
+
+**Expected Response:** `200 OK`
+```json
+{
+  "shifts": [
+    {
+      "id": "shift-<uuid>",
+      "status": "COMPLETED",
+      "starting_mileage": 12000,
+      "ending_mileage": 12450,
+      "clock_in_time": "2026-05-01T04:03:19.170989Z",
+      "clock_out_time": "2026-05-01T04:03:19.602388Z"
+    }
+  ],
+  "total": 1,
+  "driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4"
+}
+```
 
 ---
 

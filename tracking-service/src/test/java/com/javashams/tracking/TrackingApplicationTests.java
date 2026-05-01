@@ -1,11 +1,18 @@
 // src/test/java/com/javashams/tracking/TrackingApplicationTests.java
 package com.javashams.tracking;
 
+import com.javashams.tracking.api.DriverShiftReportController;
 import com.javashams.tracking.api.StopsController;
+import com.javashams.tracking.model.DriverShiftReport;
 import com.javashams.tracking.model.Stop;
+import com.javashams.tracking.model.dto.ClockInRequest;
+import com.javashams.tracking.model.dto.ClockOutRequest;
 import com.javashams.tracking.model.dto.StopDto;
+import com.javashams.tracking.repositories.DriverShiftReportRepository;
 import com.javashams.tracking.repositories.StopRepository;
+import com.javashams.tracking.services.DriverShiftReportService;
 import com.javashams.tracking.services.StopStore;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -19,10 +26,13 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
+
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
+import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -481,5 +491,409 @@ class StopsControllerTest {
         webTestClient.delete().uri("/v1/stops/ghost")
                 .exchange()
                 .expectStatus().isNotFound();
+    }
+}
+
+// ── DriverShiftReportService unit tests ──────────────────────────────────────
+
+@ExtendWith(MockitoExtension.class)
+class DriverShiftReportServiceTest {
+
+    @Mock
+    DriverShiftReportRepository shiftReportRepository;
+
+    @InjectMocks
+    DriverShiftReportService shiftReportService;
+
+    private DriverShiftReport shift(String id, String driverId, String status, long startingMileage) {
+        DriverShiftReport report = new DriverShiftReport();
+        report.setId(id);
+        report.setDriverId(driverId);
+        report.setDriverName("Test Driver");
+        report.setReportDate(LocalDate.now());
+        report.setStartingMileage(startingMileage);
+        report.setStatus(status);
+        report.setClockInTime(Instant.now());
+        long now = System.currentTimeMillis();
+        report.setCreatedAtMs(now);
+        report.setUpdatedAtMs(now);
+        return report;
+    }
+
+    // clockIn — validation
+
+    @Test
+    @DisplayName("clockIn: errors when driver_id is null")
+    void clockIn_errors_whenDriverIdNull() {
+        ClockInRequest req = new ClockInRequest(null, "John Driver", null, null, 10000L, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().equals("driver_id is required"))
+                .verify();
+    }
+
+    @Test
+    @DisplayName("clockIn: errors when driver_id is blank")
+    void clockIn_errors_whenDriverIdBlank() {
+        ClockInRequest req = new ClockInRequest("   ", "John Driver", null, null, 10000L, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().equals("driver_id is required"))
+                .verify();
+    }
+
+    @Test
+    @DisplayName("clockIn: errors when driver_name is null")
+    void clockIn_errors_whenDriverNameNull() {
+        ClockInRequest req = new ClockInRequest("driver-1", null, null, null, 10000L, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().equals("driver_name is required"))
+                .verify();
+    }
+
+    @Test
+    @DisplayName("clockIn: errors when driver_name is blank")
+    void clockIn_errors_whenDriverNameBlank() {
+        ClockInRequest req = new ClockInRequest("driver-1", "   ", null, null, 10000L, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().equals("driver_name is required"))
+                .verify();
+    }
+
+    @Test
+    @DisplayName("clockIn: errors when starting_mileage is null")
+    void clockIn_errors_whenStartingMileageNull() {
+        ClockInRequest req = new ClockInRequest("driver-1", "John Driver", null, null, null, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().contains("starting_mileage"))
+                .verify();
+    }
+
+    @Test
+    @DisplayName("clockIn: errors when starting_mileage is negative")
+    void clockIn_errors_whenStartingMileageNegative() {
+        ClockInRequest req = new ClockInRequest("driver-1", "John Driver", null, null, -1L, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().contains("starting_mileage"))
+                .verify();
+    }
+
+    // clockIn — conflict
+
+    @Test
+    @DisplayName("clockIn: errors when driver already has an open shift")
+    void clockIn_errors_whenOpenShiftExists() {
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1"))
+                .thenReturn(Mono.just(shift("shift-existing", "driver-1", "IN_PROGRESS", 10000L)));
+
+        ClockInRequest req = new ClockInRequest("driver-1", "John Driver", null, null, 12000L, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .expectErrorMatches(e -> e instanceof IllegalStateException
+                        && e.getMessage().contains("open shift"))
+                .verify();
+    }
+
+    // clockIn — happy path
+
+    @Test
+    @DisplayName("clockIn: saves shift with correct fields")
+    void clockIn_savesShiftWithCorrectFields() {
+        ArgumentCaptor<DriverShiftReport> captor = ArgumentCaptor.forClass(DriverShiftReport.class);
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1")).thenReturn(Mono.empty());
+        when(shiftReportRepository.save(captor.capture()))
+                .thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        ClockInRequest req = new ClockInRequest("driver-1", "John Driver", "R-01", "ABC-123", 10000L, "All good");
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .assertNext(report -> {
+                    assertThat(report.getDriverId()).isEqualTo("driver-1");
+                    assertThat(report.getDriverName()).isEqualTo("John Driver");
+                    assertThat(report.getStatus()).isEqualTo("IN_PROGRESS");
+                    assertThat(report.getStartingMileage()).isEqualTo(10000L);
+                    assertThat(report.getClockInTime()).isNotNull();
+                    assertThat(report.getClockOutTime()).isNull();
+                    assertThat(report.getReportDate()).isEqualTo(LocalDate.now());
+                    assertThat(report.getId()).startsWith("shift-");
+                })
+                .verifyComplete();
+
+        assertThat(captor.getValue().getRadioNumber()).isEqualTo("R-01");
+        assertThat(captor.getValue().getVehicleLicense()).isEqualTo("ABC-123");
+        assertThat(captor.getValue().getConditionNotes()).isEqualTo("All good");
+    }
+
+    @Test
+    @DisplayName("clockIn: optional fields can all be null")
+    void clockIn_allowsNullOptionalFields() {
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1")).thenReturn(Mono.empty());
+        when(shiftReportRepository.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        ClockInRequest req = new ClockInRequest("driver-1", "John Driver", null, null, 10000L, null);
+        StepVerifier.create(shiftReportService.clockIn(req))
+                .assertNext(report -> {
+                    assertThat(report.getRadioNumber()).isNull();
+                    assertThat(report.getVehicleLicense()).isNull();
+                    assertThat(report.getConditionNotes()).isNull();
+                })
+                .verifyComplete();
+    }
+
+    // clockOut — validation
+
+    @Test
+    @DisplayName("clockOut: errors when ending_mileage is null")
+    void clockOut_errors_whenEndingMileageNull() {
+        ClockOutRequest req = new ClockOutRequest("driver-1", null, null);
+        StepVerifier.create(shiftReportService.clockOut("driver-1", req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().equals("ending_mileage is required"))
+                .verify();
+    }
+
+    @Test
+    @DisplayName("clockOut: errors when no open shift found")
+    void clockOut_errors_whenNoOpenShift() {
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1")).thenReturn(Mono.empty());
+
+        ClockOutRequest req = new ClockOutRequest("driver-1", 15000L, null);
+        StepVerifier.create(shiftReportService.clockOut("driver-1", req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().contains("No open shift"))
+                .verify();
+    }
+
+    @Test
+    @DisplayName("clockOut: errors when ending_mileage is less than starting_mileage")
+    void clockOut_errors_whenEndingMileageLessThanStarting() {
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1"))
+                .thenReturn(Mono.just(shift("shift-1", "driver-1", "IN_PROGRESS", 10000L)));
+
+        ClockOutRequest req = new ClockOutRequest("driver-1", 5000L, null);
+        StepVerifier.create(shiftReportService.clockOut("driver-1", req))
+                .expectErrorMatches(e -> e instanceof IllegalArgumentException
+                        && e.getMessage().contains("ending_mileage must be >="))
+                .verify();
+    }
+
+    // clockOut — happy path
+
+    @Test
+    @DisplayName("clockOut: completes shift with correct fields")
+    void clockOut_completesShiftWithCorrectFields() {
+        long before = System.currentTimeMillis();
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1"))
+                .thenReturn(Mono.just(shift("shift-1", "driver-1", "IN_PROGRESS", 10000L)));
+        when(shiftReportRepository.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        ClockOutRequest req = new ClockOutRequest("driver-1", 15000L, null);
+        StepVerifier.create(shiftReportService.clockOut("driver-1", req))
+                .assertNext(report -> {
+                    assertThat(report.getStatus()).isEqualTo("COMPLETED");
+                    assertThat(report.getEndingMileage()).isEqualTo(15000L);
+                    assertThat(report.getClockOutTime()).isNotNull();
+                    assertThat(report.getUpdatedAtMs()).isGreaterThanOrEqualTo(before);
+                })
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("clockOut: updates condition_notes when provided")
+    void clockOut_updatesConditionNotes_whenProvided() {
+        DriverShiftReport existing = shift("shift-1", "driver-1", "IN_PROGRESS", 10000L);
+        existing.setConditionNotes("Original notes");
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1")).thenReturn(Mono.just(existing));
+        when(shiftReportRepository.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        ClockOutRequest req = new ClockOutRequest("driver-1", 15000L, "Updated at end of shift");
+        StepVerifier.create(shiftReportService.clockOut("driver-1", req))
+                .assertNext(report -> assertThat(report.getConditionNotes()).isEqualTo("Updated at end of shift"))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("clockOut: preserves existing condition_notes when null in request")
+    void clockOut_preservesConditionNotes_whenNullInRequest() {
+        DriverShiftReport existing = shift("shift-1", "driver-1", "IN_PROGRESS", 10000L);
+        existing.setConditionNotes("Original notes");
+        when(shiftReportRepository.findOpenShiftByDriverId("driver-1")).thenReturn(Mono.just(existing));
+        when(shiftReportRepository.save(any())).thenAnswer(inv -> Mono.just(inv.getArgument(0)));
+
+        ClockOutRequest req = new ClockOutRequest("driver-1", 15000L, null);
+        StepVerifier.create(shiftReportService.clockOut("driver-1", req))
+                .assertNext(report -> assertThat(report.getConditionNotes()).isEqualTo("Original notes"))
+                .verifyComplete();
+    }
+
+    // getShiftsForDriver
+
+    @Test
+    @DisplayName("getShiftsForDriver: returns flux of shifts")
+    void getShiftsForDriver_returnsShifts() {
+        when(shiftReportRepository.findByDriverIdOrderByClockInTimeDesc("driver-1"))
+                .thenReturn(Flux.just(
+                        shift("shift-2", "driver-1", "COMPLETED", 12000L),
+                        shift("shift-1", "driver-1", "COMPLETED", 10000L)
+                ));
+
+        StepVerifier.create(shiftReportService.getShiftsForDriver("driver-1"))
+                .assertNext(r -> assertThat(r.getId()).isEqualTo("shift-2"))
+                .assertNext(r -> assertThat(r.getId()).isEqualTo("shift-1"))
+                .verifyComplete();
+    }
+
+    @Test
+    @DisplayName("getShiftsForDriver: returns empty when no shifts exist")
+    void getShiftsForDriver_returnsEmpty_whenNoShifts() {
+        when(shiftReportRepository.findByDriverIdOrderByClockInTimeDesc("driver-1"))
+                .thenReturn(Flux.empty());
+
+        StepVerifier.create(shiftReportService.getShiftsForDriver("driver-1"))
+                .verifyComplete();
+    }
+}
+
+// ── DriverShiftReportController slice tests ───────────────────────────────────
+
+@WebFluxTest(DriverShiftReportController.class)
+class DriverShiftReportControllerTest {
+
+    @Autowired
+    WebTestClient webTestClient;
+
+    @MockBean
+    DriverShiftReportService shiftReportService;
+
+    private DriverShiftReport shift(String id, String driverId) {
+        DriverShiftReport report = new DriverShiftReport();
+        report.setId(id);
+        report.setDriverId(driverId);
+        report.setDriverName("John Driver");
+        report.setStartingMileage(10000L);
+        report.setStatus("IN_PROGRESS");
+        report.setClockInTime(Instant.now());
+        long now = System.currentTimeMillis();
+        report.setCreatedAtMs(now);
+        report.setUpdatedAtMs(now);
+        return report;
+    }
+
+    // POST /v1/shifts/clock-in
+
+    @Test
+    @DisplayName("POST /v1/shifts/clock-in: 201 with valid body")
+    void clockIn_returns201() {
+        when(shiftReportService.clockIn(any())).thenReturn(Mono.just(shift("shift-1", "driver-1")));
+
+        webTestClient.post().uri("/v1/shifts/clock-in")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of(
+                        "driver_id", "driver-1",
+                        "driver_name", "John Driver",
+                        "starting_mileage", 10000
+                ))
+                .exchange()
+                .expectStatus().isCreated()
+                .expectBody()
+                .jsonPath("$.id").isEqualTo("shift-1")
+                .jsonPath("$.status").isEqualTo("IN_PROGRESS");
+    }
+
+    @Test
+    @DisplayName("POST /v1/shifts/clock-in: 400 when service rejects input")
+    void clockIn_returns400_whenServiceRejectsInput() {
+        when(shiftReportService.clockIn(any()))
+                .thenReturn(Mono.error(new IllegalArgumentException("driver_name is required")));
+
+        webTestClient.post().uri("/v1/shifts/clock-in")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("driver_id", "driver-1", "starting_mileage", 10000))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("driver_name is required");
+    }
+
+    @Test
+    @DisplayName("POST /v1/shifts/clock-in: 409 when driver already has an open shift")
+    void clockIn_returns409_whenOpenShiftExists() {
+        when(shiftReportService.clockIn(any()))
+                .thenReturn(Mono.error(new IllegalStateException("Driver already has an open shift: shift-1")));
+
+        webTestClient.post().uri("/v1/shifts/clock-in")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("driver_id", "driver-1", "driver_name", "John Driver", "starting_mileage", 10000))
+                .exchange()
+                .expectStatus().isEqualTo(409)
+                .expectBody()
+                .jsonPath("$.error").value(v -> assertThat(v.toString()).contains("open shift"));
+    }
+
+    // POST /v1/shifts/clock-out
+
+    @Test
+    @DisplayName("POST /v1/shifts/clock-out: 200 with valid body")
+    void clockOut_returns200() {
+        DriverShiftReport completed = shift("shift-1", "driver-1");
+        completed.setStatus("COMPLETED");
+        completed.setEndingMileage(15000L);
+        when(shiftReportService.clockOut(eq("driver-1"), any())).thenReturn(Mono.just(completed));
+
+        webTestClient.post().uri("/v1/shifts/clock-out")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("driver_id", "driver-1", "ending_mileage", 15000))
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.status").isEqualTo("COMPLETED")
+                .jsonPath("$.ending_mileage").isEqualTo(15000);
+    }
+
+    @Test
+    @DisplayName("POST /v1/shifts/clock-out: 400 when service rejects input")
+    void clockOut_returns400_whenServiceRejectsInput() {
+        when(shiftReportService.clockOut(eq("driver-1"), any()))
+                .thenReturn(Mono.error(new IllegalArgumentException("ending_mileage is required")));
+
+        webTestClient.post().uri("/v1/shifts/clock-out")
+                .contentType(MediaType.APPLICATION_JSON)
+                .bodyValue(Map.of("driver_id", "driver-1"))
+                .exchange()
+                .expectStatus().isBadRequest()
+                .expectBody()
+                .jsonPath("$.error").isEqualTo("ending_mileage is required");
+    }
+
+    // GET /v1/shifts/driver/{driverId}
+
+    @Test
+    @DisplayName("GET /v1/shifts/driver/{driverId}: 200 with wrapped list")
+    void getShiftsForDriver_returns200() {
+        when(shiftReportService.getShiftsForDriver("driver-1"))
+                .thenReturn(Flux.just(shift("shift-2", "driver-1"), shift("shift-1", "driver-1")));
+
+        webTestClient.get().uri("/v1/shifts/driver/driver-1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.total").isEqualTo(2)
+                .jsonPath("$.driver_id").isEqualTo("driver-1")
+                .jsonPath("$.shifts[0].id").isEqualTo("shift-2");
+    }
+
+    @Test
+    @DisplayName("GET /v1/shifts/driver/{driverId}: 200 with empty list when no shifts")
+    void getShiftsForDriver_returns200_whenEmpty() {
+        when(shiftReportService.getShiftsForDriver("driver-1")).thenReturn(Flux.empty());
+
+        webTestClient.get().uri("/v1/shifts/driver/driver-1")
+                .exchange()
+                .expectStatus().isOk()
+                .expectBody()
+                .jsonPath("$.total").isEqualTo(0)
+                .jsonPath("$.shifts").isArray();
     }
 }

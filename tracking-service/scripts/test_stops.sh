@@ -5,9 +5,22 @@ set -e
 BASE="http://localhost:8081"
 PASS=0
 FAIL=0
+CREATED_IDS=()
 
 ok()   { echo "  PASS: $1"; PASS=$((PASS+1)); }
 fail() { echo "  FAIL: $1"; FAIL=$((FAIL+1)); }
+
+cleanup() {
+  if [ ${#CREATED_IDS[@]} -gt 0 ]; then
+    echo ""
+    echo "=== CLEANUP — deleting created stops ==="
+    for id in "${CREATED_IDS[@]}"; do
+      STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X DELETE "$BASE/v1/stops/$id")
+      echo "  DELETE $id → HTTP $STATUS"
+    done
+  fi
+}
+trap cleanup EXIT
 
 # ── 1. CREATE ─────────────────────────────────────────────────────────────────
 echo ""
@@ -15,6 +28,7 @@ echo "=== 1. POST /v1/stops — create stop ==="
 CREATE=$(curl -s -X POST "$BASE/v1/stops" \
   -H "Content-Type: application/json" \
   -d '{
+    "stopId": "stop-test-001",
     "name": "Main Library",
     "latitude": 41.2010,
     "longitude": -72.5740,
@@ -23,6 +37,7 @@ CREATE=$(curl -s -X POST "$BASE/v1/stops" \
 echo "$CREATE" | python3 -m json.tool
 
 STOP_ID=$(echo "$CREATE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('id',''))" 2>/dev/null)
+[ -n "$STOP_ID" ] && CREATED_IDS+=("$STOP_ID")
 IS_ACTIVE=$(echo "$CREATE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('is_active',''))" 2>/dev/null)
 CREATED_AT_MS=$(echo "$CREATE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('created_at_ms',''))" 2>/dev/null)
 
@@ -68,7 +83,7 @@ echo ""
 echo "=== 5. POST /v1/stops — missing lat/lon, expect 400 ==="
 BAD=$(curl -s -w "\n%{http_code}" -X POST "$BASE/v1/stops" \
   -H "Content-Type: application/json" \
-  -d '{"name":"No Coords"}')
+  -d '{"stopId":"stop-test-bad","name":"No Coords"}')
 BAD_STATUS=$(echo "$BAD" | tail -1)
 BAD_BODY=$(echo "$BAD" | head -1)
 echo "  HTTP status: $BAD_STATUS"

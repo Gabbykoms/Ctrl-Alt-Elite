@@ -107,74 +107,68 @@ DELETE /v1/drivers/{id}
 
 ---
 
-## Driver Shift Reports - `/v1/driver-shift-reports`
+## Driver Shift Reports - `/v1/shifts`
 
-Stores shift-level dashboard data (date, radio number, driver info, vehicle license, mileage, condition notes).
+Manages driver shift reports. A driver clocks in at the start of a shift and clocks out at the end. `driver_name` is always provided by the client for now (see long-term plan for server-side lookup). `driver_id` references the `drivers` table.
 
-### Start Shift Report
+### Clock In
 ```http
-POST /v1/driver-shift-reports/start
+POST /v1/shifts/clock-in
 Content-Type: application/json
 
 {
-  "report_date": "2026-03-25",
-  "radio_number": "12",
-  "driver_id": "driver-001",
+  "driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4",
   "driver_name": "John Doe",
-  "vehicle_license": "ABC-1234",
-  "starting_mileage": 145230,
-  "condition_notes": "Exterior clean, no visible damage"
+  "radio_number": "R-01",
+  "vehicle_license": "CT-BANTAM-1",
+  "starting_mileage": 12000,
+  "condition_notes": "Vehicle in good condition"
 }
 ```
-**Response (201):** Shift report created (ending mileage initially `null`)
+**Required:** `driver_id`, `driver_name`, `starting_mileage`
+**Optional:** `radio_number`, `vehicle_license`, `condition_notes`
+
+**Response (201):** Shift report created with `status: IN_PROGRESS`, `clock_in_time` set, `ending_mileage: null`, `clock_out_time: null`
+
+**Response (409):** Driver already has an open shift
+
+**Response (400):** Missing required field
 
 ---
 
-### End Shift Report
+### Clock Out
 ```http
-PATCH /v1/driver-shift-reports/{id}/end
+POST /v1/shifts/clock-out
 Content-Type: application/json
 
 {
-  "ending_mileage": 145318,
-  "condition_notes": "Small scratch on rear bumper"
+  "driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4",
+  "ending_mileage": 12450,
+  "condition_notes": "Minor wear on front left tyre"
 }
 ```
-**Response (200):** Updates ending mileage and notes
+**Required:** `driver_id`, `ending_mileage`
+**Optional:** `condition_notes`
+
+**Response (200):** Shift updated with `status: COMPLETED`, `clock_out_time` set, `ending_mileage` recorded
+
+**Response (400):** No open shift found, missing `ending_mileage`, or `ending_mileage < starting_mileage`
 
 ---
 
-### Get Shift Report by ID
+### Get Shift History for Driver
 ```http
-GET /v1/driver-shift-reports/{id}
+GET /v1/shifts/driver/{driverId}
 ```
-**Response (200):** Single shift report | (404) Not found
-
----
-
-### List All Shift Reports
-```http
-GET /v1/driver-shift-reports
+**Response (200):**
+```json
+{
+  "shifts": [...],
+  "total": 2,
+  "driver_id": "d22fcfa1-ffdd-4422-af5b-3408467136a4"
+}
 ```
-**Response (200):** Array of shift reports
-
----
-
-### List Shift Reports by Driver
-```http
-GET /v1/driver-shift-reports/driver/{driverId}
-```
-**Response (200):** Driver's shift history (newest date first)
-
----
-
-### List Shift Reports by Date
-```http
-GET /v1/driver-shift-reports/date/{reportDate}
-```
-**Example:** `GET /v1/driver-shift-reports/date/2026-03-25`
-
-**Response (200):** Shift reports for that date
+Ordered by `clock_in_time` descending (most recent first)
 
 ---
 
@@ -295,12 +289,16 @@ POST /v1/stops
 Content-Type: application/json
 
 {
+  "stopId": "stop-001",
   "name": "Stop Name",
   "latitude": 41.7465,
   "longitude": -72.6928,
   "description": "Optional description"
 }
 ```
+**Required:** `stopId`, `name`, `latitude`, `longitude`
+**Optional:** `description`
+
 **Response (201):** Stop created
 
 ---
@@ -320,11 +318,11 @@ Content-Type: application/json
 
 ---
 
-### Delete Stop
+### Delete Stop (Soft Delete)
 ```http
 DELETE /v1/stops/{stopId}
 ```
-**Response (204):** Stop removed
+**Response (200):** Stop soft-deleted (`is_active` set to `false`, still retrievable by ID)
 
 ---
 

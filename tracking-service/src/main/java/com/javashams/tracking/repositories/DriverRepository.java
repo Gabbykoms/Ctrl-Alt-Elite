@@ -1,49 +1,39 @@
-// package com.javashams.tracking.repositories;
-// 
-// import com.javashams.tracking.model.Driver;
-// import org.springframework.data.jpa.repository.JpaRepository;
-// import org.springframework.data.jpa.repository.Query;
-// import org.springframework.stereotype.Repository;
-// 
-// import java.util.List;
-// import java.util.Optional;
-// 
-// /**
-//  * Spring Data JPA Repository for Driver entity
-//  * Provides database access and query methods for driver persistence
-//  */
-// @Repository
-// public interface DriverRepository extends JpaRepository<Driver, String> {
-//     
-//     /**
-//      * Find a driver by ID
-//      */
-//     Optional<Driver> findById(String id);
-//     
-//     /**
-//      * Find all drivers with a specific status
-//      */
-//     List<Driver> findByStatus(String status);
-//     
-//     /**
-//      * Find all drivers assigned to a shuttle
-//      */
-//     List<Driver> findByShuttleId(String shuttleId);
-//     
-//     /**
-//      * Find all drivers assigned to a route
-//      */
-//     List<Driver> findByRouteId(String routeId);
-//     
-//     /**
-//      * Find all online drivers
-//      */
-//     @Query("SELECT d FROM Driver d WHERE d.status = 'ONLINE'")
-//     List<Driver> findAllOnlineDrivers();
-//     
-//     /**
-//      * Find online drivers for a specific shuttle
-//      */
-//     @Query("SELECT d FROM Driver d WHERE d.status = 'ONLINE' AND d.shuttleId = :shuttleId")
-//     List<Driver> findOnlineDriversByShuttle(String shuttleId);
-// }
+package com.javashams.tracking.repositories;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.javashams.tracking.config.SupabaseConfig;
+import com.javashams.tracking.model.Driver;
+import org.springframework.http.codec.json.Jackson2JsonDecoder;
+import org.springframework.http.codec.json.Jackson2JsonEncoder;
+import org.springframework.stereotype.Repository;
+import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
+
+import java.util.Objects;
+
+@Repository
+public class DriverRepository {
+
+    private final WebClient webClient;
+
+    public DriverRepository(SupabaseConfig config, ObjectMapper objectMapper) {
+        this.webClient = WebClient.builder()
+            .baseUrl(Objects.requireNonNull(config.getUrl(), "SUPABASE_URL must be configured"))
+            .defaultHeader("apikey", Objects.requireNonNull(config.getAnonKey(), "SUPABASE_ANON_KEY must be configured"))
+            .defaultHeader("Authorization", "Bearer " + Objects.requireNonNull(config.getServiceRoleKey(), "SUPABASE_SERVICE_ROLE_KEY must be configured"))
+            .defaultHeader("Content-Type", "application/json")
+            .codecs(configurer -> {
+                configurer.defaultCodecs().jackson2JsonEncoder(new Jackson2JsonEncoder(objectMapper));
+                configurer.defaultCodecs().jackson2JsonDecoder(new Jackson2JsonDecoder(objectMapper));
+            })
+            .build();
+    }
+
+    public Mono<Driver> findById(String id) {
+        return webClient.get()
+            .uri("/rest/v1/drivers?id=eq.{id}", id)
+            .retrieve()
+            .bodyToFlux(Driver.class)
+            .next();
+    }
+}
