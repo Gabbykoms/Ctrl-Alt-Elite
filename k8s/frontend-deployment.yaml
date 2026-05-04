@@ -28,7 +28,7 @@ spec:
       - name: bantam-shuttle-registry
       containers:
       - name: bantam-shuttle-frontend
-        image: registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.2
+        image: registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.4
         imagePullPolicy: Always
         ports:
         - name: http
