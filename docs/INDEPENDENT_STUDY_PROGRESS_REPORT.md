@@ -234,10 +234,8 @@ Additionally, a 1,900-line **iOS App Roadmap** (`IOS_APP_ROADMAP.md`) was create
 ## 6. Next Steps (Future Work)
 
 
-- Complete the deployment 
 - Implement the iOS companion app outlined in `IOS_APP_ROADMAP.md`
 - Add monitoring and alerting (uptime checks, error rate dashboards)
-- Improve the communication between the driver and the students(text message)
-- Implement the admin dashboard improvements planned in Figma
+- Improve Communication between the students and the drivers indirectly(messsa )
 
 ---
