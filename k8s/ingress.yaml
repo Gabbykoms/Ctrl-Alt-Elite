@@ -47,6 +47,14 @@ spec:
             name: bantam-shuttle-backend
             port:
               number: 8080
+      # Tracking Service
+      - path: /v1
+        pathType: Prefix
+        backend:
+          service:
+            name: bantam-shuttle-tracking
+            port:
+              number: 8081
       # Frontend (catch-all) - must be last
       - path: /
         pathType: Prefix

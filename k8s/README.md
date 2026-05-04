@@ -25,6 +25,9 @@ docker build --platform linux/amd64 \
 
 cd ../backend
 docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/backend:2.0.0 .
+
+cd ../tracking-service
+docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.0 .
 ```
 
 ## 2. Push Images
@@ -32,6 +35,7 @@ docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/b
 ```bash
 docker push registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.0
 docker push registry.digitalocean.com/bantam-shuttle-registry/backend:2.0.0
+docker push registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.0
 ```
 
 ## 3. Registry Integration
@@ -72,6 +76,8 @@ kubectl apply -f frontend-deployment.yaml
 kubectl apply -f frontend-service.yaml
 kubectl apply -f backend-deployment.yaml
 kubectl apply -f backend-service.yaml
+kubectl apply -f tracking-deployment.yaml
+kubectl apply -f tracking-service.yaml
 ```
 
 ## 7. Verify
@@ -88,10 +94,15 @@ To access the services locally without an ingress:
 ```bash
 kubectl port-forward svc/bantam-shuttle-backend 8080:8080 -n elite-dev &
 kubectl port-forward svc/bantam-shuttle-frontend 3000:80 -n elite-dev &
+kubectl port-forward svc/bantam-shuttle-tracking 8081:8081 -n elite-dev &
+
+# after we are done with port forward
+kill $(lsof -ti:8080,3000,8081)
 ```
 
 - Frontend: http://localhost:3000
 - Backend API: http://localhost:8080
+- Tracking: http://localhost:8081
 
 Make sure `configmap.yaml` has `frontend-url` set to `http://localhost:3000` for CORS to work.
 
@@ -115,6 +126,8 @@ kubectl apply -f ingress.yaml
 | `frontend-service.yaml` | Frontend ClusterIP service (port 80) |
 | `backend-deployment.yaml` | Backend deployment (Node.js Express API) |
 | `backend-service.yaml` | Backend ClusterIP service (port 8080) |
+| `tracking-deployment.yaml` | Tracking service deployment (Spring Boot, port 8081) |
+| `tracking-service.yaml` | Tracking service ClusterIP service (port 8081) |
 | `ingress.yaml` | NGINX ingress routing rules |
 | `generate-secrets.sh` | Script to generate `secrets.yaml` from `.env` |
 | `.env.example` | Template for required environment variables |
