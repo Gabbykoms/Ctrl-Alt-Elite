@@ -1,10 +1,7 @@
 import { useState, useEffect } from 'react'
 import LiveMap from '../components/LiveMap'
-import ShiftsList from '../components/ShiftsList'
 import { DriverShiftReport, trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
 import { useAuth } from '../contexts/AuthContext'
-import { getDriverShifts } from '../data/mockShifts'
-import type { Shift } from '../data/mockShifts'
 
 interface Stop {
   id: string
@@ -33,7 +30,7 @@ export default function DriverDashboard() {
   const [shuttles, setShuttles] = useState<Shuttle[]>([])
   const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
   const [activeTab, setActiveTab] = useState<'map' | 'shifts'>('map')
-  const [driverShifts, setDriverShifts] = useState<Shift[]>([])
+  const [driverShifts, setDriverShifts] = useState<DriverShiftReport[]>([])
   // Keep tabs internal to the dashboard page only
   const [reportDate, setReportDate] = useState(() => new Date().toISOString().slice(0, 10))
   const [radioNumber, setRadioNumber] = useState('')
@@ -58,20 +55,23 @@ export default function DriverDashboard() {
 
       try {
         const reports = await trackingAPI.getDriverShiftReportsByDriver(user.id)
-        const openReport = reports.find((report: DriverShiftReport) =>
-          report.reportDate === reportDate && (report.endingMileage === null || report.endingMileage === undefined)
-        )
+        const mostRecent = reports[0]
+        const openReport = mostRecent && (mostRecent.ending_mileage === null || mostRecent.ending_mileage === undefined)
+          ? mostRecent
+          : null
 
         if (openReport) {
           setActiveReportId(openReport.id)
-          setRadioNumber(openReport.radioNumber || '')
-          setDriverName(openReport.driverName || user.name)
-          setVehicleLicense(openReport.vehicleLicense || '')
-          setStartingMileage(String(openReport.startingMileage ?? ''))
-          setConditionNotes(openReport.conditionNotes || '')
+          setIsClockedIn(true)
+          setRadioNumber(openReport.radio_number || '')
+          setDriverName(openReport.driver_name || user.name)
+          setVehicleLicense(openReport.vehicle_license || '')
+          setStartingMileage(String(openReport.starting_mileage ?? ''))
+          setConditionNotes(openReport.condition_notes || '')
           setReportMessage(`Loaded existing open report: ${openReport.id}`)
         } else {
           setActiveReportId(null)
+          setIsClockedIn(false)
         }
       } catch (error) {
         console.error('Error loading shift reports:', error)
@@ -81,12 +81,17 @@ export default function DriverDashboard() {
     loadOpenShiftReport()
   }, [user?.id, user?.name, reportDate])
 
-  // Load driver's shifts from mock data
   useEffect(() => {
-    if (user?.id) {
-      const shifts = getDriverShifts(user.id)
-      setDriverShifts(shifts)
+    const loadShifts = async () => {
+      if (!user?.id) return
+      try {
+        const shifts = await trackingAPI.getDriverShiftReportsByDriver(user.id)
+        setDriverShifts(shifts)
+      } catch (error) {
+        console.error('Error loading shifts:', error)
+      }
     }
+    loadShifts()
   }, [user?.id])
 
   const handleStartShiftReport = async () => {
@@ -119,6 +124,7 @@ export default function DriverDashboard() {
         condition_notes: conditionNotes || undefined,
       })
       setActiveReportId(created.id)
+      setIsClockedIn(true)
       setReportMessage(`Shift report started successfully (${created.id}).`)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to start shift report.'
@@ -154,12 +160,14 @@ export default function DriverDashboard() {
     setIsSubmittingReport(true)
     setReportMessage('')
     try {
-      await trackingAPI.endDriverShiftReport(activeReportId, {
+      await trackingAPI.endDriverShiftReport({
+        driver_id: user!.id,
         ending_mileage: parsedEndingMileage,
         condition_notes: conditionNotes || undefined,
       })
       setReportMessage('Shift report ended successfully.')
       setActiveReportId(null)
+      setIsClockedIn(false)
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Failed to end shift report.'
       setReportMessage(message)
@@ -443,9 +451,35 @@ export default function DriverDashboard() {
           <LiveMap pins={mapPins} />
         ) : (
           <div className="h-full overflow-y-auto p-6">
-            <div className="max-w-6xl mx-auto">
+            <div className="max-w-4xl mx-auto space-y-4">
               <h3 className="text-2xl font-bold text-dark mb-4">My Shifts</h3>
-              <ShiftsList shifts={driverShifts} />
+              {driverShifts.length === 0 ? (
+                <p className="text-gray-500 text-center py-12">No shifts found.</p>
+              ) : (
+                driverShifts.map(shift => (
+                  <div key={shift.id} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm space-y-2">
+                    <div className="flex items-center justify-between">
+                      <p className="font-semibold text-gray-900">{shift.report_date}</p>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        shift.status === 'COMPLETED' ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
+                      }`}>
+                        {shift.status === 'COMPLETED' ? 'Completed' : 'In Progress'}
+                      </span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-sm text-gray-600">
+                      <p>Clock In: {shift.clock_in_time ? new Date(shift.clock_in_time).toLocaleTimeString() : '—'}</p>
+                      <p>Clock Out: {shift.clock_out_time ? new Date(shift.clock_out_time).toLocaleTimeString() : '—'}</p>
+                      <p>Start Mileage: {shift.starting_mileage}</p>
+                      <p>End Mileage: {shift.ending_mileage ?? '—'}</p>
+                      {shift.vehicle_license && <p>Vehicle: {shift.vehicle_license}</p>}
+                      {shift.radio_number && <p>Radio #: {shift.radio_number}</p>}
+                    </div>
+                    {shift.condition_notes && (
+                      <p className="text-sm text-gray-500 border-t pt-2">Notes: {shift.condition_notes}</p>
+                    )}
+                  </div>
+                ))
+              )}
             </div>
           </div>
         )}

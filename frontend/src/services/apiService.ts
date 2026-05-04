@@ -165,16 +165,19 @@ export const TRACKING_SERVICE_URL = TRACKING_SERVICE_BASE;
 
 export interface DriverShiftReport {
   id: string
-  reportDate: string
-  radioNumber?: string | null
-  driverId: string
-  driverName: string
-  vehicleLicense?: string | null
-  startingMileage: number
-  endingMileage?: number | null
-  conditionNotes?: string | null
-  createdAtMs: number
-  updatedAtMs: number
+  report_date: string
+  radio_number?: string | null
+  driver_id: string
+  driver_name: string
+  vehicle_license?: string | null
+  starting_mileage: number
+  ending_mileage?: number | null
+  condition_notes?: string | null
+  created_at_ms: number
+  updated_at_ms: number
+  status?: string | null
+  clock_in_time?: string | null
+  clock_out_time?: string | null
 }
 
 export interface StartDriverShiftReportPayload {
@@ -188,6 +191,7 @@ export interface StartDriverShiftReportPayload {
 }
 
 export interface EndDriverShiftReportPayload {
+  driver_id: string
   ending_mileage: number
   condition_notes?: string
 }
@@ -251,7 +255,7 @@ export const trackingAPI = {
     }).then(res => res.json()),
 
   // Create a new stop (admin only)
-  createStop: (data: { name: string; latitude: number; longitude: number; description?: string }) =>
+  createStop: (data: { stopId: string; name: string; latitude: number; longitude: number; description?: string }) =>
     fetch(`${TRACKING_SERVICE_BASE}/v1/stops`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -277,25 +281,30 @@ export const trackingAPI = {
 
   // ============ DRIVER SHIFT REPORTS ============
   startDriverShiftReport: (data: StartDriverShiftReportPayload): Promise<DriverShiftReport> =>
-    fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/start`, {
+    fetch(`${TRACKING_SERVICE_BASE}/v1/shifts/clock-in`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
       credentials: 'include',
     }).then(parseTrackingJson),
 
-  endDriverShiftReport: (id: string, data: EndDriverShiftReportPayload): Promise<DriverShiftReport> =>
-    fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/${id}/end`, {
-      method: 'PATCH',
+  endDriverShiftReport: (data: EndDriverShiftReportPayload): Promise<DriverShiftReport> =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/shifts/clock-out`, {
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
       credentials: 'include',
     }).then(parseTrackingJson),
 
   getDriverShiftReportsByDriver: (driverId: string): Promise<DriverShiftReport[]> =>
-    fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/driver/${driverId}`, {
+    fetch(`${TRACKING_SERVICE_BASE}/v1/shifts/driver/${driverId}`, {
       credentials: 'include',
-    }).then(parseTrackingJson),
+    }).then(parseTrackingJson).then(data => data.shifts ?? []),
+
+  getAllDriverShiftReports: (): Promise<DriverShiftReport[]> =>
+    fetch(`${TRACKING_SERVICE_BASE}/v1/shifts`, {
+      credentials: 'include',
+    }).then(parseTrackingJson).then(data => data.shifts ?? []),
 
   getDriverShiftReportById: (id: string): Promise<DriverShiftReport> =>
     fetch(`${TRACKING_SERVICE_BASE}/v1/driver-shift-reports/${id}`, {

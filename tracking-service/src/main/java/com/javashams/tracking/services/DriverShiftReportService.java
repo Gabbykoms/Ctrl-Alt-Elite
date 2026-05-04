@@ -87,4 +87,9 @@ public class DriverShiftReportService {
         return shiftReportRepository.findByDriverIdOrderByClockInTimeDesc(driverId)
             .doOnComplete(() -> logger.info("Retrieved shifts for driver: {}", driverId));
     }
+
+    public Flux<DriverShiftReport> getAllShifts() {
+        return shiftReportRepository.findAllOrderByClockInTimeDesc()
+            .doOnComplete(() -> logger.info("Retrieved all shift reports"));
+    }
 }

@@ -55,6 +55,21 @@ public class DriverShiftReportController {
                 });
     }
 
+    @GetMapping
+    public Mono<ResponseEntity<?>> getAllShifts() {
+        return shiftReportService.getAllShifts()
+                .collectList()
+                .<ResponseEntity<?>>map(shifts -> ResponseEntity.ok(Map.of(
+                        "shifts", shifts,
+                        "total", shifts.size()
+                )))
+                .onErrorResume(e -> {
+                    logger.error("Error retrieving all shifts", e);
+                    return Mono.just(ResponseEntity.internalServerError()
+                            .body(Map.of("error", "Failed to retrieve shifts", "message", String.valueOf(e.getMessage()))));
+                });
+    }
+
     @GetMapping("/driver/{driverId}")
     public Mono<ResponseEntity<?>> getShiftsForDriver(@PathVariable String driverId) {
         return shiftReportService.getShiftsForDriver(driverId)
