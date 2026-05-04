@@ -4,8 +4,7 @@ import { BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, L
 import { Plus, Trash2, Loader } from 'lucide-react'
 import LiveMap from '../components/LiveMap'
 import AdminShiftsView from '../components/AdminShiftsView'
-import { trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
-import { mockShifts } from '../data/mockShifts'
+import { DriverShiftReport, trackingAPI, TRACKING_SERVICE_URL } from '../services/apiService'
 
 const PEAK_USAGE_DATA = [
   { time: '6 AM', count: 45 },
@@ -69,10 +68,24 @@ export default function AdminDashboard() {
   const [highlightedStopId, setHighlightedStopId] = useState<string | null>(null)
   const [shuttles, setShuttles] = useState<Shuttle[]>([])
   const [_isLoadingShuttles, setIsLoadingShuttles] = useState(false)
+  const [allShifts, setAllShifts] = useState<DriverShiftReport[]>([])
 
   // Load stops on mount
   useEffect(() => {
     loadStops()
+  }, [])
+
+  // Load all shifts from tracking service
+  useEffect(() => {
+    const loadShifts = async () => {
+      try {
+        const shifts = await trackingAPI.getAllDriverShiftReports()
+        setAllShifts(shifts)
+      } catch (error) {
+        console.error('Error loading shifts:', error)
+      }
+    }
+    loadShifts()
   }, [])
 
   // Load shuttles from tracking service (real bus locations)
@@ -151,9 +164,16 @@ export default function AdminDashboard() {
       return
     }
 
+    const stopId = stopName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    if (stops.some(s => s.id === stopId)) {
+      _setFeedbackMessage({ type: 'error', text: `A stop named "${stopName}" already exists` })
+      return
+    }
+
     try {
       setIsLoading(true)
       const newStop = await trackingAPI.createStop({
+        stopId,
         name: stopName,
         latitude: clickPosition.lat,
         longitude: clickPosition.lng,
@@ -498,7 +518,7 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <div className="p-6 overflow-y-auto">
-            <AdminShiftsView shifts={mockShifts} />
+            <AdminShiftsView shifts={allShifts} />
           </div>
         )}
       </div>

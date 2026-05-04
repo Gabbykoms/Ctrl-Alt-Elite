@@ -1,8 +1,23 @@
-import AdminShiftsView from '../components/AdminShiftsView'
-import { mockShifts } from '../data/mockShifts'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import AdminShiftsView from '../components/AdminShiftsView'
+import { DriverShiftReport, trackingAPI } from '../services/apiService'
 
 export default function AdminShifts() {
+  const [shifts, setShifts] = useState<DriverShiftReport[]>([])
+
+  useEffect(() => {
+    const loadShifts = async () => {
+      try {
+        const data = await trackingAPI.getAllDriverShiftReports()
+        setShifts(data)
+      } catch (error) {
+        console.error('Error loading shifts:', error)
+      }
+    }
+    loadShifts()
+  }, [])
+
   return (
     <div className="p-6">
       <div className="max-w-6xl mx-auto">
@@ -11,7 +26,7 @@ export default function AdminShifts() {
           <Link to="/admin" className="text-sm text-blue-600 hover:underline">Back to Dashboard</Link>
         </div>
 
-        <AdminShiftsView shifts={mockShifts} />
+        <AdminShiftsView shifts={shifts} />
       </div>
     </div>
   )

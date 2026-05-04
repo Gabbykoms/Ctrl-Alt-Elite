@@ -39,10 +39,10 @@ public class StopRepository {
 
     public Mono<Stop> findById(String id) {
         return webClient.get()
-            .uri("/rest/v1/stops?id=eq.{id}", id)
+            .uri("/rest/v1/stops?id=eq." + id)
             .retrieve()
             .bodyToFlux(Stop.class)
-            .next(); // get the first element or empty Mono
+            .next();
     }
 
     public Mono<Stop> save(Stop stop) {

@@ -33,7 +33,7 @@ public class StopsController {
                 .onErrorResume(e -> {
                     logger.error("Error retrieving stops", e);
                     return Mono.just(ResponseEntity.internalServerError()
-                            .body(Map.of("error", "Failed to retrieve stops", "message", e.getMessage())));
+                            .body(Map.of("error", "Failed to retrieve stops", "message", String.valueOf(e.getMessage()))));
                 });
     }
     
@@ -45,7 +45,7 @@ public class StopsController {
                 .onErrorResume(e -> {
                     logger.error("Error retrieving stop: {}", stopId, e);
                     return Mono.just(ResponseEntity.internalServerError()
-                            .body(Map.of("error", "Failed to retrieve stop", "message", e.getMessage())));
+                            .body(Map.of("error", "Failed to retrieve stop", "message", String.valueOf(e.getMessage()))));
                 });
     }
     
@@ -77,12 +77,12 @@ public class StopsController {
         return stopStore.createStop(stopId, name, latitude, longitude, description)
                 .<ResponseEntity<?>>map(stop -> ResponseEntity.status(HttpStatus.CREATED).body(stop))
                 .onErrorResume(IllegalArgumentException.class, e -> 
-                    Mono.just(ResponseEntity.badRequest().body(Map.of("error", "Invalid stop data", "message", e.getMessage())))
+                    Mono.just(ResponseEntity.badRequest().body(Map.of("error", "Invalid stop data", "message", String.valueOf(e.getMessage()))))
                 )
                 .onErrorResume(e -> {
                     logger.error("Error creating stop", e);
                     return Mono.just(ResponseEntity.internalServerError()
-                            .body(Map.of("error", "Failed to create stop", "message", e.getMessage())));
+                            .body(Map.of("error", "Failed to create stop", "message", String.valueOf(e.getMessage()))));
                 });
     }
     
@@ -101,12 +101,12 @@ public class StopsController {
         return stopStore.updateStop(stopId, name, latitude, longitude, description)
                 .<ResponseEntity<?>>map(ResponseEntity::ok)
                 .onErrorResume(IllegalArgumentException.class, e -> 
-                    Mono.just(ResponseEntity.badRequest().body(Map.of("error", "Invalid stop data", "message", e.getMessage())))
+                    Mono.just(ResponseEntity.badRequest().body(Map.of("error", "Invalid stop data", "message", String.valueOf(e.getMessage()))))
                 )
                 .onErrorResume(e -> {
                     logger.error("Error updating stop: {}", stopId, e);
                     return Mono.just(ResponseEntity.internalServerError()
-                            .body(Map.of("error", "Failed to update stop", "message", e.getMessage())));
+                            .body(Map.of("error", "Failed to update stop", "message", String.valueOf(e.getMessage()))));
                 });
     }
     
@@ -124,7 +124,7 @@ public class StopsController {
                 .onErrorResume(e -> {
                     logger.error("Error deleting stop: {}", stopId, e);
                     return Mono.just(ResponseEntity.internalServerError()
-                            .body(Map.of("error", "Failed to delete stop", "message", e.getMessage())));
+                            .body(Map.of("error", "Failed to delete stop", "message", String.valueOf(e.getMessage()))));
                 });
     }
 }

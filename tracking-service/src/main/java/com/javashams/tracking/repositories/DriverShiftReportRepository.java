@@ -49,7 +49,7 @@ public class DriverShiftReportRepository {
 
     public Mono<DriverShiftReport> findById(String id) {
         return webClient.get()
-            .uri("/rest/v1/driver_shift_reports?id=eq.{id}", id)
+            .uri("/rest/v1/driver_shift_reports?id=eq." + id)
             .retrieve()
             .bodyToFlux(DriverShiftReport.class)
             .next();
@@ -57,16 +57,23 @@ public class DriverShiftReportRepository {
 
     public Flux<DriverShiftReport> findByDriverIdOrderByClockInTimeDesc(String driverId) {
         return webClient.get()
-            .uri("/rest/v1/driver_shift_reports?driver_id=eq.{driverId}&order=clock_in_time.desc", driverId)
+            .uri("/rest/v1/driver_shift_reports?driver_id=eq." + driverId + "&order=clock_in_time.desc")
             .retrieve()
             .bodyToFlux(DriverShiftReport.class);
     }
 
     public Mono<DriverShiftReport> findOpenShiftByDriverId(String driverId) {
         return webClient.get()
-            .uri("/rest/v1/driver_shift_reports?driver_id=eq.{driverId}&status=eq.IN_PROGRESS", driverId)
+            .uri("/rest/v1/driver_shift_reports?driver_id=eq." + driverId + "&status=eq.IN_PROGRESS")
             .retrieve()
             .bodyToFlux(DriverShiftReport.class)
             .next();
+    }
+
+    public Flux<DriverShiftReport> findAllOrderByClockInTimeDesc() {
+        return webClient.get()
+            .uri("/rest/v1/driver_shift_reports?order=clock_in_time.desc")
+            .retrieve()
+            .bodyToFlux(DriverShiftReport.class);
     }
 }
