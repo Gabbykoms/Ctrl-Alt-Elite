@@ -120,8 +120,8 @@ app.use((req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler)
 
-// Start server
-httpServer.listen(PORT, () => {
+// Start server function
+function startServer() {
   console.log(`\n Bantam Shuttle Backend Server`)
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
   console.log(` Server running on http://localhost:${PORT}`)
@@ -130,7 +130,12 @@ httpServer.listen(PORT, () => {
   console.log(` Health check: http://localhost:${PORT}/health`)
   console.log(`🔌 WebSocket: ws://localhost:${PORT}`)
   console.log(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
-})
+}
 
-export { app, io }
+// Only listen if this is the entry point (not imported for testing)
+if (process.env.NODE_ENV !== 'test') {
+  httpServer.listen(PORT, startServer)
+}
+
+export { app, io, httpServer, startServer }
 
