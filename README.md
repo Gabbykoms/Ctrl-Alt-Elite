@@ -5,9 +5,9 @@ A modern, full-featured shuttle tracking application built for Trinity College w
 ## Live Demo
 Production Application: 
 ```bash
-http://shuttle.javajon-gke.duckdns.org/
+http://bantam-shuttle.duckdns.org/
 ```
-The application is deployed on Google Kubernetes Engine (GKE) and accessible via DuckDNS.
+The application is deployed on DigitalOcean Kubernetes and accessible via DuckDNS.
 
 ## Quick Start
 
@@ -15,7 +15,7 @@ The application is deployed on Google Kubernetes Engine (GKE) and accessible via
 
 Simply visit the live application:
 ```bash
-http://shuttle.javajon-gke.duckdns.org/
+http://bantam-shuttle.duckdns.org/
 ```
 All services are running on the Kubernetes cluster:
 
@@ -876,9 +876,9 @@ A detailed guide on building container images for each microservice is given in 
 If you wish to build container images and push them to harbor and deploy them on kubernetes, detailed guide found in
    [`README_HARBOUR.md`](README_HARBOUR.md)
 
-### GKE Deployment
+### DigitalOcean Kubernetes Deployment
 
-Once images are pushed to harbour, deployment to kuberentes cluster in GKE is detailed in the [`README_K8s.md`](README_K8s.md.md).
+Once images are pushed to the registry, deployment to the DigitalOcean Kubernetes cluster is detailed in [`docs/README_K8s.md`](docs/README_K8s.md).
 
 ---
 

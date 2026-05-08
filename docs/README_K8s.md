@@ -1,10 +1,10 @@
 # Kubernetes Deployment Guide - Ctrl Alt Elite
 
-This guide covers deploying Ctrl Alt Elite microservices to Kubernetes clusters (GKE, local K8s, etc).
+This guide covers deploying Ctrl Alt Elite microservices to Kubernetes clusters, including DigitalOcean Kubernetes and local K8s environments.
 
 ## Prerequisites
 
-- Kubernetes cluster running (GKE, local minikube, Docker Desktop K8s, etc.)
+- Kubernetes cluster running (DigitalOcean Kubernetes, local minikube, Docker Desktop K8s, etc.)
 - `kubectl` configured and connected to your cluster
 - Docker images built and pushed to Harbor registry (see `README_BUILD_IMAGES.md`)
 - Harbor registry credentials configured as a Kubernetes secret
@@ -240,10 +240,10 @@ Then access:
 ### Using Ingress
 
 If Ingress is configured, services are accessible via:
-- Frontend: `https://shuttle.javajon-gke.duckdns.org`
-- Backend: `https://shuttle.javajon-gke.duckdns.org/api`
-- Tracking: `https://shuttle.javajon-gke.duckdns.org/api/tracking`
-- AI: `https://shuttle.javajon-gke.duckdns.org/api/ai`
+- Frontend: `http://bantam-shuttle.duckdns.org`
+- Backend: `http://bantam-shuttle.duckdns.org/api`
+- Tracking: `http://bantam-shuttle.duckdns.org/api/tracking`
+- AI: `http://bantam-shuttle.duckdns.org/api/ai`
 
 ## Scaling Deployments
 
