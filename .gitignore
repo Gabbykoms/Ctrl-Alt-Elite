@@ -57,3 +57,4 @@ frontend/dist/
 # K8s generated secrets (contain API keys)
 k8s/secrets.yaml
 k8s/ai-secrets.yaml
+tracking-service/kubernetes/secrets.yaml

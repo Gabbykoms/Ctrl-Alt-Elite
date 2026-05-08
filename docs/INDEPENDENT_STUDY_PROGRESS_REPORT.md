@@ -3,8 +3,11 @@
 ### Spring Semester 2026 | January – April
 
 **Students:** Noella Uwayisenga & Shamsher Ghising Tamang
+
 **Project:** Bantam Shuttle — Real-Time Campus Shuttle Tracking & Ride Management System
+
 **Supervisor:** Professor Ken Kousen
+
 **Submission Date:** April 28, 2026
 
 ---
