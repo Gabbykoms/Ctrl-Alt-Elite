@@ -50,6 +50,7 @@ frontend/dist/
 
 # Vite
 .vite-dev.pid
+.vite/
 
 # AI
 .claude
