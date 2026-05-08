@@ -128,6 +128,26 @@ A testing framework was introduced to the frontend for the first time:
 
 ---
 
+### 2.7b Backend Testing Infrastructure (May 2026)
+
+**Commits:** `[version2-branch]`
+
+Comprehensive testing infrastructure was added to the backend microservice:
+
+- Integrated **Vitest** as the test runner with TypeScript support and **Supertest** for HTTP assertion testing
+- Created 4 test suites covering:
+  - **Validation Tests** (17 tests) — Email format, password strength, name length, role enum, combined schema validation
+  - **Server Tests** (9 tests) — Health check, redirects, 404 handling, CORS configuration, Socket.IO setup, content-type handling
+  - **Auth Route Tests** (10 tests) — Registration validation (@trincoll.edu domain, password requirements), login validation, role support
+  - **Error Handling Tests** (9 tests) — Malformed JSON, HTTP method support, API response consistency
+- Total: **45 tests, all passing**
+- Configured mock environment variables and Supabase client mocks to avoid external dependencies
+- Prevented auto-listening during test execution with NODE_ENV=test flag
+- Added test scripts to `package.json`: `npm test` (run once), `npm run test:watch`, `npm run test:ui`
+- Created comprehensive test structure and documentation for future test expansion
+
+---
+
 ### 2.8 Tracking Service Database Migration to Supabase (April 2026)
 
 **Commit:** `ccc4190c`
@@ -150,28 +170,33 @@ The tracking service originally ran against a dedicated PostgreSQL instance prov
 
 ---
 
-### 2.9 Cloud Deployment Exploration (April 2026)
+### 2.9 Cloud Deployment Strategy & Implementation (April–May 2026)
 
 **Commits:** `85089ba0`, `d477d003`, `76724f4e`, `e1dec5ad`, `30e1868e`, `d1f3266f`, `ccc4190c`, `0232a662`, `9cff3f3f`
 
-A major focus of this semester was achieving a fully public cloud deployment. Two platforms were explored:
+A major focus of this semester was achieving a fully public cloud deployment with all microservices running and accessible. Two platforms were evaluated:
 
-#### DigitalOcean (Kubernetes + App Platform)
+#### DigitalOcean Kubernetes (Final Platform)
 
-- Initially implemented Kubernetes deployment manifests (`k8s/` directory) for DigitalOcean Kubernetes Service (DOKS), including deployments, services, config maps, and ingress definitions for all four microservices
-- Transitioned to DigitalOcean App Platform for simpler management, creating a `.do/app.yaml` app specification
-- Worked through several deployment issues:
-  - YAML spec structure errors (duplicate `services:` keys causing silent spec invalidation)
-  - Discovery that DO App Platform does not re-read `.do/app.yaml` on subsequent pushes — spec must be updated through the DO dashboard or CLI
-  - Resolved Dockerfile path configuration for the static frontend
+- Implemented Kubernetes deployment manifests (`k8s/` directory) for DigitalOcean Kubernetes Service (DOKS), including deployments, services, config maps, ingress, and secrets management for all four microservices
+- Successfully deployed all services to DOKS:
+  - **Frontend** (React + Nginx)
+  - **Backend** (Node.js + Express)
+  - **Tracking Service** (Java + Spring Boot)
+  - **AI Integration Service** (Python + FastAPI)
+- Configured NGINX ingress controller for routing external traffic
+- Set up DuckDNS for public domain access (`bantam-shuttle.duckdns.org`)
+- All services communicate via Kubernetes internal DNS; browser clients access via public ingress
+- Successfully deployed and tested all endpoints (health checks, API routes, socket connections)
+- Updated main README to reflect DigitalOcean deployment and public access URL
 
-#### Railway
+#### Railway (Exploration & Evaluation)
 
-- Deployed the frontend, backend, and tracking service successfully to Railway
-- Railway's GitHub integration auto-detects Dockerfiles per service directory, eliminating the need for a centralized app spec file
-- Configured inter-service communication using Railway's internal DNS (`.railway.internal`) for server-to-server calls and public `*.up.railway.app` domains for browser-facing endpoints
-- Fixed a Railway-detected issue in the frontend Dockerfile (`npx vite build` → `npm run build`)
-- Hardened the AI service's RabbitMQ connection to handle startup race conditions in the Railway environment
+- Initially deployed frontend, backend, and tracking service to Railway for comparison
+- Railway's GitHub integration auto-detects Dockerfiles per service directory, providing quick onboarding
+- Configured inter-service communication using Railway's internal DNS (`.railway.internal`) for server-to-server calls
+- While Railway offered simplicity for single-service deployments, Kubernetes on DigitalOcean was ultimately chosen for better cost efficiency, more granular control, and alignment with production-grade infrastructure practices
+- Experience gained with Railway proved valuable for understanding different deployment models and trade-offs
 
 ---
 
@@ -188,6 +213,7 @@ The following documentation was produced and committed to the `docs/` directory:
 | `TESTING.md` | Frontend and backend testing strategy and setup guide |
 | `API_ROUTES.md` | Complete API route reference for all services |
 | `AUTH_DOCUMENTATION.md` | Authentication flow and JWT integration documentation |
+| `INGRESS_SETUP.md` | DigitalOcean NGINX ingress configuration and DNS setup walkthrough |
 
 Additionally, a 1,900-line **iOS App Roadmap** (`IOS_APP_ROADMAP.md`) was created at the project root, outlining a future native mobile companion application.
 
@@ -223,22 +249,46 @@ Additionally, a 1,900-line **iOS App Roadmap** (`IOS_APP_ROADMAP.md`) was create
 
 ## 5. Current System State
 
-| Component | Status |
-|---|---|
-| Frontend | Live on Railway |
-| Backend | Live on Railway |
-| Tracking Service | Live on Railway (Supabase PostgreSQL) |
-| AI Integration Service | Not deployed (deferred — focus on core services first) |
-| Database | Supabase (consolidated — backend + tracking share one project) |
-| DigitalOcean | Preserved as backup deployment target |
+| Component | Status | Technology | Location |
+|---|---|---|---|
+| Frontend | ✅ Deployed | React + Vite + Nginx | DigitalOcean Kubernetes |
+| Backend | ✅ Deployed | Node.js + Express + TypeScript | DigitalOcean Kubernetes |
+| Tracking Service | ✅ Deployed | Java 21 + Spring Boot + WebFlux | DigitalOcean Kubernetes |
+| AI Integration Service | ✅ Deployed | Python + FastAPI + LangChain | DigitalOcean Kubernetes |
+| Database | ✅ Consolidated | Supabase PostgreSQL | Cloud |
+| Public Access | ✅ Live | DuckDNS + NGINX Ingress | `bantam-shuttle.duckdns.org` |
+| Testing (Frontend) | ✅ Implemented | Vitest + React Testing Library | Repository |
+| Testing (Backend) | ✅ Implemented | Vitest + Supertest (45 tests) | Repository |
+| Testing (Tracking) | ✅ Existing | JUnit + Spring Test | Repository |
+| Testing (AI Service) | ✅ Existing | pytest | Repository |
 
 ---
 
-## 6. Next Steps (Future Work)
+## 6. Deployment Checklist (Completion Status)
 
+| Item | Completed | Notes |
+|---|---|---|
+| Frontend deployment | ✅ Yes | Live on DigitalOcean K8s |
+| Backend deployment | ✅ Yes | Live on DigitalOcean K8s |
+| Tracking service deployment | ✅ Yes | Live on DigitalOcean K8s |
+| AI service deployment | ✅ Yes | Live on DigitalOcean K8s |
+| Frontend testing | ✅ Yes | Vitest + React Testing Library |
+| Backend testing | ✅ Yes | 45 tests, all passing |
+| Tracking service testing | ✅ Yes | Existing JUnit tests |
+| AI service testing | ✅ Yes | Existing pytest tests |
+| Public domain access | ✅ Yes | `bantam-shuttle.duckdns.org` |
+| Database consolidation | ✅ Yes | All services use Supabase |
+| Secrets management | ✅ Yes | `.env.example` templates, no credentials in repo |
+| Kubernetes manifests | ✅ Yes | Full DOKS configuration |
+
+---
+
+## 7. Next Steps (Future Work)
 
 - Implement the iOS companion app outlined in `IOS_APP_ROADMAP.md`
-- Add monitoring and alerting (uptime checks, error rate dashboards)
-- Improve Communication between the students and the drivers indirectly(messsa )
+- Add monitoring and alerting (uptime checks, error rate dashboards via Prometheus/Grafana)
+- Expand test coverage for tracking service and AI service to include integration tests
+- Optimize API response times and add caching layers
+- Implement real-time messaging system between students and drivers
 
 ---
