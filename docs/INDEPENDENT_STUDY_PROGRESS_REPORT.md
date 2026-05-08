@@ -286,7 +286,7 @@ Additionally, a 1,900-line **iOS App Roadmap** (`IOS_APP_ROADMAP.md`) was create
 ## 7. Next Steps (Future Work)
 
 - Implement the iOS companion app outlined in `IOS_APP_ROADMAP.md`
-- Add monitoring and alerting (uptime checks, error rate dashboards via Prometheus/Grafana)
+- Add monitoring and alerting (uptime checks, error rate dashboards)
 - Expand test coverage for tracking service and AI service to include integration tests
 - Optimize API response times and add caching layers
 - Implement real-time messaging system between students and drivers
