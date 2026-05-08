@@ -48,6 +48,21 @@ spec:
             name: bantam-shuttle-backend
             port:
               number: 8080
+      # AI Service
+      - path: /chat
+        pathType: Prefix
+        backend:
+          service:
+            name: bantam-ai-service
+            port:
+              number: 8083
+      - path: /documents
+        pathType: Prefix
+        backend:
+          service:
+            name: bantam-ai-service
+            port:
+              number: 8083
       # Tracking Service
       - path: /v1
         pathType: Prefix

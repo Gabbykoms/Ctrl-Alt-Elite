@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bantam-ai-service
+  namespace: elite-dev
+  labels:
+    app: bantam-ai-service
+    tier: backend
+    team: ctrl-alt-elite
+spec:
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: bantam-ai-service
+  template:
+    metadata:
+      labels:
+        app: bantam-ai-service
+        tier: backend
+        team: ctrl-alt-elite
+    spec:
+      imagePullSecrets:
+      - name: bantam-shuttle-registry
+      containers:
+      - name: bantam-ai-service
+        image: registry.digitalocean.com/bantam-shuttle-registry/ai-service:2.0.0
+        imagePullPolicy: Always
+        ports:
+        - name: http
+          containerPort: 8083
+          protocol: TCP
+        envFrom:
+        - configMapRef:
+            name: bantam-ai-config
+        - secretRef:
+            name: bantam-ai-secrets
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health/
+            port: 8083
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health/
+            port: 8083
+          initialDelaySeconds: 30
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+      restartPolicy: Always

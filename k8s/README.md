@@ -24,23 +24,27 @@ docker build --platform linux/amd64 \
   --build-arg VITE_TRACKING_SERVICE_URL \
   --build-arg VITE_MAPBOX_TOKEN \
   -f Dockerfile \
-  -t registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.3 .
+  -t registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.5 .
 
 
 
 cd ../backend
-docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/backend:2.0.0 .
+docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/backend:2.0.1 .
 
 cd ../tracking-service
-docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.0 .
+docker build --platform linux/amd64 -f Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.3 .
+
+cd ../AI_Intergration_Service
+docker build --platform linux/amd64 -f docker/Dockerfile -t registry.digitalocean.com/bantam-shuttle-registry/ai-service:2.0.0 .
 ```
 
 ## 2. Push Images
 
 ```bash
-docker push registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.0
-docker push registry.digitalocean.com/bantam-shuttle-registry/backend:2.0.0
-docker push registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.0
+docker push registry.digitalocean.com/bantam-shuttle-registry/frontend:2.0.5
+docker push registry.digitalocean.com/bantam-shuttle-registry/backend:2.0.1
+docker push registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.3
+docker push registry.digitalocean.com/bantam-shuttle-registry/ai-service:2.0.0
 ```
 
 ## 3. Registry Integration
@@ -75,6 +79,7 @@ Edit `configmap.yaml` and set `frontend-url` to your actual domain or `http://lo
 
 ```bash
 kubectl apply -f namespace.yaml
+kubectl apply -f ingress.yaml
 kubectl apply -f configmap.yaml
 kubectl apply -f secrets.yaml
 kubectl apply -f frontend-deployment.yaml
@@ -83,6 +88,12 @@ kubectl apply -f backend-deployment.yaml
 kubectl apply -f backend-service.yaml
 kubectl apply -f tracking-deployment.yaml
 kubectl apply -f tracking-service.yaml
+kubectl apply -f rabbitmq.yaml
+./generate-ai-secrets.sh
+kubectl apply -f ai-secrets.yaml
+kubectl apply -f ai-configmap.yaml
+kubectl apply -f ai-deployment.yaml
+kubectl apply -f ai-service.yaml
 ```
 
 ## 7. Verify

@@ -28,7 +28,7 @@ spec:
       - name: bantam-shuttle-registry
       containers:
       - name: bantam-shuttle-tracking
-        image: registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.2
+        image: registry.digitalocean.com/bantam-shuttle-registry/tracking-service:2.0.3
         imagePullPolicy: Always
         ports:
         - name: http
