@@ -38,8 +38,11 @@ const AiChat: React.FC = () => {
     const poll = async () => {
       try {
         attempts++
-        const response = await fetch(`${AI_URL}/chat/response/${requestId}`)
-        
+        const token = localStorage.getItem('token')
+        const response = await fetch(`${AI_URL}/chat/response/${requestId}`, {
+          headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+        })
+
         if (!response.ok) {
           throw new Error(`Polling error: ${response.status}`)
         }
@@ -117,10 +120,12 @@ const AiChat: React.FC = () => {
 
     try {
       // Submit request to queue
+      const token = localStorage.getItem('token')
       const response = await fetch(`${AI_URL}/chat/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
         body: JSON.stringify({ message: input }),
       })

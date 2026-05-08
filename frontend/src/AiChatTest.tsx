@@ -19,12 +19,14 @@ const AiChatTest: React.FC = () => {
       console.log(`Sending request to: ${url}`);
       console.log(`Request body:`, { message: input });
       
+      const token = localStorage.getItem('token');
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
         },
-        body: JSON.stringify({ message: input }), 
+        body: JSON.stringify({ message: input }),
       });
 
       console.log(`Response status: ${response.status}`);
